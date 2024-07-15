@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-final class MashowIOSKitTests: XCTestCase {
+final class MashowKitTests: XCTestCase {
     func test_example() {
         XCTAssertEqual("MashowIOSKit", "MashowIOSKit")
     }
