@@ -34,6 +34,7 @@ extension Project {
                              resources: [],
                              dependencies: [
                                 .external(name: "SnapKit"),
+                                .external(name: "Moya"),
                                 .external(name: "Kingfisher"),
                                 .external(name: "Lottie")
                              ])
