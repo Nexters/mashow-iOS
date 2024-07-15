@@ -6,7 +6,7 @@ import ProjectDescription
 /// See https://docs.tuist.io/guides/helpers/
 
 extension Project {
-    private static let organizationName = "io.alcoholers"
+    private static let organizationName = "com.alcoholers"
     private static let projectName = "Mashow"
     
     /// Helper function to create the Project for this ExampleApp

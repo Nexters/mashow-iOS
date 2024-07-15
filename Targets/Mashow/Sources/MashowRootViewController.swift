@@ -3,7 +3,7 @@
 //  MashowKit
 //
 //  Created by Kai Lee on 7/14/24.
-//  Copyright © 2024 io.alcoholers. All rights reserved.
+//  Copyright © 2024 com.alcoholers. All rights reserved.
 //
 
 import UIKit
