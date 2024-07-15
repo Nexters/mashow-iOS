@@ -12,4 +12,6 @@ fi
 
 # Fix version of Tuist
 mise use tuist@3.9.0
-tuist version
+
+# Show result if successful
+echo "✅ Setup complete. Tuist version: $(tuist version)"
