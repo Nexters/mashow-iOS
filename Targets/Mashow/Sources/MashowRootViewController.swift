@@ -11,6 +11,21 @@ import UIKit
 class MashowRootViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .systemBlue
+    }
+}
+
+import SwiftUI
+#Preview {
+    VStack {
+        MashowRootViewController.preview()
+        
+        // or
+        MashowRootViewController.preview {
+            let vc = MashowRootViewController()
+            
+            vc.view.backgroundColor = .red
+            return vc
+        }
     }
 }
