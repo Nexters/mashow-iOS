@@ -50,7 +50,7 @@ extension API: TargetType {
     var headers: [String : String]? {
         var header = ["Content-type": "application/json"]
         // Add authorization headers if exists
-         if let accessToken = NetworkManager.shared.accessToken {
+        if let accessToken = Environment.apiManager.accessToken {
              header["Authorization"] = "Bearer \(accessToken)"
          }
         

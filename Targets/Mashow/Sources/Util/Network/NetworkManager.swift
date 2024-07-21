@@ -9,13 +9,12 @@
 import Moya
 import Foundation
 
-final class NetworkManager {
-    static let shared = NetworkManager()
-    private init() {
-        // Use singleton instead
+final class NetworkManager<Target> where Target: TargetType {
+    init(provider: MoyaProvider<Target> = MoyaProvider<Target>()) {
+        self.provider = provider
     }
     
-    private let provider = MoyaProvider<API>()
+    private let provider: MoyaProvider<Target>
     private(set) var accessToken: String?
     
     // MARK: - Manage access token
@@ -28,7 +27,7 @@ final class NetworkManager {
     }
     
     // MARK: - API Request
-    func request<T>(_ api: API, of type: T.Type) async throws -> T where T: Decodable {
+    func request<T>(_ api: Target, of type: T.Type) async throws -> T where T: Decodable {
         try await provider
             .request(api)
             .map(T.self)
