@@ -9,6 +9,7 @@
 import Moya
 import Foundation
 
+// FIXME: 나중에 API 나오는 거에 맞춰서 전부 변경해야 함
 enum API {
     case testGet
     case testPost(id: Int)
@@ -16,7 +17,6 @@ enum API {
 
 extension API: TargetType {
     var baseURL: URL {
-        // FIXME: TBD
         return URL(string: "https://api.example.com")!
     }
     
@@ -50,7 +50,7 @@ extension API: TargetType {
     var headers: [String : String]? {
         var header = ["Content-type": "application/json"]
         // Add authorization headers if exists
-        if let accessToken = Environment.apiManager.accessToken {
+        if let accessToken = Environment.network.accessToken {
              header["Authorization"] = "Bearer \(accessToken)"
          }
         
