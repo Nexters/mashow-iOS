@@ -10,8 +10,8 @@ import Foundation
 import Moya
 
 struct Environment {
-    private static let _network = NetworkManager(provider: MoyaProvider<API>())
+    private static let internalNetwork = NetworkManager(provider: MoyaProvider<API>())
     static var network: NetworkManager<API> {
-        _network
+        internalNetwork
     }
 }
