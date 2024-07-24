@@ -18,7 +18,9 @@ let dependencies = Dependencies(
         // Kingfisher
         .remote(url: "https://github.com/onevcat/Kingfisher.git", requirement: .upToNextMajor(from: "7.0.0")),
         // Lottie
-        .remote(url: "https://github.com/airbnb/lottie-ios.git", requirement: .upToNextMajor(from: "3.4.3"))
+        .remote(url: "https://github.com/airbnb/lottie-ios.git", requirement: .upToNextMajor(from: "3.4.3")),
+        // Kakao
+        .remote(url: "https://github.com/kakao/kakao-ios-sdk.git", requirement: .upToNextMajor(from: "2.22.5"))
     ],
     platforms: [.iOS]
 )

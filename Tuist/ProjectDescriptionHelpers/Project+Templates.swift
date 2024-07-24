@@ -36,7 +36,9 @@ extension Project {
                                 .external(name: "SnapKit"),
                                 .external(name: "Moya"),
                                 .external(name: "Kingfisher"),
-                                .external(name: "Lottie")
+                                .external(name: "Lottie"),
+                                .external(name: "KakaoSDKAuth"),
+                                .external(name: "KakaoSDKUser")
                              ])
         let tests = Target(name: "\(name)Tests",
                            platform: platform,
