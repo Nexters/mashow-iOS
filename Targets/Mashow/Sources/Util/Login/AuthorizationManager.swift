@@ -8,26 +8,12 @@
 
 import Foundation
 
-final class AuthorizationManager {
+struct AuthorizationManager {
     private let networkManager: NetworkManager<API>
-    private let storageManager: StorageManager
-    
-    /// 로그인 여부 판별 등에 사용되는 permanent 액세스 토큰.
-    /// 내부에서 로그인 성공/로그아웃 시 자체적으로 업데이트 된다.
-    private(set) var accessToken: String? {
-        get {
-            storageManager.accessToken
-        }
-        set {
-            storageManager.accessToken = newValue
-        }
-    }
     
     init(
-        _ storageManager: StorageManager = Environment.storage,
         _ networkManager: NetworkManager<API> = Environment.network
     ) {
-        self.storageManager = storageManager
         self.networkManager = networkManager
     }
     
@@ -46,12 +32,7 @@ final class AuthorizationManager {
             mashowAccessToken = try await networkManager.request(.testPost(id: 123), of: String.self)
         }
         
-        self.accessToken = mashowAccessToken
         return mashowAccessToken
-    }
-    
-    func signOut() {
-        accessToken = nil
     }
 }
 

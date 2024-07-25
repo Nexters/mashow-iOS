@@ -11,6 +11,7 @@ import KakaoSDKAuth
 import KakaoSDKUser
 
 extension AuthorizationManager {
+    /// 카카오 로그인 요청 후 카카오 액세스 토큰을 반환한다
     func signInWithKakao() async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             // 카카오톡 앱 사용 가능 여부 확인
