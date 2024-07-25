@@ -9,13 +9,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
-        if
-            let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String,
-            let baseUrl = Bundle.main.object(forInfoDictionaryKey: "BASE_API_URL") as? String
-        {
-            KakaoSDK.initSDK(appKey: kakaoAppKey)
+        guard let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String else {
+            fatalError("XCConfig을 잘못 넣으셨군요...")
         }
         
+        KakaoSDK.initSDK(appKey: kakaoAppKey)
         return true
     }
 

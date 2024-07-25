@@ -17,7 +17,11 @@ enum API {
 
 extension API: TargetType {
     var baseURL: URL {
-        return URL(string: "https://api.example.com")!
+        guard let baseUrl = Bundle.main.object(forInfoDictionaryKey: "BASE_API_URL") as? String else {
+            fatalError("XCConfig을 잘못 넣으셨군요...")
+        }
+        
+        return URL(string: baseUrl)!
     }
     
     var path: String {
