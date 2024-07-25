@@ -14,4 +14,9 @@ struct Environment {
     static var network: NetworkManager<API> {
         internalNetwork
     }
+    
+    private static let internalStorage = StorageManager()
+    static var storage: StorageManager {
+        internalStorage
+    }
 }
