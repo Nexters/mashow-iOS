@@ -9,7 +9,6 @@
 import XCTest
 import Moya
 @testable import Mashow
-import SwiftUI
 
 final class NetworkManagerTests: XCTestCase {
     var networkManager: NetworkManager<TestAPI>!
@@ -26,15 +25,45 @@ final class NetworkManagerTests: XCTestCase {
     func testRegisterAccessToken() {
         let token = "testAccessToken"
         
-        networkManager.registerAccessToken(token: token)
-        XCTAssertEqual(networkManager.accessToken, token, "Access token should be correctly registered.")
+        networkManager.registerAccessToken(accessToken: token)
+        
+        // Create a request to test the header
+        let request = URLRequest(url: URL(string: "https://api.example.com/get")!)
+        let plugins = networkManager.provider.plugins
+            .filter { $0 is BearerTokenPlugin }
+        XCTAssertEqual(plugins.count, 1, "There should be plugin.")
+        
+        let preparedRequest = plugins.first?.prepare(request, target: TestAPI.testGet)
+        XCTAssertEqual(
+            preparedRequest?.value(forHTTPHeaderField: "Authorization"),
+            "Bearer \(token)", 
+            "Access token should be correctly added to the Authorization header.")
+    }
+    
+    func testRegisterAccessTokenTwice() {
+        let token = "testAccessToken"
+        
+        networkManager.registerAccessToken(accessToken: token)
+        networkManager.registerAccessToken(accessToken: token)
+        
+        // Create a request to test the header
+        let plugins = networkManager.provider.plugins
+            .filter { $0 is BearerTokenPlugin }
+        XCTAssertEqual(plugins.count, 1, "There should be only one plugin.")
     }
     
     func testRemoveAccessToken() {
-        networkManager.registerAccessToken(token: "testAccessToken")
-        networkManager.removeAccessToken()
+        networkManager.registerAccessToken(accessToken: "testAccessToken")
+        let plugins = networkManager.provider.plugins
+            .filter { $0 is BearerTokenPlugin }
+        XCTAssertEqual(plugins.count, 1, "There should be plugin.")
         
-        XCTAssertNil(networkManager.accessToken, "Access token should be removed.")
+        networkManager.removeAccessToken()
+        let hasBearerTokenPlugin = networkManager.provider.plugins
+            .filter { $0 is BearerTokenPlugin }
+            .isNotEmpty
+        
+        XCTAssertFalse(hasBearerTokenPlugin, "Access token plugin should be removed.")
     }
     
     func testRequestSuccess() async throws {
@@ -118,3 +147,9 @@ fileprivate let jsonString = """
 """
 
 fileprivate let testData = TestData(data: "testGet")
+
+extension Array {
+    var isNotEmpty: Bool {
+        !isEmpty
+    }
+}

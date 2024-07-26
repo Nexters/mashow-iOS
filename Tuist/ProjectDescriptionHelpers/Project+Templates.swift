@@ -36,8 +36,11 @@ extension Project {
                                 .external(name: "SnapKit"),
                                 .external(name: "Moya"),
                                 .external(name: "Kingfisher"),
-                                .external(name: "Lottie")
+                                .external(name: "Lottie"),
+                                .external(name: "KakaoSDKAuth"),
+                                .external(name: "KakaoSDKUser")
                              ])
+        
         let tests = Target(name: "\(name)Tests",
                            platform: platform,
                            product: .unitTests,
@@ -47,6 +50,7 @@ extension Project {
                            sources: ["Targets/\(name)/Tests/**"],
                            resources: [],
                            dependencies: [.target(name: name)])
+        
         return [sources, tests]
     }
     
@@ -65,10 +69,39 @@ extension Project {
                             "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
                         ],
                     ]
-                ]
+                ],
             ],
+            "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink", "kakaoplus", "kakaotalk"],
+            "NSAppTransportSecurity": [
+                "NSAllowsArbitraryLoads": true
+            ],
+            "CFBundleURLTypes": [
+                [
+                    "CFBundleTypeRole": "Editor",
+                    "CFBundleURLSchemes": [
+                        "$(KAKAO_APP_KEY)://oauth"
+                    ]
+                ],
+                [
+                    "CFBundleTypeRole": "Editor",
+                    "CFBundleURLSchemes": [
+                        "$(KAKAO_APP_KEY)://kakaolink"
+                    ]
+                ],
+            ],
+            "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
+            "BASE_API_URL": "$(BASE_API_URL)"
         ]
         
+        let debugConfiguration = Configuration.debug(
+            name: .debug,
+            xcconfig: .relativeToRoot("Configurations/Debug.xcconfig"))
+        
+        let releaseConfiguration = Configuration.release(
+            name: .release,
+            xcconfig: .relativeToRoot("Configurations/Release.xcconfig")
+        )
+
         let mainTarget = Target(
             name: name,
             platform: platform,
@@ -78,7 +111,11 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
-            dependencies: dependencies
+            dependencies: dependencies,
+            settings: .settings(configurations: [
+               debugConfiguration,
+               releaseConfiguration
+            ])
         )
         
         let testTarget = Target(
