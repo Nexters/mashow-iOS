@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+      "removeComments": true,
+      "allowJs": true,
+      "allowSyntheticDefaultImports": true,
+      "baseUrl": "./src"
+  },
+  "include": [
+      "./src/index.d.ts"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+      "useBabel": true,
+      "useCache": true
+  }
+}

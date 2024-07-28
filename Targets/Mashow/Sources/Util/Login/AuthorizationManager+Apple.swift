@@ -17,7 +17,6 @@ extension AuthorizationManager {
 }
 
 final class AppleAuthManager: NSObject {
-    private var currentNonce: String? = nil
     weak var viewController: UIViewController?
     private var completionHandler: ((Result<String, Error>) -> Void)? = nil
     
@@ -74,5 +73,3 @@ extension AppleAuthManager: ASAuthorizationControllerPresentationContextProvidin
         return viewController!.view.window!
     }
 }
-
-protocol AppleAuthManagerDelegate: ASAuthorizationControllerDelegate { }
