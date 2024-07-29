@@ -8,6 +8,7 @@
 
 import Foundation
 import Moya
+import Willow
 
 struct Environment {
     private static let internalNetwork = NetworkManager(provider: MoyaProvider<API>())
@@ -18,5 +19,10 @@ struct Environment {
     private static let internalStorage = StorageManager()
     static var storage: StorageManager {
         internalStorage
+    }
+    
+    private static let internalLogger = Logger(logLevels: .all, writers: [OSLogWriter(subsystem: "Mashow", category: "Mashow Logger")])
+    static var logger: Logger {
+        internalLogger
     }
 }

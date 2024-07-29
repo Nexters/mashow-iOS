@@ -20,7 +20,9 @@ let dependencies = Dependencies(
         // Lottie
         .remote(url: "https://github.com/airbnb/lottie-ios.git", requirement: .upToNextMajor(from: "3.4.3")),
         // Kakao
-        .remote(url: "https://github.com/kakao/kakao-ios-sdk.git", requirement: .upToNextMajor(from: "2.22.5"))
+        .remote(url: "https://github.com/kakao/kakao-ios-sdk.git", requirement: .upToNextMajor(from: "2.22.5")),
+        // Logger(Willow)
+        .remote(url: "https://github.com/Nike-Inc/Willow.git", requirement: .upToNextMajor(from: "5.2.1"))
     ],
     platforms: [.iOS]
 )
