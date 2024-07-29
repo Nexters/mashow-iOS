@@ -24,9 +24,9 @@ struct AuthorizationManager {
         let mashowAccessToken: String
         
         switch platform {
-        case .apple(let viewController):
+        case .apple:
             // FIXME: API 나오면 아래 부분 수정
-            mashowAccessToken = try await signInWithApple(viewController)
+            mashowAccessToken = try await signInWithApple()
         case .kakao:
             // FIXME: API 나오면 아래 부분 수정
             let accessToken = try await signInWithKakao()
@@ -38,7 +38,7 @@ struct AuthorizationManager {
 
 extension AuthorizationManager {
     enum PlatformType {
-        case apple(UIViewController)
+        case apple
         case kakao
     }
 }

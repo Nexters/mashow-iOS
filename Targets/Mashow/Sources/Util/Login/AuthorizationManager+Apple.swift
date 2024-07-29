@@ -10,22 +10,16 @@ import UIKit
 import AuthenticationServices
 
 extension AuthorizationManager {
-    func signInWithApple(_ view: UIViewController) async throws -> String {
+    func signInWithApple() async throws -> String {
         let appleAuthManager = AppleAuthManager()
-        return try await appleAuthManager.didTapSignInWithAppleButton(from: view)
+        return try await appleAuthManager.didTapSignInWithAppleButton()
     }
 }
 
 final class AppleAuthManager: NSObject {
-    weak var viewController: UIViewController?
     private var completionHandler: ((Result<String, Error>) -> Void)? = nil
     
-    func setAppleAuthPresentationAnchorView(_ view: UIViewController) {
-        self.viewController = view
-    }
-    
-    func didTapSignInWithAppleButton(from view: UIViewController) async throws -> String {
-        setAppleAuthPresentationAnchorView(view)
+    func didTapSignInWithAppleButton() async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
             startAuthFlow { result in
                 switch result {
@@ -63,7 +57,6 @@ extension AppleAuthManager: ASAuthorizationControllerDelegate {
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: any Error) {
-        print(error.localizedDescription)
         completionHandler?(.failure(error))
     }
 }
@@ -73,7 +66,7 @@ extension AppleAuthManager: ASAuthorizationControllerPresentationContextProvidin
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first
         else {
-            print("No window available for presentation.")
+            Environment.logger.errorMessage("No window found for presentation while signing in with Apple.")
             return UIWindow()
         }
         return window
