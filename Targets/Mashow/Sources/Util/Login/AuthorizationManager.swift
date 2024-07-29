@@ -25,9 +25,8 @@ struct AuthorizationManager {
         
         switch platform {
         case .apple(let viewController):
-            // FIXME: 잘 고쳐줘 다연아
+            // FIXME: API 나오면 아래 부분 수정
             mashowAccessToken = try await signInWithApple(viewController)
-            print(mashowAccessToken)
         case .kakao:
             // FIXME: API 나오면 아래 부분 수정
             let accessToken = try await signInWithKakao()

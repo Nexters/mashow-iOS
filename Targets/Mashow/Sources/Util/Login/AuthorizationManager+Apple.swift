@@ -70,6 +70,12 @@ extension AppleAuthManager: ASAuthorizationControllerDelegate {
 
 extension AppleAuthManager: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return viewController!.view.window!
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first
+        else {
+            print("No window available for presentation.")
+            return UIWindow()
+        }
+        return window
     }
 }
