@@ -7,11 +7,36 @@
 //
 
 import UIKit
+import AuthenticationServices
 
 class MashowRootViewController: UIViewController {
+    
+    let authManager = AuthorizationManager()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBlue
+        setupSignInWithApple()
+    }
+    
+    private func setupSignInWithApple() {
+        let signInWithAppleButton = ASAuthorizationAppleIDButton()
+        signInWithAppleButton.addTarget(
+            self,
+            action: #selector(didTapSignInWithAppleButton),
+            for: .touchUpInside
+        )
+        view.addSubview(signInWithAppleButton)
+        signInWithAppleButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            signInWithAppleButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
+    @objc private func didTapSignInWithAppleButton() {
+        Task {
+            try await authManager.signIn(with: .apple(self))
+        }
     }
 }
 
