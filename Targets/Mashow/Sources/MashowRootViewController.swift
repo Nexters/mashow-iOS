@@ -7,16 +7,13 @@
 //
 
 import UIKit
-import AuthenticationServices
+import SnapKit
 
 class MashowRootViewController: UIViewController {
-    
-    let authManager = AuthorizationManager()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBlue
-        setupSignInWithApple()
+
+        
     }
     
     private func setupSignInWithApple() {
