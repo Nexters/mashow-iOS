@@ -112,6 +112,7 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
+            entitlements: .relativeToRoot("./Mashow.entitlements"), 
             dependencies: dependencies,
             settings: .settings(configurations: [
                debugConfiguration,
