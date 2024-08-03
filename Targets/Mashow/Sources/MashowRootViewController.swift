@@ -35,7 +35,7 @@ class MashowRootViewController: UIViewController {
     
     @objc private func didTapSignInWithAppleButton() {
         Task {
-            try await authManager.signIn(with: .apple(self))
+            try await authManager.signIn(with: .apple)
         }
     }
 }
