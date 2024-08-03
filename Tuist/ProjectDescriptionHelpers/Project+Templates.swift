@@ -38,7 +38,8 @@ extension Project {
                                 .external(name: "Kingfisher"),
                                 .external(name: "Lottie"),
                                 .external(name: "KakaoSDKAuth"),
-                                .external(name: "KakaoSDKUser")
+                                .external(name: "KakaoSDKUser"),
+                                .external(name: "Willow"),
                              ])
         
         let tests = Target(name: "\(name)Tests",
