@@ -8,10 +8,11 @@
 
 import UIKit
 import SnapKit
+import Combine
 import AuthenticationServices.ASAuthorizationAppleIDButton
 
 class LoginViewController: UIViewController {
-    private let authManager = AuthorizationManager()
+    var viewModel: LoginViewModel!
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
@@ -31,7 +32,7 @@ class LoginViewController: UIViewController {
     
     lazy var subtitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "술, 끊지 말고 잠 마시저"
+        label.text = "술, 끊지 말고 잘 마시자"
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 14)
         label.numberOfLines = 0
@@ -46,6 +47,12 @@ class LoginViewController: UIViewController {
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18)
         button.layer.cornerRadius = 8
+        button.addTarget(
+            self,
+            action: #selector(didTapSignInWithKakaoButton),
+            for: .touchUpInside
+        )
+        
         return button
     }()
     
@@ -61,13 +68,14 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .black.withAlphaComponent(0.8)
 
         setupViews()
         setupConstraints()
     }
 }
 
+// MARK: - View setup
 private extension LoginViewController {
     func setupViews() {
         view.addSubview(backgroundImageView)
@@ -108,11 +116,24 @@ private extension LoginViewController {
             make.trailing.equalTo(view).offset(-20)
         }
     }
-    
+}
+
+// MARK: - Actions
+private extension LoginViewController {
     @objc func didTapSignInWithAppleButton() {
         Task {
             do {
-                try await authManager.signIn(with: .apple)
+                print(try await viewModel.signInWithApple())
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
+    @objc func didTapSignInWithKakaoButton() {
+        Task {
+            do {
+                try await viewModel.signInWithKakao()
             } catch {
                 print(error)
             }
