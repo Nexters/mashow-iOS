@@ -22,15 +22,11 @@ class LoginViewModel {
         self.authManager = authManager
     }
     
-    func signInWithApple() async throws {
-        let accessToken = try await authManager.signInWithApple()
-        // Report to publisher
-        state.accessToken.send(accessToken)
+    func signInWithApple() async throws -> (oAuthTokenm: String, user: User?) {
+        try await authManager.signIn(with: .apple)
     }
     
-    func signInWithKakao() async throws {
-        let accessToken = try await authManager.signInWithKakao()
-        // Report to publisher
-        state.accessToken.send(accessToken)
+    func signInWithKakao() async throws -> (oAuthTokenm: String, user: User?) {
+        try await authManager.signIn(with: .kakao)
     }
 }
