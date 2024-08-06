@@ -11,11 +11,13 @@ import UIKit
 import SnapKit
 
 class SetNicknameViewController: UIViewController {
+    var viewModel: SetNicknameViewModel!
+    
     lazy var upperTextLabel: UILabel = {
         let label = UILabel()
         label.text = "술,\n끊지 말고 잘 마시자"
         label.textColor = UIColor.white.withAlphaComponent(0.8)
-        label.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: 19, weight: .regular)
         label.numberOfLines = 2
         return label
     }()
@@ -24,7 +26,7 @@ class SetNicknameViewController: UIViewController {
         let label = UILabel()
         label.text = "Ma실 준비가 되었나요?"
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 25, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         return label
     }()
     
@@ -59,9 +61,15 @@ class SetNicknameViewController: UIViewController {
     lazy var getStartedButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Get started", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         button.layer.cornerRadius = 10
+        button.addTarget(
+            self,
+            action: #selector(didTapGetStartedButton),
+            for: .touchUpInside)
+        
         return button
     }()
     
@@ -72,17 +80,20 @@ class SetNicknameViewController: UIViewController {
         setupViews()
         setupConstraints()
     }
-    
-    private func setupViews() {
+}
+
+// MARK: - Setup
+private extension SetNicknameViewController {
+    func setupViews() {
         view.addSubview(upperTextLabel)
         view.addSubview(mainTextLabel)
         view.addSubview(nicknameTextField)
         view.addSubview(getStartedButton)
     }
     
-    private func setupConstraints() {
+    func setupConstraints() {
         upperTextLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(30)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(42)
             make.left.equalTo(view.safeAreaLayoutGuide).offset(20)
         }
         
@@ -108,7 +119,26 @@ class SetNicknameViewController: UIViewController {
     }
 }
 
+// MARK: - Actions
+private extension SetNicknameViewController {
+    @objc func didTapGetStartedButton() {
+        guard let nickname = nicknameTextField.text else { return }
+        Task {
+            try await viewModel.setNickname(nickname)
+        }
+    }
+}
+
 import SwiftUI
 #Preview {
-    SetNicknameViewController.preview()
+    SetNicknameViewController.preview {
+        let vc = SetNicknameViewController()
+        vc.viewModel = SetNicknameViewModel(
+            state: .init(
+                platform: .apple,
+                platformOAuthToken: "",
+                accessToken: .init(nil)
+            ))
+        return vc
+    }
 }

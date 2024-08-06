@@ -120,12 +120,33 @@ private extension LoginViewController {
 
 // MARK: - Actions
 private extension LoginViewController {
+    var errorAlert: UIAlertController {
+        UIAlertController(
+            title: "에러!",
+            message: "로그인 중 에러가 발생했습니다. 잠시후 다시 시도해주세요.",
+            preferredStyle: .alert
+        )
+    }
+    
     @objc func didTapSignInWithAppleButton() {
         Task {
             do {
-                print(try await viewModel.signInWithApple())
+                let (oAuthToken, userInfo) = try await viewModel.signInWithApple()
+                
+                if let accessToken = userInfo?.accessToken {
+                    // Login sucess. Report to publisher
+                    viewModel.state.accessToken.send(accessToken)
+                } else {
+                    // User has never registered. Go to set nickname.
+                    showSetNicknameViewController(platform: .apple, platformOAuthToken: oAuthToken)
+                }
             } catch {
-                print(error)
+                // Show error alert
+                let alert = errorAlert
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
+                
+                Environment.logger.errorMessage("🍺 Error signing in with Apple: \(error)")
             }
         }
     }
@@ -133,11 +154,39 @@ private extension LoginViewController {
     @objc func didTapSignInWithKakaoButton() {
         Task {
             do {
-                try await viewModel.signInWithKakao()
+                let (oAuthToken, userInfo) = try await viewModel.signInWithKakao()
+
+                if let accessToken = userInfo?.accessToken {
+                    // Login sucess. Report to publisher
+                    viewModel.state.accessToken.send(accessToken)
+                } else {
+                    // User has never registered. Go to set nickname.
+                    showSetNicknameViewController(platform: .kakao, platformOAuthToken: oAuthToken)
+                }
             } catch {
-                print(error)
+                // Show error alert
+                let alert = errorAlert
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
+                
+                Environment.logger.errorMessage("🍺 Error signing in with Kakao: \(error)")
             }
         }
+    }
+    
+    private func showSetNicknameViewController(
+        platform: AuthorizationManager.PlatformType,
+        platformOAuthToken: String
+    ) {
+        let viewController = SetNicknameViewController()
+        viewController.viewModel = SetNicknameViewModel(
+            state: .init(
+                platform: platform,
+                platformOAuthToken: platformOAuthToken,
+                accessToken: viewModel.state.accessToken
+            ))
+        
+        show(viewController, sender: self)
     }
 }
 
