@@ -76,6 +76,17 @@ extension Project {
             "NSAppTransportSecurity": [
                 "NSAllowsArbitraryLoads": true
             ],
+            "UIAppFonts": [
+                "Pretendard-Black.otf",
+                "Pretendard-Bold.otf",
+                "Pretendard-ExtraBold.otf",
+                "Pretendard-ExtraLight.otf",
+                "Pretendard-Light.otf",
+                "Pretendard-Medium.otf",
+                "Pretendard-Regular.otf",
+                "Pretendard-SemiBold.otf",
+                "Pretendard-Thin.otf"
+            ],
             "CFBundleURLTypes": [
                 [
                     "CFBundleTypeRole": "Editor",
