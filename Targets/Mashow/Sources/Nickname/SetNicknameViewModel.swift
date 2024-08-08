@@ -27,16 +27,14 @@ final class SetNicknameViewModel {
         self.networkManager = networkManager
     }
     
-    func setNickname(_ nickname: String) async throws {
-        let accessToken = try await networkManager.request(
-            .account(.signUp(
+    /// Register에 성공하면 accessToken을 리턴합니다
+    func register(nickname: String) async throws -> String {
+        try await networkManager.request(
+            .user(.signUp(
                 platform: state.platform,
                 oAuthToken: state.platformOAuthToken,
                 nickname: nickname)),
             of: String.self
         )
-        
-        // Report to publisher
-        state.accessToken.send(accessToken)
     }
 }

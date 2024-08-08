@@ -124,7 +124,16 @@ private extension SetNicknameViewController {
     @objc func didTapGetStartedButton() {
         guard let nickname = nicknameTextField.text else { return }
         Task {
-            try await viewModel.setNickname(nickname)
+            do {
+                let accessToken = try await viewModel.register(nickname: nickname)
+                navigationController?.popViewController(animated: false)
+                // Report to publisher
+                viewModel.state.accessToken.send("accessToken")
+            } catch {
+                // Show error alert
+                showErrorAlert()
+                Environment.logger.errorMessage("🍺 Error setting nickname: \(error)")
+            }
         }
     }
 }

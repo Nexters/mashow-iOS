@@ -31,7 +31,7 @@ struct AuthorizationManager {
         }
         
         let userResponse = try await networkManager.request(
-            .account(.logIn(platform: platform, oAuthToken: oAuthToken)),
+            .user(.logIn(platform: platform, oAuthToken: oAuthToken)),
             of: UserResponse.self
         )
         
