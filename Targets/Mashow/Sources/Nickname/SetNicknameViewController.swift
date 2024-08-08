@@ -17,7 +17,7 @@ class SetNicknameViewController: UIViewController {
         let label = UILabel()
         label.text = "술,\n끊지 말고 잘 마시자"
         label.textColor = UIColor.white.withAlphaComponent(0.8)
-        label.font = UIFont.systemFont(ofSize: 19, weight: .regular)
+        label.font = .pretendard(size: 19, weight: .regular)
         label.numberOfLines = 2
         return label
     }()
@@ -26,7 +26,7 @@ class SetNicknameViewController: UIViewController {
         let label = UILabel()
         label.text = "Ma실 준비가 되었나요?"
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        label.font = .pretendard(size: 20, weight: .bold)
         return label
     }()
     
@@ -55,13 +55,18 @@ class SetNicknameViewController: UIViewController {
         textField.leftView = paddingView
         textField.leftViewMode = .always
         textField.backgroundColor = .hex("C8C8C8", alpha: 0.3)
+        
+        // Set delegate
+        textField.delegate = self
+        textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+
         return textField
     }()
     
     lazy var getStartedButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Get started", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .semibold)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         button.layer.cornerRadius = 10
@@ -79,6 +84,7 @@ class SetNicknameViewController: UIViewController {
         
         setupViews()
         setupConstraints()
+        updateSubmitButton(enabled: false)
     }
 }
 
@@ -119,13 +125,35 @@ private extension SetNicknameViewController {
     }
 }
 
+// MARK: - Delegate
+extension SetNicknameViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        didTapGetStartedButton()
+        return true
+    }
+}
+
 // MARK: - Actions
 private extension SetNicknameViewController {
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        if isNicknameValid(textField.text) {
+            updateSubmitButton(enabled: true)
+        } else {
+            updateSubmitButton(enabled: false)
+        }
+    }
+    
     @objc func didTapGetStartedButton() {
-        guard let nickname = nicknameTextField.text else { return }
+        guard
+            let nickname = nicknameTextField.text,
+            isNicknameValid(nickname)
+        else {
+            return
+        }
+        
         Task {
             do {
-                let accessToken = try await viewModel.register(nickname: nickname)
+//                let accessToken = try await viewModel.register(nickname: nickname)
                 navigationController?.popViewController(animated: false)
                 // Report to publisher
                 viewModel.state.accessToken.send("accessToken")
@@ -135,6 +163,37 @@ private extension SetNicknameViewController {
                 Environment.logger.errorMessage("🍺 Error setting nickname: \(error)")
             }
         }
+    }
+}
+
+// MARK: - Utils
+private extension SetNicknameViewController {
+    func isNicknameValid(_ nickname: String?) -> Bool {
+        func isAcceptable(_ input: String) -> Bool {
+            // Define the regular expression pattern for allowed characters
+            let pattern = "^[a-zA-Z0-9_]*$"
+            
+            // Create a regular expression object
+            let regex = try! NSRegularExpression(pattern: pattern)
+            
+            // Check if the entire string matches the pattern
+            let range = NSRange(location: 0, length: input.utf16.count)
+            let match = regex.firstMatch(in: input, options: [], range: range)
+            
+            // Return true if a match is found, otherwise false
+            return match != nil
+        }
+        
+        guard let nickname = nickname, 2 <= nickname.count, nickname.count <= 10, isAcceptable(nickname) else {
+            return false
+        }
+        
+        return true
+    }
+    
+    func updateSubmitButton(enabled: Bool) {
+        getStartedButton.alpha = enabled ? 1 : 0.6
+        getStartedButton.isEnabled = enabled ? true : false
     }
 }
 
