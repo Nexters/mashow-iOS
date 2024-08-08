@@ -42,11 +42,22 @@ class LoginViewController: UIViewController {
     
     lazy var kakaoLoginButton: UIButton = {
         let button = UIButton()
-        button.backgroundColor = UIColor.yellow
-        button.setTitle("카카오로 로그인", for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18)
+        
+        // Set image for the button
+        let buttonImage = UIImage(resource: .kakaoLogin)
+        button.setImage(buttonImage, for: .normal)
+        
+        var configuration = UIButton.Configuration.filled()
+        configuration.cornerStyle = .medium
+        configuration.image = buttonImage
+        configuration.imagePlacement = .all
+        
+        // Set corner radius
         button.layer.cornerRadius = 8
+        button.contentVerticalAlignment = .fill
+        button.contentHorizontalAlignment = .fill
+        
+        // Add target for button action
         button.addTarget(
             self,
             action: #selector(didTapSignInWithKakaoButton),
