@@ -11,7 +11,11 @@ import Moya
 import Willow
 
 struct Environment {
-    private static let internalNetwork = NetworkManager(provider: MoyaProvider<API>())
+    private static let internalNetwork = NetworkManager(
+        provider: MoyaProvider<API>(plugins: [
+            // Logger
+            NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))
+        ]))
     static var network: NetworkManager<API> {
         internalNetwork
     }
