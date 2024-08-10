@@ -154,15 +154,15 @@ private extension LoginViewController {
     @objc func didTapSignInWithKakaoButton() {
         Task {
             do {
-//                let (oAuthToken, userInfo) = try await viewModel.signInWithKakao()
+                let (oAuthToken, userInfo) = try await viewModel.signInWithKakao()
 
-//                if let accessToken = userInfo?.accessToken {
-//                    // Login sucess. Report to publisher
-//                    viewModel.state.accessToken.send(accessToken)
-//                } else {
-//                    // User has never registered. Go to set nickname.
-                    showSetNicknameViewController(platform: .kakao, platformOAuthToken: "oAuthToken")
-//                }
+                if let accessToken = userInfo?.accessToken {
+                    // Login sucess. Report to publisher
+                    viewModel.state.accessToken.send(accessToken)
+                } else {
+                    // User has never registered. Go to set nickname.
+                    showSetNicknameViewController(platform: .kakao, platformOAuthToken: oAuthToken)
+                }
             } catch {
                 // Show error alert
                 showErrorAlert(message: "로그인 중 에러가 발생했습니다. 잠시후 다시 시도해주세요.")

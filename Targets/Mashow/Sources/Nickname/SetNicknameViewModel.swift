@@ -29,12 +29,18 @@ final class SetNicknameViewModel {
     
     /// Register에 성공하면 accessToken을 리턴합니다
     func register(nickname: String) async throws -> String {
-        try await networkManager.request(
+        let user = try await networkManager.request(
             .user(.signUp(
                 platform: state.platform,
                 oAuthToken: state.platformOAuthToken,
                 nickname: nickname)),
-            of: String.self
-        )
+            of: UserResponse.self
+        ).value
+        
+        guard let user else {
+            throw URLError(.badServerResponse)
+        }
+        
+        return user.accessToken
     }
 }
