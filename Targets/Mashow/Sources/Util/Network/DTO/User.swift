@@ -15,12 +15,8 @@ struct UserResponse: Decodable {
 }
 
 struct User: Codable {
-    let userId: Int
     let nickname: String
-    let oAuthProvider: String
     let accessToken: String
-    let createdAt: String
-    let modifiedAt: String
 }
 
 extension User {
@@ -30,13 +26,8 @@ extension User {
   "code": 0,
   "message": "string",
   "value": {
-    "userId": 1,
     "nickname": "알렉스",
-    "oAuthProvider": "KAKAO",
-    "oAuthIdentity": "3639122460",
-    "accessToken": "{accessToken}",
-    "createdAt": "2024-08-05T12:04:00.019Z",
-    "modifiedAt": "2024-08-05T12:04:00.019Z"
+    "accessToken": "{accessToken}"
   }
 }
 """
