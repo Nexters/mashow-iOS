@@ -1,16 +1,10 @@
-//
-//  FoodSelectionViewController.swift
-//  Mashow
-//
-//  Created by Kai Lee on 8/10/24.
-//  Copyright © 2024 com.alcoholers. All rights reserved.
-//
-
 import UIKit
 import SnapKit
 import Combine
 
 class FoodInputHomeViewController: UIViewController {
+    private let viewModel = FoodInputHomeViewModel()
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Elements
     
@@ -55,12 +49,22 @@ class FoodInputHomeViewController: UIViewController {
         return button
     }()
     
+    lazy var foodItemsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        return stackView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black.withAlphaComponent(0.8)
 
         setupViews()
         setupConstraints()
+        bind()
     }
 }
 
@@ -69,6 +73,7 @@ private extension FoodInputHomeViewController {
     func setupViews() {
         view.addSubview(titleLabel)
         view.addSubview(inputButton)
+        view.addSubview(foodItemsStackView)
         view.addSubview(saveButton)
         view.addSubview(backButton)
     }
@@ -86,6 +91,11 @@ private extension FoodInputHomeViewController {
             make.height.equalTo(44)
         }
         
+        foodItemsStackView.snp.makeConstraints { make in
+            make.top.equalTo(inputButton.snp.bottom).offset(16)
+            make.leading.trailing.equalTo(view).inset(20)
+        }
+        
         backButton.snp.makeConstraints { make in
             make.leading.equalTo(view).offset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
@@ -96,18 +106,45 @@ private extension FoodInputHomeViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
         }
     }
+    
+    func bind() {
+        viewModel.state.foodItems
+            .sink { [weak self] items in
+                self?.updateFoodItemsStackView(with: items)
+            }
+            .store(in: &cancellables)
+    }
+    
+    func updateFoodItemsStackView(with items: [String]) {
+        // Clear previous views
+        foodItemsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        // Add new food items to the stack view
+        for item in items {
+            let label = UILabel()
+            label.text = item
+            label.textColor = .white
+            label.font = UIFont.systemFont(ofSize: 16)
+            foodItemsStackView.addArrangedSubview(label)
+        }
+    }
 }
 
 // MARK: - Actions
 private extension FoodInputHomeViewController {
-    // Implement any button actions if necessary
     @objc func didTapInputButton() {
         // Show modal view controller
-        let modalViewController = UIViewController()
-        modalViewController.modalPresentationStyle = .fullScreen
-        modalViewController.view.backgroundColor = .gray
+        let foodInputViewController = FoodInputViewController()
+        foodInputViewController.viewModel = FoodInputViewModel(
+            action: .init(
+                onSubmitResult: { [weak self] chosenFoods in
+                    guard let self else { return }
+                    self.viewModel.state.foodItems.send(chosenFoods)
+                }))
         
-        show(modalViewController, sender: nil)
+        foodInputViewController.modalPresentationStyle = .fullScreen
+        
+        show(foodInputViewController, sender: nil)
     }
     
     @objc func didTapSaveButton() {

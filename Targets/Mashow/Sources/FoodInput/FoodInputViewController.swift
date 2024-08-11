@@ -12,10 +12,19 @@ import SnapKit
 class FoodInputViewController: UIViewController {
     
     // MARK: - Properties
-    
+    var viewModel: FoodInputViewModel!
     private var foodItems: [String] = [""]
     
     // MARK: - UI Elements
+    
+    lazy var dismissButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark"), for: .normal)
+        button.tintColor = .white
+        
+        button.addTarget(self, action: #selector(didTapDismissButton), for: .touchUpInside)
+        return button
+    }()
     
     lazy var titleLabel: UILabel = {
         let label = UILabel()
@@ -84,15 +93,21 @@ class FoodInputViewController: UIViewController {
 // MARK: - View setup
 private extension FoodInputViewController {
     func setupViews() {
+        view.addSubview(dismissButton)
         view.addSubview(titleLabel)
         view.addSubview(tableView)
         view.addSubview(doneButton)
     }
     
     func setupConstraints() {
+        dismissButton.snp.makeConstraints { make in
+            make.leading.equalTo(view).offset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+        }
+        
         titleLabel.snp.makeConstraints { make in
             make.centerX.equalTo(view)
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            make.top.equalTo(dismissButton.snp.bottom).offset(16)
         }
         
         tableView.snp.makeConstraints { make in
@@ -139,8 +154,12 @@ private extension FoodInputViewController {
     
     @objc func didTapDoneButton() {
         let chosenFoods = foodItems.filter { !$0.isEmpty }
-        // FIXME: fixme
-        print(chosenFoods)
+        viewModel.submitResult(chosenFoods: chosenFoods)
+        dismiss(animated: true)
+    }
+    
+    @objc func didTapDismissButton() {
+        dismiss(animated: true)
     }
 }
 
