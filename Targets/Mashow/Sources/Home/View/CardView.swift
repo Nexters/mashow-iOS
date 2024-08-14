@@ -13,7 +13,7 @@ class CardView: UIView {
     
     // MARK: - UI Elements
     
-    private lazy var backgroundImageView: UIImageView = {
+    lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(resource: .emptyCard)
         imageView.contentMode = .scaleAspectFit
@@ -74,7 +74,7 @@ class CardView: UIView {
         
         actionButton.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.bottom.equalToSuperview().offset(-30)
+            make.bottom.equalToSuperview().inset(30)
             make.width.height.equalTo(50)
         }
     }

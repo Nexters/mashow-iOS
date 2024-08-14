@@ -9,7 +9,7 @@
 import UIKit
 import SnapKit
 
-class DrinkShowViewController: UIViewController {
+class HomeViewController: UIViewController {
 
     // MARK: - UI Elements
 
@@ -95,7 +95,7 @@ class DrinkShowViewController: UIViewController {
         }
 
         showLabel.snp.makeConstraints { make in
-            make.top.equalTo(nicknameLabel.snp.bottom).offset(-8)
+            make.top.equalTo(nicknameLabel.snp.bottom).inset(8)
             make.leading.equalTo(nicknameLabel)
         }
 
@@ -120,7 +120,7 @@ class DrinkShowViewController: UIViewController {
         recordButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.leading.equalTo(view).offset(16)
-            make.trailing.equalTo(view).offset(-16)
+            make.trailing.equalTo(view).inset(16)
             make.height.equalTo(50)
         }
     }
@@ -128,5 +128,5 @@ class DrinkShowViewController: UIViewController {
 
 import SwiftUI
 #Preview {
-    DrinkShowViewController.preview()
+    HomeViewController.preview()
 }

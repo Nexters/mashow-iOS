@@ -7,7 +7,6 @@ class ViewToggleStackView: UIView {
 
     lazy var cardViewButton: UIButton = {
         var configuration = UIButton.Configuration.filled()
-        configuration.title = "Card view"
         configuration.baseForegroundColor = .white
         configuration.baseBackgroundColor = .darkGray
         configuration.cornerStyle = .capsule
@@ -23,7 +22,6 @@ class ViewToggleStackView: UIView {
     
     lazy var listViewButton: UIButton = {
         var configuration = UIButton.Configuration.filled()
-        configuration.title = "List view"
         configuration.baseForegroundColor = .white
         configuration.baseBackgroundColor = .darkGray
         configuration.cornerStyle = .capsule
