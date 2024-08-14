@@ -1,9 +1,8 @@
-//
 //  SetNicknameViewController.swift
 //  Mashow
 //
 //  Created by Kai Lee on 8/4/24.
-//  Copyright © 2024 com.alcoholers. All rights reserved.
+//  © 2024 com.alcoholers. All rights reserved.
 //
 
 import Foundation
@@ -12,11 +11,20 @@ import SnapKit
 
 class SetNicknameViewController: UIViewController {
     var viewModel: SetNicknameViewModel!
+    private let maxNicknameCount = 6
+    private var currentNicknameCount = 0
+    
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .loginBackground)
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
     
     lazy var upperTextLabel: UILabel = {
         let label = UILabel()
         label.text = "술,\n끊지 말고 잘 마시자"
-        label.textColor = UIColor.white.withAlphaComponent(0.8)
+        label.textColor = UIColor.white.withAlphaComponent(0.3)
         label.font = .pretendard(size: 19, weight: .regular)
         label.numberOfLines = 2
         return label
@@ -30,37 +38,19 @@ class SetNicknameViewController: UIViewController {
         return label
     }()
     
-    lazy var nicknameTextField: UITextField = {
-        let textField = UITextField()
-        
-        // Set placeholder
-        textField.attributedPlaceholder = NSAttributedString(
-            string: "닉네임",
-            attributes: [
-                NSAttributedString.Key.foregroundColor: UIColor.white.withAlphaComponent(0.7)
-            ])
-        
-        // Set text color
-        textField.textColor = .white
-        
-        // Set border
-        textField.borderStyle = .roundedRect
-        textField.layer.cornerRadius = 14
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = .hex("F8F8F8", alpha: 0.4)
-        textField.layer.masksToBounds = true
-        
-        // Set view layouts
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField.frame.height))
-        textField.leftView = paddingView
-        textField.leftViewMode = .always
-        textField.backgroundColor = .hex("C8C8C8", alpha: 0.3)
-        
-        // Set delegate
+    lazy var nicknameTextField: DecoratedTextField = {
+        let textField = DecoratedTextField()
         textField.delegate = self
         textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-
         return textField
+    }()
+    
+    lazy var textCountIndicatorView: UILabel = {
+        let label = UILabel()
+        label.text = "0/\(maxNicknameCount)"
+        label.textColor = .hex("F3F3F3").withAlphaComponent(0.3)
+        label.font = .pretendard(size: 18, weight: .regular)
+        return label
     }()
     
     lazy var getStartedButton: UIButton = {
@@ -91,13 +81,19 @@ class SetNicknameViewController: UIViewController {
 // MARK: - Setup
 private extension SetNicknameViewController {
     func setupViews() {
+        view.addSubview(backgroundImageView)
         view.addSubview(upperTextLabel)
         view.addSubview(mainTextLabel)
         view.addSubview(nicknameTextField)
+        view.addSubview(textCountIndicatorView)
         view.addSubview(getStartedButton)
     }
     
     func setupConstraints() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalTo(view)
+        }
+        
         upperTextLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(42)
             make.left.equalTo(view.safeAreaLayoutGuide).offset(20)
@@ -115,6 +111,11 @@ private extension SetNicknameViewController {
             make.height.equalTo(56)
         }
         
+        textCountIndicatorView.snp.makeConstraints { make in
+            make.top.equalTo(nicknameTextField.snp.bottom).offset(10)
+            make.right.equalTo(nicknameTextField).inset(10)
+        }
+        
         getStartedButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(30)
             make.centerX.equalTo(view)
@@ -127,6 +128,17 @@ private extension SetNicknameViewController {
 
 // MARK: - Delegate
 extension SetNicknameViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // Get the current text in the text field
+        let currentText = textField.text ?? ""
+        
+        // Calculate the new length of the text after the change
+        let newLength = currentText.count + string.count - range.length
+        
+        // Check if the new length is within the allowed range
+        return newLength <= maxNicknameCount
+    }
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         didTapGetStartedButton()
         return true
@@ -136,6 +148,9 @@ extension SetNicknameViewController: UITextFieldDelegate {
 // MARK: - Actions
 private extension SetNicknameViewController {
     @objc func textFieldDidChange(_ textField: UITextField) {
+        currentNicknameCount = textField.text?.count ?? 0
+        textCountIndicatorView.text = "\(currentNicknameCount)/\(maxNicknameCount)"
+        
         if isNicknameValid(textField.text) {
             updateSubmitButton(enabled: true)
         } else {
@@ -171,7 +186,7 @@ private extension SetNicknameViewController {
     func isNicknameValid(_ nickname: String?) -> Bool {
         func isAcceptable(_ input: String) -> Bool {
             // Define the regular expression pattern for allowed characters
-            let pattern = "^[a-zA-Z0-9_]*$"
+            let pattern = "^[a-z0-9ㄱ-ㅣ가-힣]*$"
             
             // Create a regular expression object
             let regex = try! NSRegularExpression(pattern: pattern)
@@ -184,7 +199,7 @@ private extension SetNicknameViewController {
             return match != nil
         }
         
-        guard let nickname = nickname, 2 <= nickname.count, nickname.count <= 10, isAcceptable(nickname) else {
+        guard let nickname = nickname, 1 <= nickname.count, nickname.count <= 6, isAcceptable(nickname) else {
             return false
         }
         
