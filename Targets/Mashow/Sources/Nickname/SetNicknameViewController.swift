@@ -74,6 +74,7 @@ class SetNicknameViewController: UIViewController {
         
         setupViews()
         setupConstraints()
+        setupTapToDismissKeyboard()
         updateSubmitButton(enabled: false)
     }
 }
@@ -123,6 +124,11 @@ private extension SetNicknameViewController {
             make.right.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.height.equalTo(60)
         }
+    }
+    
+    func setupTapToDismissKeyboard() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
     }
 }
 
@@ -178,6 +184,10 @@ private extension SetNicknameViewController {
                 Environment.logger.errorMessage("🍺 Error setting nickname: \(error)")
             }
         }
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 }
 
