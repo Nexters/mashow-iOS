@@ -16,7 +16,7 @@ class LoginViewController: UIViewController {
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "") // FIXME: Use the correct image name
+        imageView.image = UIImage(resource: .loginBackground)
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()
@@ -46,14 +46,16 @@ class LoginViewController: UIViewController {
         // Set image for the button
         let buttonImage = UIImage(resource: .kakaoLogin)
         button.setImage(buttonImage, for: .normal)
-        
+        button.imageView?.contentMode = .scaleAspectFill
+
         var configuration = UIButton.Configuration.filled()
         configuration.cornerStyle = .medium
         configuration.image = buttonImage
         configuration.imagePlacement = .all
         
         // Set corner radius
-        button.layer.cornerRadius = 8
+        button.layer.cornerRadius = 12
+        button.clipsToBounds = true
         button.contentVerticalAlignment = .fill
         button.contentHorizontalAlignment = .fill
         
@@ -69,6 +71,7 @@ class LoginViewController: UIViewController {
     
     lazy var appleLoginButton: ASAuthorizationAppleIDButton = {
         let button = ASAuthorizationAppleIDButton()
+        button.cornerRadius = 12
         button.addTarget(
             self,
             action: #selector(didTapSignInWithAppleButton),
@@ -111,20 +114,20 @@ private extension LoginViewController {
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
         }
         
-        kakaoLoginButton.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-50)
-            make.height.equalTo(50)
-            make.leading.equalTo(view).offset(20)
-            make.trailing.equalTo(view).offset(-20)
-        }
-        
         appleLoginButton.snp.makeConstraints { make in
             make.centerX.equalTo(view)
-            make.bottom.equalTo(kakaoLoginButton.snp.top).offset(-10)
-            make.height.equalTo(50)
-            make.leading.equalTo(view).offset(20)
-            make.trailing.equalTo(view).offset(-20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(30)
+            make.height.equalTo(60)
+            make.leading.equalTo(view).inset(24)
+            make.trailing.equalTo(view).inset(24)
+        }
+        
+        kakaoLoginButton.snp.makeConstraints { make in
+            make.centerX.equalTo(view)
+            make.bottom.equalTo(appleLoginButton.snp.top).offset(-19)
+            make.height.equalTo(60)
+            make.leading.equalTo(view).inset(24)
+            make.trailing.equalTo(view).inset(24)
         }
     }
 }
