@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import KakaoSDKAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -21,5 +22,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = viewController
         self.window = window
         window.makeKeyAndVisible()
+    }
+    
+    // Handle universal link open
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        URLContexts.forEach { context in
+            let url = context.url.absoluteURL
+            
+            if (AuthApi.isKakaoTalkLoginUrl(url)) {
+                _ = AuthController.handleOpenUrl(url: url)
+            }
+        }
     }
 }

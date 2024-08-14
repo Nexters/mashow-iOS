@@ -91,15 +91,9 @@ extension Project {
                 [
                     "CFBundleTypeRole": "Editor",
                     "CFBundleURLSchemes": [
-                        "$(KAKAO_APP_KEY)://oauth"
+                        "kakao$(KAKAO_APP_KEY)"
                     ]
-                ],
-                [
-                    "CFBundleTypeRole": "Editor",
-                    "CFBundleURLSchemes": [
-                        "$(KAKAO_APP_KEY)://kakaolink"
-                    ]
-                ],
+                ]
             ],
             "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
             "BASE_API_URL": "$(BASE_API_URL)"
