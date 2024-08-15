@@ -19,9 +19,7 @@ class MashowRootViewModel {
     }
         
     init(_ storageManager: StorageManager = Environment.storage) {
-        self.storageManager = storageManager
-        storageManager.accessToken = nil // TODO: Should be deleted
-        
+        self.storageManager = storageManager        
         let storedAccessToken = storageManager.accessToken
         self.state = State(
             accessToken: CurrentValueSubject<String?, Never>(storedAccessToken)
