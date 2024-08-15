@@ -19,6 +19,9 @@ class MashowRootViewController: UIViewController {
         view.backgroundColor = .white
         
         bind()
+        
+        // Remove back button title("Back")
+        navigationItem.backButtonTitle = ""
     }
     
     private func bind() {

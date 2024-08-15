@@ -18,6 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         let rootViewController = MashowRootViewController()
         let viewController = UINavigationController(rootViewController: rootViewController)
+        viewController.navigationBar.tintColor = .white
         
         window.rootViewController = viewController
         self.window = window
