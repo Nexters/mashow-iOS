@@ -53,6 +53,23 @@ class SetNicknameViewController: UIViewController {
         return label
     }()
     
+    lazy var warningLabel: UILabel = {
+        let label = UILabel()
+        label.text = "한글, 영어 소문자, 숫자만 사용할 수 있습니다"
+        label.textColor = .red.withAlphaComponent(0.8)
+        label.font = .pretendard(size: 14, weight: .regular)
+        label.isHidden = true // Hidden by default
+        return label
+    }()
+    
+    lazy var nicknameInfoStackView: UIStackView = {
+        // Uses `UIView` as a spacer
+        let stackView = UIStackView(arrangedSubviews: [warningLabel, UIView(), textCountIndicatorView])
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        return stackView
+    }()
+    
     lazy var getStartedButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Get started", for: .normal)
@@ -86,7 +103,7 @@ private extension SetNicknameViewController {
         view.addSubview(upperTextLabel)
         view.addSubview(mainTextLabel)
         view.addSubview(nicknameTextField)
-        view.addSubview(textCountIndicatorView)
+        view.addSubview(nicknameInfoStackView)
         view.addSubview(getStartedButton)
     }
     
@@ -112,9 +129,10 @@ private extension SetNicknameViewController {
             make.height.equalTo(56)
         }
         
-        textCountIndicatorView.snp.makeConstraints { make in
+        nicknameInfoStackView.snp.makeConstraints { make in
             make.top.equalTo(nicknameTextField.snp.bottom).offset(10)
-            make.right.equalTo(nicknameTextField).inset(10)
+            make.left.equalTo(nicknameTextField.snp.left).inset(10)
+            make.right.equalTo(nicknameTextField.snp.right).inset(10)
         }
         
         getStartedButton.snp.makeConstraints { make in
@@ -135,13 +153,11 @@ private extension SetNicknameViewController {
 // MARK: - Delegate
 extension SetNicknameViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        // Get the current text in the text field
         let currentText = textField.text ?? ""
         
-        // Calculate the new length of the text after the change
+        // 변경 후 텍스트의 새로운 길이를 계산
         let newLength = currentText.count + string.count - range.length
-        
-        // Check if the new length is within the allowed range
+        // 새로운 텍스트 길이가 허용된 범위 내에 있는지 확인
         return newLength <= maxNicknameCount
     }
     
@@ -159,8 +175,14 @@ private extension SetNicknameViewController {
         
         if isNicknameValid(textField.text) {
             updateSubmitButton(enabled: true)
+            warningLabel.isHidden = true
         } else {
             updateSubmitButton(enabled: false)
+            // 텍스트가 비어있을 때만 경고 라벨을 표시.
+            // 이 조건이 없으면 닉네임을 지워서 텍스트필드가 빌 때도 라벨이 표시된다.
+            if textField.text?.isEmpty == false {
+                warningLabel.isHidden = false
+            }
         }
     }
     
