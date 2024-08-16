@@ -16,7 +16,7 @@ class CardView: UIView {
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(resource: .emptyCard)
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleToFill
         return imageView
     }()
     
@@ -35,16 +35,20 @@ class CardView: UIView {
         button.setImage(
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .heavy)),
             for: .normal)
-        button.imageView?.tintColor = .white
+        button.tintColor = .white
         button.backgroundColor = .black.withAlphaComponent(0.2)
         
         button.addTarget(self, action: #selector(didTapActionButton), for: .touchUpInside)
         return button
     }()
     
-    lazy var actionButtonWrapperView: UIView = {
-        let view = UIView()
-        return view
+    lazy var stackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [cardLabel, actionButton])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 35
+        return stackView
     }()
     
     // MARK: - Initializer
@@ -63,10 +67,7 @@ class CardView: UIView {
     
     private func setupViews() {
         addSubview(backgroundImageView)
-        addSubview(cardLabel)
-        addSubview(actionButtonWrapperView)
-        
-        layer.cornerRadius = 16
+        addSubview(stackView)
         clipsToBounds = true
     }
     
@@ -75,26 +76,16 @@ class CardView: UIView {
             make.edges.equalToSuperview()
         }
         
-        cardLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(90)
+        stackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview().multipliedBy(1.05)
         }
         
-        // To match center
-        actionButtonWrapperView.snp.makeConstraints { make in
-            make.top.equalTo(cardLabel.snp.bottom)
-            make.centerX.equalTo(cardLabel)
-            make.bottom.equalToSuperview()
-        }
-        
-        actionButtonWrapperView.addSubview(actionButton)
         actionButton.snp.makeConstraints { make in
-            make.center.equalToSuperview()
             make.width.height.equalTo(56)
         }
     }
 }
-
 // MARK: - Actions
 private extension CardView {
     @objc func didTapActionButton() {

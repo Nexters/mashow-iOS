@@ -86,6 +86,7 @@ class HomeViewController: UIViewController {
 
         setupViews()
         setupConstraints()
+        navigationController?.navigationBar.isHidden = true
     }
 
     // MARK: - View setup
@@ -111,14 +112,13 @@ class HomeViewController: UIViewController {
         }
 
         showLabel.snp.makeConstraints { make in
-            make.top.equalTo(nicknameLabel.snp.bottom).inset(8)
+            make.top.equalTo(nicknameLabel.snp.bottom).offset(8)
             make.leading.equalTo(nicknameLabel)
         }
 
         myPageButton.snp.makeConstraints { make in
             make.centerY.equalTo(nicknameLabel)
-            make.height.equalTo(32)
-            make.width.equalTo(32)
+            make.height.width.equalTo(32)
             make.trailing.equalTo(view).inset(20)
         }
 
@@ -131,8 +131,9 @@ class HomeViewController: UIViewController {
 
         drinkCardView.snp.makeConstraints { make in
             make.top.equalTo(viewToggleStackView.snp.bottom).offset(16)
-            make.leading.equalTo(view).offset(16)
-            make.trailing.equalTo(view).inset(16)
+            make.leading.equalTo(view).offset(30)
+            make.trailing.equalTo(view).inset(30)
+            make.bottom.lessThanOrEqualTo(recordButton.snp.top).offset(-16)
         }
 
         recordButton.snp.makeConstraints { make in
