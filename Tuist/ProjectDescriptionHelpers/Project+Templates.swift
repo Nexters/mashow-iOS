@@ -76,19 +76,24 @@ extension Project {
             "NSAppTransportSecurity": [
                 "NSAllowsArbitraryLoads": true
             ],
+            "UIAppFonts": [
+                "Pretendard-Black.otf",
+                "Pretendard-Bold.otf",
+                "Pretendard-ExtraBold.otf",
+                "Pretendard-ExtraLight.otf",
+                "Pretendard-Light.otf",
+                "Pretendard-Medium.otf",
+                "Pretendard-Regular.otf",
+                "Pretendard-SemiBold.otf",
+                "Pretendard-Thin.otf"
+            ],
             "CFBundleURLTypes": [
                 [
                     "CFBundleTypeRole": "Editor",
                     "CFBundleURLSchemes": [
-                        "$(KAKAO_APP_KEY)://oauth"
+                        "kakao$(KAKAO_APP_KEY)"
                     ]
-                ],
-                [
-                    "CFBundleTypeRole": "Editor",
-                    "CFBundleURLSchemes": [
-                        "$(KAKAO_APP_KEY)://kakaolink"
-                    ]
-                ],
+                ]
             ],
             "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
             "BASE_API_URL": "$(BASE_API_URL)"
