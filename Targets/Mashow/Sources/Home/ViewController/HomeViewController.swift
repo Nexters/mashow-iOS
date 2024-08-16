@@ -5,7 +5,6 @@
 //  Created by Kai Lee on 8/12/24.
 //  Copyright © 2024 com.alcoholers. All rights reserved.
 //
-
 import UIKit
 import SnapKit
 
@@ -23,7 +22,7 @@ class HomeViewController: UIViewController {
     lazy var nicknameLabel: UILabel = {
         let label = UILabel()
         label.text = "Nickname"
-        label.font = .blankSans(size: 48, weight: .bold)
+        label.font = .blankSans(size: 44, weight: .bold)
         label.textColor = .white
         return label
     }()
@@ -31,7 +30,7 @@ class HomeViewController: UIViewController {
     lazy var showLabel: UILabel = {
         let label = UILabel()
         label.text = "SHOW"
-        label.font = .blankSans(size: 48, weight: .bold)
+        label.font = .blankSans(size: 44, weight: .bold)
         label.textColor = .white
         return label
     }()
@@ -74,7 +73,7 @@ class HomeViewController: UIViewController {
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
         button.layer.masksToBounds = true
-        button.layer.cornerRadius = button.frame.width/2
+        button.layer.cornerRadius = button.frame.width / 2
 
         return button
     }()
@@ -105,21 +104,15 @@ class HomeViewController: UIViewController {
         backgroundImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-
+        
         nicknameLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.leading.equalTo(view).offset(20)
         }
 
         showLabel.snp.makeConstraints { make in
-            make.top.equalTo(nicknameLabel.snp.bottom).offset(8)
-            make.leading.equalTo(nicknameLabel)
-        }
-
-        myPageButton.snp.makeConstraints { make in
-            make.centerY.equalTo(nicknameLabel)
-            make.height.width.equalTo(32)
-            make.trailing.equalTo(view).inset(20)
+            make.top.equalTo(nicknameLabel.snp.bottom)
+            make.leading.equalTo(view).offset(20)
         }
 
         viewToggleStackView.snp.makeConstraints { make in
@@ -128,19 +121,25 @@ class HomeViewController: UIViewController {
             make.width.equalTo(194)
             make.height.equalTo(34)
         }
-
+        
         drinkCardView.snp.makeConstraints { make in
-            make.top.equalTo(viewToggleStackView.snp.bottom).offset(16)
+            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
             make.leading.equalTo(view).offset(30)
             make.trailing.equalTo(view).inset(30)
-            make.bottom.lessThanOrEqualTo(recordButton.snp.top).offset(-16)
+            make.bottom.equalTo(recordButton.snp.top).offset(-20)
         }
-
+        
         recordButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.equalTo(view).offset(15)
-            make.trailing.equalTo(view).inset(15)
+            make.leading.equalTo(view).offset(20)
+            make.trailing.equalTo(view).inset(20)
             make.height.equalTo(60)
+        }
+        
+        myPageButton.snp.makeConstraints { make in
+            make.centerY.equalTo(nicknameLabel)
+            make.height.width.equalTo(32)
+            make.trailing.equalTo(view).inset(20)
         }
     }
 }
@@ -149,4 +148,3 @@ import SwiftUI
 #Preview {
     HomeViewController.preview()
 }
-

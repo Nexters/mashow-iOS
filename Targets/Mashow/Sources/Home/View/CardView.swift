@@ -68,13 +68,13 @@ class CardView: UIView {
     private func setupViews() {
         addSubview(backgroundImageView)
         addSubview(stackView)
-        clipsToBounds = true
     }
     
     private func setupConstraints() {
         backgroundImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.height.width.equalToSuperview()
         }
+        backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         
         stackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
