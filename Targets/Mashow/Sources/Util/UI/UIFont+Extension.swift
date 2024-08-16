@@ -19,11 +19,11 @@ extension UIFont {
 }
 
 extension UIFont {
-    enum BlackSansWeight: String {
-        case black, bold, extraBold, extraLight, light, medium, regular, semibold, thin
+    enum BlankSansWeight: String {
+        case bold
     }
     
-    static func blackSans(size fontSize: CGFloat, weight: UIFont.BlackSansWeight) -> UIFont {
-        return UIFont(name: "BlackSans-\(weight.rawValue)", size: fontSize) ?? .systemFont(ofSize: fontSize, weight: .regular)
+    static func blankSans(size fontSize: CGFloat, weight: UIFont.BlankSansWeight) -> UIFont {
+        return UIFont(name: "BlankSansOTF\(weight.rawValue)", size: fontSize) ?? .systemFont(ofSize: fontSize, weight: .bold)
     }
 }

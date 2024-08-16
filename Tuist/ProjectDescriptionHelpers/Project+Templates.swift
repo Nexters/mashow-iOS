@@ -86,13 +86,7 @@ extension Project {
                 "Pretendard-Regular.otf",
                 "Pretendard-SemiBold.otf",
                 "Pretendard-Thin.otf",
-                "BlackSans-black.otf",
-                "BlackSans-bold.otf",
-                "BlackSans-light.otf",
-                "BlackSans-regulard.otf",
-                "BlackSans-semibold.otf",
-                "BlackSans-thin.otf",
-                "BlackSans-ultralight.otf"
+                "BlankSans-bold.otf",
             ],
             "CFBundleURLTypes": [
                 [
