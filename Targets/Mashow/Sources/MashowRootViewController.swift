@@ -12,15 +12,34 @@ import AuthenticationServices
 class MashowRootViewController: UIViewController {
     
     let authManager = AuthorizationManager()
+    lazy var signInWithAppleButton = ASAuthorizationAppleIDButton()
+    lazy var button = UIButton(configuration: UIButton.Configuration.plain())
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBlue
+        view.backgroundColor = .systemBackground
         setupSignInWithApple()
+        setupNavigationButton()
+    }
+    
+    private func setupNavigationButton() {
+        view.addSubview(button)
+        button.setTitle("Drink Selection", for: .normal)
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            button.topAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+        button.addTarget(self, action: #selector(didTapNavButton), for: .touchUpInside)
+    }
+    
+    @objc private func didTapNavButton() {
+        navigationController?.pushViewController(DrinkSelectionViewController(), animated: true)
     }
     
     private func setupSignInWithApple() {
-        let signInWithAppleButton = ASAuthorizationAppleIDButton()
         signInWithAppleButton.addTarget(
             self,
             action: #selector(didTapSignInWithAppleButton),
