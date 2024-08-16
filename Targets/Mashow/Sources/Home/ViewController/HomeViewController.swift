@@ -23,7 +23,7 @@ class HomeViewController: UIViewController {
     lazy var nicknameLabel: UILabel = {
         let label = UILabel()
         label.text = "Nickname"
-        label.font = .blackSans(size: 48, weight: .bold)
+        label.font = .blankSans(size: 48, weight: .bold)
         label.textColor = .white
         return label
     }()
@@ -31,7 +31,7 @@ class HomeViewController: UIViewController {
     lazy var showLabel: UILabel = {
         let label = UILabel()
         label.text = "SHOW"
-        label.font = .blackSans(size: 48, weight: .bold)
+        label.font = .blankSans(size: 48, weight: .bold)
         label.textColor = .white
         return label
     }()
@@ -51,15 +51,31 @@ class HomeViewController: UIViewController {
         button.setTitle("기록하기", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemGray2
-        button.layer.cornerRadius = 8
+        button.backgroundColor = .hex("151515").withAlphaComponent(0.3)
+        button.layer.cornerRadius = 13
+        button.clipsToBounds = true
+        
+        // Add blur to background
+        let blurEffect = UIBlurEffect(style: .light)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = button.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blurEffectView.alpha = 0.2
+        button.addSubview(blurEffectView)
+        
         return button
     }()
 
-    lazy var experimentButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(resource: .labIcon), for: .normal)
+    lazy var myPageButton: CircularButton = {
+        let button = CircularButton()
+        button.setImage(
+            UIImage(systemName: "person.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
+            for: .normal)
         button.tintColor = .white
+        button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = button.frame.width/2
+
         return button
     }()
 
@@ -81,7 +97,7 @@ class HomeViewController: UIViewController {
         view.addSubview(viewToggleStackView)
         view.addSubview(drinkCardView)
         view.addSubview(recordButton)
-        view.addSubview(experimentButton)
+        view.addSubview(myPageButton)
     }
 
     private func setupConstraints() {
@@ -99,8 +115,10 @@ class HomeViewController: UIViewController {
             make.leading.equalTo(nicknameLabel)
         }
 
-        experimentButton.snp.makeConstraints { make in
+        myPageButton.snp.makeConstraints { make in
             make.centerY.equalTo(nicknameLabel)
+            make.height.equalTo(32)
+            make.width.equalTo(32)
             make.trailing.equalTo(view).inset(20)
         }
 
@@ -119,9 +137,9 @@ class HomeViewController: UIViewController {
 
         recordButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.equalTo(view).offset(16)
-            make.trailing.equalTo(view).inset(16)
-            make.height.equalTo(50)
+            make.leading.equalTo(view).offset(15)
+            make.trailing.equalTo(view).inset(15)
+            make.height.equalTo(60)
         }
     }
 }
@@ -130,3 +148,4 @@ import SwiftUI
 #Preview {
     HomeViewController.preview()
 }
+
