@@ -2,6 +2,13 @@ import UIKit
 import SnapKit
 
 class ViewToggleStackView: UIView {
+    enum SelectableType {
+        case card, list
+    }
+    
+    // MARK: - Properties
+    var onTapCardView: (() -> Void)?
+    var onTapListView: (() -> Void)?
 
     // MARK: - UI Elements
 
@@ -17,6 +24,7 @@ class ViewToggleStackView: UIView {
                 "Card view",
                 attributes: AttributeContainer([.font: UIFont.pretendard(size: 14, weight: .semibold)]))
         }
+        button.addTarget(self, action: #selector(didTapCardView), for: .touchUpInside)
         return button
     }()
     
@@ -32,6 +40,7 @@ class ViewToggleStackView: UIView {
                 "List view",
                 attributes: AttributeContainer([.font: UIFont.pretendard(size: 14, weight: .semibold)]))
         }
+        button.addTarget(self, action: #selector(didTapListView), for: .touchUpInside)
         return button
     }()
 
@@ -50,8 +59,8 @@ class ViewToggleStackView: UIView {
         setupViews()
         setupConstraints()
         
-        // FIXME:
-        listViewButton.alpha = 0.4
+        // FIXME: Not MVP
+        cardViewButton.alpha = 0.4
     }
 
     required init?(coder: NSCoder) {
@@ -68,5 +77,17 @@ class ViewToggleStackView: UIView {
         stackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func didTapCardView() {
+        onTapCardView?()
+    }
+    
+    @objc
+    private func didTapListView() {
+        onTapListView?()
     }
 }

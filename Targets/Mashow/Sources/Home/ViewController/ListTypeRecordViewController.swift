@@ -28,9 +28,10 @@ class ListTypeRecordViewController: UIViewController {
         
         return zip(drinks, images).map { drinkType, image in
             let cardView = MiniCardView()
-            cardView.configure(with: image, drinkType: drinkType, isSelected: false)
-            cardView.onTap = { [weak self] in
-                self?.handleCardTap(for: cardView)
+            if drinkType == .soju {
+                cardView.configure(with: image, drinkType: drinkType, isSelected: true)
+            } else {
+                cardView.configure(with: image, drinkType: drinkType, isSelected: false)
             }
             return cardView
         }

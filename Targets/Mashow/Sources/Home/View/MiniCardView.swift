@@ -19,7 +19,6 @@ class MiniCardView: UIView {
     }()
     
     // Closure to handle tap events
-    var onTap: (() -> Void)?
     var isSelected: Bool = false
     
     // MARK: - Initializer
@@ -28,7 +27,6 @@ class MiniCardView: UIView {
         super.init(frame: frame)
         setupViews()
         setupConstraints()
-        setupTapGesture()
     }
 
     required init?(coder: NSCoder) {
@@ -47,15 +45,6 @@ class MiniCardView: UIView {
         }
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-    }
-    
-    private func setupTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        addGestureRecognizer(tapGesture)
-    }
-    
-    @objc private func handleTap() {
-        onTap?()
     }
     
     // MARK: - Opacity Control
