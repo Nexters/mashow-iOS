@@ -10,6 +10,17 @@ import UIKit
 
 final class DrinkSelectionViewController: UIViewController {
     
+    let viewModel: DrinkSelectionViewModel!
+    
+    init(viewModel: DrinkSelectionViewModel!) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private let drinkTypeList = DrinkSelectionViewModel.DrinkType.allCases
     
     private let pageViewController = UIPageViewController(
@@ -34,15 +45,13 @@ final class DrinkSelectionViewController: UIViewController {
     private lazy var bottomNextButton: UIButton = {
         let button = UIButton()
         button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.tintColor = .white
-        button.layer.borderWidth = 1.0
-        button.layer.borderColor = UIColor.white.cgColor
         button.layer.cornerRadius = 13
         button.backgroundColor = UIColor.clear
         button.layer.masksToBounds = true
         
-        let blurEffect = UIBlurEffect(style: .dark)
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView.layer.cornerRadius = 13
         blurEffectView.layer.masksToBounds = true
@@ -62,20 +71,13 @@ final class DrinkSelectionViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupBackground()
         setupNavigationBar()
         setupLayouts()
+        setupHandlers()
     }
 }
 
 private extension DrinkSelectionViewController {
-    
-    private func setupBackground() {
-        let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        backgroundImage.image = UIImage(resource: .backgroundDefault)
-        backgroundImage.contentMode = .scaleAspectFill
-        self.view.insertSubview(backgroundImage, at: 0)
-    }
     
     private func setupNavigationBar() {
         self.navigationController?.navigationBar.tintColor = .white
@@ -84,8 +86,8 @@ private extension DrinkSelectionViewController {
         navigationItem.title = "7월 16일 화요일" // FIXME: set formmatted date string
         navigationItem.hidesBackButton = true
         navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "chevron.left")!,
-            style: .plain,
+            title: "취소",
+            style: .done,
             target: self,
             action: #selector(didTapBackButton)
         )
@@ -102,33 +104,51 @@ private extension DrinkSelectionViewController {
     }
     
     private func setupLayouts() {
+        pageViewController.dataSource = self
         pageViewController.setViewControllers(
-            [DrinkTypeViewController(drinkType: drinkTypeList.first!)],
+            [DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList.first!)],
             direction: .forward,
             animated: false
         )
-        view.addSubview(pageViewController.view)
         addChild(pageViewController)
-        pageViewController.view.bounds = view.bounds
-        pageViewController.dataSource = self
+        view.addSubview(pageViewController.view)
         pageViewController.didMove(toParent: self)
         
         view.addSubview(leftArrowButton)
-        view.addSubview(rightArrowButton)
-        view.addSubview(bottomNextButton)
         leftArrowButton.translatesAutoresizingMaskIntoConstraints = false
-        rightArrowButton.translatesAutoresizingMaskIntoConstraints = false
-        bottomNextButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             leftArrowButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            leftArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40)
+        ])
+        
+        view.addSubview(rightArrowButton)
+        rightArrowButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
             rightArrowButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            leftArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
-            rightArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
+            rightArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40)
+        ])
+        
+        view.addSubview(bottomNextButton)
+        bottomNextButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
             bottomNextButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
             bottomNextButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             bottomNextButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             bottomNextButton.heightAnchor.constraint(equalToConstant: 56)
         ])
+    }
+    
+    private func setupHandlers() {
+        leftArrowButton.addTarget(self, action: #selector(didTapLeftArrow), for: .touchUpInside)
+        rightArrowButton.addTarget(self, action: #selector(didTapRightArrow), for: .touchUpInside)
+    }
+    
+    @objc private func didTapLeftArrow() {
+        pageViewController.moveToPrevPage()
+    }
+    
+    @objc private func didTapRightArrow() {
+        pageViewController.moveToNextPage()
     }
 }
 
@@ -137,14 +157,14 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
         guard let viewController = viewController as? DrinkTypeViewController else { return nil }
         guard var prevIndex = drinkTypeList.firstIndex(of: viewController.drinkType) else { return nil }
         prevIndex = prevIndex == 0 ? drinkTypeList.count - 1 : prevIndex - 1
-        return DrinkTypeViewController(drinkType: drinkTypeList[prevIndex])
+        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList[prevIndex])
     }
     
     func pageViewController(_: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let viewController = viewController as? DrinkTypeViewController else { return nil }
         guard var nextIndex = drinkTypeList.firstIndex(of: viewController.drinkType) else { return nil }
         nextIndex = nextIndex == drinkTypeList.count - 1 ? 0 : nextIndex + 1
-        return DrinkTypeViewController(drinkType: drinkTypeList[nextIndex])
+        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList[nextIndex])
     }
     
     func presentationCount(for _: UIPageViewController) -> Int {
@@ -153,5 +173,20 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
     
     func presentationIndex(for _: UIPageViewController) -> Int {
         return 0
+    }
+}
+
+extension UIPageViewController {
+
+    func moveToNextPage() {
+       guard let currentViewController = self.viewControllers?.first else { return }
+       guard let nextViewController = dataSource?.pageViewController(self, viewControllerAfter: currentViewController) else { return }
+       setViewControllers([nextViewController], direction: .forward, animated: true)
+    }
+
+    func moveToPrevPage() {
+       guard let currentViewController = self.viewControllers?.first else { return }
+       guard let previousViewController = dataSource?.pageViewController(self, viewControllerBefore: currentViewController) else { return }
+       setViewControllers([previousViewController], direction: .reverse, animated: true)
     }
 }

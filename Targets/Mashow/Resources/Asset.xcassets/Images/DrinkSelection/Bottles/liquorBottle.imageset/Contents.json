@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "liqourBottle.png",
+      "filename" : "liquorBottle.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "liqourBottle@2x.png",
+      "filename" : "liquorBottle@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "liqourBottle@3x.png",
+      "filename" : "liquorBottle@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
