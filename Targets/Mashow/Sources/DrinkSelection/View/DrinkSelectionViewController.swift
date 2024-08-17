@@ -192,14 +192,6 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
         nextIndex = nextIndex == drinkTypeList.count - 1 ? 0 : nextIndex + 1
         return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList[nextIndex])
     }
-    
-    func presentationCount(for _: UIPageViewController) -> Int {
-        return 0
-    }
-    
-    func presentationIndex(for _: UIPageViewController) -> Int {
-        return 0
-    }
 }
 
 extension UIPageViewController {
