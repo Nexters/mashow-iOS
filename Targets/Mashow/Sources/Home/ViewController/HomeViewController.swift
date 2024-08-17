@@ -23,16 +23,16 @@ class HomeViewController: UIViewController {
         let label = UILabel()
         label.text = "Nickname"
         label.font = .blankSans(size: 44, weight: .bold)
-        label.textColor = .white
+        label.textColor = .white.withAlphaComponent(0.7)
         return label
     }()
 
-    lazy var showLabel: UILabel = {
-        let label = UILabel()
-        label.text = "SHOW"
-        label.font = .blankSans(size: 44, weight: .bold)
-        label.textColor = .white
-        return label
+    lazy var showLabel: GradientLabel = {
+        let view = GradientLabel()
+        view.label.text = "SHOW"
+        view.label.font = .blankSans(size: 44, weight: .bold)
+        view.label.textColor = .white
+        return view
     }()
 
     lazy var viewToggleStackView: ViewToggleStackView = {
@@ -44,25 +44,14 @@ class HomeViewController: UIViewController {
         let view = CardView()
         return view
     }()
-
-    lazy var recordButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("기록하기", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .hex("151515").withAlphaComponent(0.3)
-        button.layer.cornerRadius = 13
-        button.clipsToBounds = true
-        
-        // Add blur to background
-        let blurEffect = UIBlurEffect(style: .light)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = button.bounds
-        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        blurEffectView.alpha = 0.2
-        button.addSubview(blurEffectView)
-        
-        return button
+    
+    lazy var listTypeRecordViewController: ListTypeRecordViewController = {
+        let view = ListTypeRecordViewController()
+        return view
+    }()
+    
+    lazy var recordButton: AddButton = {
+        AddButton()
     }()
 
     lazy var myPageButton: CircularButton = {
@@ -82,12 +71,14 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupViews()
+        setupSubViewController()
         setupConstraints()
+        setupSubViewAction()
         navigationController?.navigationBar.isHidden = true
     }
-
+    
     // MARK: - View setup
 
     private func setupViews() {
@@ -95,9 +86,14 @@ class HomeViewController: UIViewController {
         view.addSubview(nicknameLabel)
         view.addSubview(showLabel)
         view.addSubview(viewToggleStackView)
-        view.addSubview(drinkCardView)
+//        view.addSubview(drinkCardView)
         view.addSubview(recordButton)
         view.addSubview(myPageButton)
+    }
+    
+    private func setupSubViewController() {
+        addChild(listTypeRecordViewController)
+        view.addSubview(listTypeRecordViewController.view)
     }
 
     private func setupConstraints() {
@@ -109,11 +105,18 @@ class HomeViewController: UIViewController {
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.leading.equalTo(view).offset(20)
         }
+        nicknameLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
 
         showLabel.snp.makeConstraints { make in
             make.top.equalTo(nicknameLabel.snp.bottom)
             make.leading.equalTo(view).offset(20)
         }
+        showLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        showLabel.setColors([
+            .hex("C6CEA5").withAlphaComponent(0.7),
+            .hex("C5A7A7").withAlphaComponent(0.7),
+            .hex("47525A")
+        ])
 
         viewToggleStackView.snp.makeConstraints { make in
             make.top.equalTo(showLabel.snp.bottom).offset(16)
@@ -122,24 +125,37 @@ class HomeViewController: UIViewController {
             make.height.equalTo(34)
         }
         
-        drinkCardView.snp.makeConstraints { make in
+//        drinkCardView.snp.makeConstraints { make in
+//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+//            make.leading.equalTo(view).offset(30)
+//            make.trailing.equalTo(view).inset(30)
+//            make.bottom.equalTo(recordButton.snp.top).offset(-20)
+//        }
+        
+        listTypeRecordViewController.view.snp.makeConstraints { make in
             make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-            make.leading.equalTo(view).offset(30)
-            make.trailing.equalTo(view).inset(30)
-            make.bottom.equalTo(recordButton.snp.top).offset(-20)
+            make.leading.equalTo(view).offset(24)
+            make.trailing.equalTo(view).inset(24)
+            make.bottom.equalTo(recordButton.snp.top).offset(-25)
         }
         
         recordButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.equalTo(view).offset(20)
-            make.trailing.equalTo(view).inset(20)
-            make.height.equalTo(60)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(15)
+            make.centerX.equalToSuperview()
+            make.height.equalTo(56)
+            make.width.equalTo(56)
         }
         
         myPageButton.snp.makeConstraints { make in
             make.centerY.equalTo(nicknameLabel)
             make.height.width.equalTo(32)
             make.trailing.equalTo(view).inset(20)
+        }
+    }
+    
+    func setupSubViewAction() {
+        viewToggleStackView.onTapCardView = { [weak self] in
+            self?.showAlert(title: "Coming Soon!", message: "곧 추가됩니다")
         }
     }
 }
