@@ -44,6 +44,11 @@ class HomeViewController: UIViewController {
         let view = CardView()
         return view
     }()
+    
+    lazy var listTypeRecordViewController: ListTypeRecordViewController = {
+        let view = ListTypeRecordViewController()
+        return view
+    }()
 
     lazy var recordButton: UIButton = {
         let button = UIButton(type: .system)
@@ -84,6 +89,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
 
         setupViews()
+        setupSubViewController()
         setupConstraints()
         navigationController?.navigationBar.isHidden = true
     }
@@ -95,9 +101,14 @@ class HomeViewController: UIViewController {
         view.addSubview(nicknameLabel)
         view.addSubview(showLabel)
         view.addSubview(viewToggleStackView)
-        view.addSubview(drinkCardView)
+//        view.addSubview(drinkCardView)
         view.addSubview(recordButton)
         view.addSubview(myPageButton)
+    }
+    
+    private func setupSubViewController() {
+        addChild(listTypeRecordViewController)
+        view.addSubview(listTypeRecordViewController.view)
     }
 
     private func setupConstraints() {
@@ -122,10 +133,17 @@ class HomeViewController: UIViewController {
             make.height.equalTo(34)
         }
         
-        drinkCardView.snp.makeConstraints { make in
+//        drinkCardView.snp.makeConstraints { make in
+//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+//            make.leading.equalTo(view).offset(30)
+//            make.trailing.equalTo(view).inset(30)
+//            make.bottom.equalTo(recordButton.snp.top).offset(-20)
+//        }
+        
+        listTypeRecordViewController.view.snp.makeConstraints { make in
             make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-            make.leading.equalTo(view).offset(30)
-            make.trailing.equalTo(view).inset(30)
+            make.leading.equalTo(view).offset(24)
+            make.trailing.equalTo(view).inset(24)
             make.bottom.equalTo(recordButton.snp.top).offset(-20)
         }
         
