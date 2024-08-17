@@ -85,7 +85,8 @@ extension Project {
                 "Pretendard-Medium.otf",
                 "Pretendard-Regular.otf",
                 "Pretendard-SemiBold.otf",
-                "Pretendard-Thin.otf"
+                "Pretendard-Thin.otf",
+                "BlankSans-bold.otf",
             ],
             "CFBundleURLTypes": [
                 [
