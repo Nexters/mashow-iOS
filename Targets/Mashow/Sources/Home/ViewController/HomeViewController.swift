@@ -8,7 +8,24 @@
 import UIKit
 import SnapKit
 
+import Combine
+
+class HomeViewModel {
+    struct State {
+        let nickname: String
+        let records: CurrentValueSubject<Set<DrinkType>, Never> = .init([]) // FIXME: Fix me after the API implemented
+    }
+    
+    let state: State
+    
+    init(state: State) {
+        self.state = state
+    }
+}
+
 class HomeViewController: UIViewController {
+    var viewModel: HomeViewModel!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - UI Elements
 
@@ -21,7 +38,7 @@ class HomeViewController: UIViewController {
 
     lazy var nicknameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Nickname"
+        label.text = viewModel.state.nickname
         label.font = .blankSans(size: 44, weight: .bold)
         label.textColor = .white.withAlphaComponent(0.7)
         return label
@@ -57,7 +74,9 @@ class HomeViewController: UIViewController {
     lazy var myPageButton: CircularButton = {
         let button = CircularButton()
         button.setImage(
-            UIImage(systemName: "person.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
+            UIImage(
+                systemName: "person.fill",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
             for: .normal)
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
@@ -73,9 +92,10 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         
         setupViews()
-//        setupSubViewController()
+        setupSubViewController()
         setupConstraints()
         setupSubViewAction()
+        bind()
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -132,12 +152,12 @@ class HomeViewController: UIViewController {
             make.bottom.equalTo(recordButton.snp.top).offset(-20)
         }
         
-//        listTypeRecordViewController.view.snp.makeConstraints { make in
-//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-//            make.leading.equalTo(view).offset(24)
-//            make.trailing.equalTo(view).inset(24)
-//            make.bottom.equalTo(recordButton.snp.top).offset(-25)
-//        }
+        listTypeRecordViewController.view.snp.makeConstraints { make in
+            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+            make.leading.equalTo(view).offset(24)
+            make.trailing.equalTo(view).inset(24)
+            make.bottom.equalTo(recordButton.snp.top).offset(-25)
+        }
         
         recordButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(15)
@@ -158,9 +178,42 @@ class HomeViewController: UIViewController {
             self?.showAlert(title: "Coming Soon!", message: "곧 추가됩니다")
         }
     }
+    
+    private func showEmptyStateView() {
+        drinkCardView.isHidden = false
+        listTypeRecordViewController.view.isHidden = true
+    }
+    
+    private func showMiniCardListView(with drinkTypeList: [DrinkType]) {
+        drinkCardView.isHidden = true
+        listTypeRecordViewController.availableDrinkTypes = drinkTypeList
+        listTypeRecordViewController.view.isHidden = false
+    }
+    
+    // MARK: - Bind
+    
+    private func bind() {
+        viewModel.state.records
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] records in
+                guard let self = self else { return }
+                
+                if records.isEmpty {
+                    showEmptyStateView()
+                } else {
+                    showMiniCardListView(with: Array(records))
+                }
+            }
+            .store(in: &cancellables)
+    }
 }
 
 import SwiftUI
 #Preview {
-    HomeViewController.preview()
+    HomeViewController.preview {
+        let vc = HomeViewController()
+        vc.viewModel = .init(state: .init(nickname: "Temp한글"))
+        vc.viewModel.state.records.send([.soju, .beer, .wine])
+        return vc
+    }
 }
