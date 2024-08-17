@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import SnapKit
+
 class ListTypeRecordViewController: UIViewController {
     // MARK: - UI Elements
     
@@ -27,7 +28,10 @@ class ListTypeRecordViewController: UIViewController {
         
         return zip(drinks, images).map { drinkType, image in
             let cardView = MiniCardView()
-            cardView.configure(with: image, drinkType: drinkType)
+            cardView.configure(with: image, drinkType: drinkType, isSelected: false)
+            cardView.onTap = { [weak self] in
+                self?.handleCardTap(for: cardView)
+            }
             return cardView
         }
     }()
@@ -68,6 +72,12 @@ class ListTypeRecordViewController: UIViewController {
         gridStackView.snp.makeConstraints { make in
             make.width.height.equalToSuperview()
         }
+    }
+    
+    // MARK: - Action Handling
+
+    private func handleCardTap(for selectedCardView: MiniCardView) {
+        selectedCardView.update(isSelected: !selectedCardView.isSelected)
     }
 }
 
