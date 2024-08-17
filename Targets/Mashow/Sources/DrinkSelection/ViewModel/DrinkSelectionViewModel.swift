@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Combine
 
 class DrinkSelectionViewModel {
     enum DrinkType: String, CaseIterable {
@@ -31,24 +32,34 @@ class DrinkSelectionViewModel {
             case .highball:
                 ["FFFA81", "FFFCBC"]
             case .mixed:
-                ["FFFFFF", "FFFFFF"] // FIXME: - 여기 컬러 뭐임
+                ["FFC1AD", "BCE7FF"]
             }
         }
     }
     
     struct State {
-        var isTypeAdded: [DrinkType: Bool] {
-            var isAdded = [DrinkType: Bool]()
-            DrinkType.allCases.forEach { type in
-                isAdded[type] = false
-            }
-            return isAdded
-        }
+        var currentType = CurrentValueSubject<DrinkType, Never>(DrinkType.soju)
+        var addedTypesPublisher = CurrentValueSubject<[DrinkType], Never>([])
     }
     
-    let state: State
+    var state: State
     
     init(state: State) {
         self.state = state
+    }
+    
+    func addType(_ type: DrinkType) {
+        guard state.addedTypesPublisher.value.count < 3, !state.addedTypesPublisher.value.contains(type) else { return }
+        var current = state.addedTypesPublisher.value
+        current.append(type)
+        state.addedTypesPublisher.send(current)
+    }
+    
+    func removeType(_ type: DrinkType) {
+        guard state.addedTypesPublisher.value.contains(type) else { return }
+        var current = state.addedTypesPublisher.value
+        guard let targetIndex = current.firstIndex(of: type) else { return }
+        current.remove(at: targetIndex)
+        state.addedTypesPublisher.send(current)
     }
 }

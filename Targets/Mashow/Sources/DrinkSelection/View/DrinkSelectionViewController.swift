@@ -7,10 +7,10 @@
 //
 
 import UIKit
+import Combine
+import SnapKit
 
 final class DrinkSelectionViewController: UIViewController {
-    
-    let viewModel: DrinkSelectionViewModel!
     
     init(viewModel: DrinkSelectionViewModel!) {
         self.viewModel = viewModel
@@ -21,6 +21,8 @@ final class DrinkSelectionViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    let viewModel: DrinkSelectionViewModel!
+    private var cancellables = Set<AnyCancellable>()
     private let drinkTypeList = DrinkSelectionViewModel.DrinkType.allCases
     
     private let pageViewController = UIPageViewController(
@@ -34,6 +36,8 @@ final class DrinkSelectionViewController: UIViewController {
         button.tintColor = .white
         return button
     }()
+
+    var backgroundView = UIImageView()
     
     private lazy var rightArrowButton: UIButton = {
         let button = UIButton()
@@ -71,6 +75,7 @@ final class DrinkSelectionViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        bind()
         setupNavigationBar()
         setupLayouts()
         setupHandlers()
@@ -78,6 +83,16 @@ final class DrinkSelectionViewController: UIViewController {
 }
 
 private extension DrinkSelectionViewController {
+    
+    private func bind() {
+        viewModel.state.currentType
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] currentType in
+                guard let self = self else { return }
+                setupBackground(currentType.rawValue)
+            }
+            .store(in: &cancellables)
+    }
     
     private func setupNavigationBar() {
         self.navigationController?.navigationBar.tintColor = .white
@@ -103,7 +118,20 @@ private extension DrinkSelectionViewController {
         navigationController?.popViewController(animated: true)
     }
     
+    private func setupBackground(_ currentType: String) {
+        UIView.transition(with: backgroundView, duration: 0.5, options: .transitionCrossDissolve) {
+            self.backgroundView.image = UIImage(named: "\(currentType)_background")
+        }
+    }
+    
     private func setupLayouts() {
+        backgroundView.contentMode = .scaleAspectFill
+        view.addSubview(backgroundView)
+        backgroundView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.verticalEdges.equalToSuperview()
+        }
+        
         pageViewController.dataSource = self
         pageViewController.setViewControllers(
             [DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList.first!)],
@@ -113,29 +141,27 @@ private extension DrinkSelectionViewController {
         addChild(pageViewController)
         view.addSubview(pageViewController.view)
         pageViewController.didMove(toParent: self)
+        pageViewController.view.backgroundColor = .clear
         
         view.addSubview(leftArrowButton)
-        leftArrowButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            leftArrowButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            leftArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40)
-        ])
+        leftArrowButton.snp.makeConstraints { make in
+            make.leading.equalTo(view).offset(30)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(40)
+        }
         
         view.addSubview(rightArrowButton)
-        rightArrowButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            rightArrowButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            rightArrowButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40)
-        ])
+        rightArrowButton.snp.makeConstraints { make in
+            make.trailing.equalTo(view).offset(-30)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(40)
+        }
         
         view.addSubview(bottomNextButton)
-        bottomNextButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            bottomNextButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
-            bottomNextButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            bottomNextButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            bottomNextButton.heightAnchor.constraint(equalToConstant: 56)
-        ])
+        bottomNextButton.snp.makeConstraints { make in
+            make.bottom.equalTo(view).offset(-30)
+            make.leading.equalTo(view).offset(20)
+            make.trailing.equalTo(view).offset(-20)
+            make.height.equalTo(56)
+        }
     }
     
     private func setupHandlers() {
