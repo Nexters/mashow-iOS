@@ -7,21 +7,7 @@
 //
 import UIKit
 import SnapKit
-
 import Combine
-
-class HomeViewModel {
-    struct State {
-        let nickname: String
-        let records: CurrentValueSubject<Set<DrinkType>, Never> = .init([]) // FIXME: Fix me after the API implemented
-    }
-    
-    let state: State
-    
-    init(state: State) {
-        self.state = state
-    }
-}
 
 class HomeViewController: UIViewController {
     var viewModel: HomeViewModel!
