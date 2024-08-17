@@ -66,10 +66,7 @@ class ListTypeRecordViewController: UIViewController {
     
     private func setupConstraints() {
         gridStackView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
-            make.leading.equalTo(view).offset(16)
-            make.trailing.equalTo(view).offset(-16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.width.height.equalToSuperview()
         }
     }
 }

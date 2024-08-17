@@ -15,7 +15,7 @@ class MiniCardView: UIView {
 
     private lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleToFill
         return imageView
     }()
     
@@ -41,6 +41,7 @@ class MiniCardView: UIView {
             make.height.width.equalToSuperview()
         }
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
 
     // MARK: - Configuration
