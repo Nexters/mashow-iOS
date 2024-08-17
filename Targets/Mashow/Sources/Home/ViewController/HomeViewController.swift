@@ -7,8 +7,11 @@
 //
 import UIKit
 import SnapKit
+import Combine
 
 class HomeViewController: UIViewController {
+    var viewModel: HomeViewModel!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - UI Elements
 
@@ -21,7 +24,7 @@ class HomeViewController: UIViewController {
 
     lazy var nicknameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Nickname"
+        label.text = viewModel.state.nickname
         label.font = .blankSans(size: 44, weight: .bold)
         label.textColor = .white.withAlphaComponent(0.7)
         return label
@@ -57,7 +60,9 @@ class HomeViewController: UIViewController {
     lazy var myPageButton: CircularButton = {
         let button = CircularButton()
         button.setImage(
-            UIImage(systemName: "person.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
+            UIImage(
+                systemName: "person.fill",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
             for: .normal)
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
@@ -76,6 +81,7 @@ class HomeViewController: UIViewController {
         setupSubViewController()
         setupConstraints()
         setupSubViewAction()
+        bind()
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -86,7 +92,7 @@ class HomeViewController: UIViewController {
         view.addSubview(nicknameLabel)
         view.addSubview(showLabel)
         view.addSubview(viewToggleStackView)
-//        view.addSubview(drinkCardView)
+        view.addSubview(drinkCardView)
         view.addSubview(recordButton)
         view.addSubview(myPageButton)
     }
@@ -125,12 +131,12 @@ class HomeViewController: UIViewController {
             make.height.equalTo(34)
         }
         
-//        drinkCardView.snp.makeConstraints { make in
-//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-//            make.leading.equalTo(view).offset(30)
-//            make.trailing.equalTo(view).inset(30)
-//            make.bottom.equalTo(recordButton.snp.top).offset(-20)
-//        }
+        drinkCardView.snp.makeConstraints { make in
+            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+            make.leading.equalTo(view).offset(30)
+            make.trailing.equalTo(view).inset(30)
+            make.bottom.equalTo(recordButton.snp.top).offset(-20)
+        }
         
         listTypeRecordViewController.view.snp.makeConstraints { make in
             make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
@@ -158,9 +164,42 @@ class HomeViewController: UIViewController {
             self?.showAlert(title: "Coming Soon!", message: "곧 추가됩니다")
         }
     }
+    
+    private func showEmptyStateView() {
+        drinkCardView.isHidden = false
+        listTypeRecordViewController.view.isHidden = true
+    }
+    
+    private func showMiniCardListView(with drinkTypeList: [DrinkType]) {
+        drinkCardView.isHidden = true
+        listTypeRecordViewController.availableDrinkTypes = drinkTypeList
+        listTypeRecordViewController.view.isHidden = false
+    }
+    
+    // MARK: - Bind
+    
+    private func bind() {
+        viewModel.state.records
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] records in
+                guard let self = self else { return }
+                
+                if records.isEmpty {
+                    showEmptyStateView()
+                } else {
+                    showMiniCardListView(with: Array(records))
+                }
+            }
+            .store(in: &cancellables)
+    }
 }
 
 import SwiftUI
 #Preview {
-    HomeViewController.preview()
+    HomeViewController.preview {
+        let vc = HomeViewController()
+        vc.viewModel = .init(state: .init(nickname: "Temp한글"))
+        vc.viewModel.state.records.send([.soju, .beer, .wine])
+        return vc
+    }
 }
