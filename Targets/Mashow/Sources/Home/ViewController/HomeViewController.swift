@@ -23,16 +23,16 @@ class HomeViewController: UIViewController {
         let label = UILabel()
         label.text = "Nickname"
         label.font = .blankSans(size: 44, weight: .bold)
-        label.textColor = .white
+        label.textColor = .white.withAlphaComponent(0.7)
         return label
     }()
 
-    lazy var showLabel: UILabel = {
-        let label = UILabel()
-        label.text = "SHOW"
-        label.font = .blankSans(size: 44, weight: .bold)
-        label.textColor = .white
-        return label
+    lazy var showLabel: GradientLabel = {
+        let view = GradientLabel()
+        view.label.text = "SHOW"
+        view.label.font = .blankSans(size: 44, weight: .bold)
+        view.label.textColor = .white
+        return view
     }()
 
     lazy var viewToggleStackView: ViewToggleStackView = {
@@ -71,14 +71,14 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupViews()
         setupSubViewController()
         setupConstraints()
         setupSubViewAction()
         navigationController?.navigationBar.isHidden = true
     }
-
+    
     // MARK: - View setup
 
     private func setupViews() {
@@ -112,6 +112,11 @@ class HomeViewController: UIViewController {
             make.leading.equalTo(view).offset(20)
         }
         showLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        showLabel.setColors([
+            .hex("C6CEA5").withAlphaComponent(0.7),
+            .hex("C5A7A7").withAlphaComponent(0.7),
+            .hex("47525A")
+        ])
 
         viewToggleStackView.snp.makeConstraints { make in
             make.top.equalTo(showLabel.snp.bottom).offset(16)
