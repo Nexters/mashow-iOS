@@ -11,12 +11,14 @@ import SnapKit
 
 class FoodCell: UITableViewCell {
     static let identifier = "FoodCell"
+    private var onTapDelete: (() -> Void)?
 
-    lazy var textField: UITextField = {
+    lazy var textField: DecoratedTextField = {
         let textField = DecoratedTextField()
         textField.placeholder = "이름 혹은 종류"
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        
         return textField
     }()
     
@@ -48,5 +50,15 @@ class FoodCell: UITableViewCell {
     func configure(with text: String, tag: Int) {
         textField.text = text
         textField.tag = tag
+    }
+    
+    func onTapDelete(_ onTapDelete: @escaping () -> Void) {
+        self.onTapDelete = onTapDelete
+        textField.onDeleteButtonTapped = onTapDelete
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        textField.reset()
     }
 }

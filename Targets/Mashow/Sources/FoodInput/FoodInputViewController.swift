@@ -199,6 +199,15 @@ extension FoodInputViewController: UITableViewDataSource {
         }
         cell.configure(with: foodItems[indexPath.row], tag: indexPath.row)
         cell.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        cell.onTapDelete { [weak self] in
+            self?.foodItems.remove(at: indexPath.row)
+            self?.tableView.reloadData()
+            self?.updateFooterVisibility()
+            self?.updateDoneButtonEnability()
+        }
+        // To fix buggy reused cells
+        cell.textField.showDeleteButtonIfNeeded()
+        
         return cell
     }
     
