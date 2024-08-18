@@ -77,6 +77,13 @@ class FoodInputHomeViewController: UIViewController {
         return stackView
     }()
     
+    lazy var glassImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .glass)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -95,6 +102,7 @@ private extension FoodInputHomeViewController {
         view.addSubview(foodItemsStackView)
         view.addSubview(saveButton)
         view.addSubview(backButton)
+        view.addSubview(glassImageView)
     }
     
     func setupConstraints() {
@@ -117,6 +125,13 @@ private extension FoodInputHomeViewController {
         foodItemsStackView.snp.makeConstraints { make in
             make.top.equalTo(inputButton.snp.bottom).offset(16)
             make.leading.trailing.equalTo(view).inset(20)
+        }
+        
+        glassImageView.snp.makeConstraints { make in
+            make.bottom.equalToSuperview()
+            make.leading.equalToSuperview().inset(32)
+            make.trailing.equalToSuperview().inset(32)
+            make.centerX.equalToSuperview()
         }
         
         backButton.snp.makeConstraints { make in
