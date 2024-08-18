@@ -17,6 +17,24 @@ class FoodInputViewController: UIViewController {
     
     // MARK: - UI Elements
     
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .loginBackground)
+        imageView.contentMode = .scaleAspectFill
+        
+        // Add a dimming effect
+        let dimmingView = UIView()
+        dimmingView.backgroundColor = .black
+        dimmingView.alpha = 0.5
+        
+        imageView.addSubview(dimmingView)
+        dimmingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        return imageView
+    }()
+    
     lazy var dismissButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "xmark"), for: .normal)
@@ -28,10 +46,11 @@ class FoodInputViewController: UIViewController {
     
     lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "먹은 음식 이름 또는 종류를 적어주세요!"
+        label.text = "먹은 음식 이름 또는 종류를\n적어주세요!"
         label.font = .pretendard(size: 20, weight: .semibold)
+        label.numberOfLines = 2
         label.textColor = .white
-        label.textAlignment = .center
+        label.textAlignment = .left
         return label
     }()
     
@@ -93,6 +112,7 @@ class FoodInputViewController: UIViewController {
 // MARK: - View setup
 private extension FoodInputViewController {
     func setupViews() {
+        view.addSubview(backgroundImageView)
         view.addSubview(dismissButton)
         view.addSubview(titleLabel)
         view.addSubview(tableView)
@@ -100,19 +120,23 @@ private extension FoodInputViewController {
     }
     
     func setupConstraints() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         dismissButton.snp.makeConstraints { make in
             make.leading.equalTo(view).offset(16)
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
+            make.leading.equalTo(view).inset(16)
             make.top.equalTo(dismissButton.snp.bottom).offset(16)
         }
         
         tableView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.trailing.equalTo(view).inset(20)
+            make.leading.trailing.equalTo(view).inset(16)
             make.bottom.equalTo(doneButton.snp.top).offset(-16)
         }
         

@@ -13,11 +13,8 @@ class FoodCell: UITableViewCell {
     static let identifier = "FoodCell"
 
     lazy var textField: UITextField = {
-        let textField = UITextField()
+        let textField = DecoratedTextField()
         textField.placeholder = "이름 혹은 종류"
-        textField.backgroundColor = .systemGray6
-        textField.textColor = .black
-        textField.borderStyle = .roundedRect
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         return textField
@@ -42,7 +39,7 @@ class FoodCell: UITableViewCell {
     private func setupConstraints() {
         textField.snp.makeConstraints { make in
             make.centerX.equalTo(contentView)
-            make.leading.trailing.equalTo(contentView).inset(16)
+            make.leading.trailing.equalTo(contentView)
             make.top.equalTo(contentView)
             make.bottom.equalTo(contentView).inset(24)
         }

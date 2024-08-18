@@ -126,7 +126,7 @@ private extension FoodInputHomeViewController {
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
+            make.leading.equalToSuperview()
             make.top.equalTo(view.safeAreaLayoutGuide).offset(32)
         }
         
