@@ -8,22 +8,41 @@ class FoodInputHomeViewController: UIViewController {
     
     // MARK: - UI Elements
     
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .loginBackground)
+        imageView.contentMode = .scaleAspectFill
+        
+        // Add a dimming effect
+        let dimmingView = UIView()
+        dimmingView.backgroundColor = .black
+        dimmingView.alpha = 0.5
+        
+        imageView.addSubview(dimmingView)
+        dimmingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        return imageView
+    }()
+    
     lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "어떤 음식으로 페어링을 했나요?"
-        label.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        label.text = "어떤 음식으로\n페어링을 했나요?"
+        label.font = .pretendard(size: 20, weight: .semibold)
+        label.numberOfLines = 2
         label.textColor = .white
-        label.textAlignment = .center
+        label.textAlignment = .left
         return label
     }()
     
     lazy var inputButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("안주 입력 +", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .regular)
-        button.setTitleColor(.black, for: .normal)
-        button.backgroundColor = .systemGray6
-        button.layer.cornerRadius = 5
+        button.titleLabel?.font = .pretendard(size: 18, weight: .semibold)
+        button.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
+        button.backgroundColor = .white.withAlphaComponent(0.15)
+        button.layer.cornerRadius = 20
         
         button.addTarget(self, action: #selector(didTapInputButton), for: .touchUpInside)
         return button
@@ -60,7 +79,6 @@ class FoodInputHomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black.withAlphaComponent(0.8)
 
         setupViews()
         setupConstraints()
@@ -71,6 +89,7 @@ class FoodInputHomeViewController: UIViewController {
 // MARK: - View setup
 private extension FoodInputHomeViewController {
     func setupViews() {
+        view.addSubview(backgroundImageView)
         view.addSubview(titleLabel)
         view.addSubview(inputButton)
         view.addSubview(foodItemsStackView)
@@ -79,16 +98,20 @@ private extension FoodInputHomeViewController {
     }
     
     func setupConstraints() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         titleLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            make.leading.equalToSuperview().inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(32)
         }
         
         inputButton.snp.makeConstraints { make in
             make.centerX.equalTo(view)
             make.top.equalTo(titleLabel.snp.bottom).offset(32)
-            make.width.equalTo(200)
-            make.height.equalTo(44)
+            make.width.equalTo(124)
+            make.height.equalTo(40)
         }
         
         foodItemsStackView.snp.makeConstraints { make in
