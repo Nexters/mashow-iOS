@@ -89,12 +89,10 @@ class FoodInputViewController: UIViewController {
     }()
     
     lazy var doneButton: UIButton = {
-        let button = UIButton(type: .system)
+        let button = BlurredButton()
         button.setTitle("완료", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 8
         button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
         return button
     }()
@@ -143,7 +141,7 @@ private extension FoodInputViewController {
         doneButton.snp.makeConstraints { make in
             make.leading.trailing.equalTo(view).inset(20)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            make.height.equalTo(44)
+            make.height.equalTo(50)
         }
     }
     
@@ -155,10 +153,11 @@ private extension FoodInputViewController {
     }
     
     func updateFooterVisibility() {
-        if let lastItem = foodItems.last, lastItem.isEmpty {
-            tableView.tableFooterView?.isHidden = true // Hide footer
+        // Hide the footer view if there are more than 3 items
+        if foodItems.count > 2 {
+            tableView.tableFooterView?.isHidden = true
         } else {
-            tableView.tableFooterView?.isHidden = false // Show footer
+            tableView.tableFooterView?.isHidden = false
         }
     }
     
