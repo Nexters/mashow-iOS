@@ -70,7 +70,6 @@ class FoodInputHomeViewController: UIViewController {
         button.setTitle("이전", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
-        
         button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
         return button
     }()
@@ -78,7 +77,7 @@ class FoodInputHomeViewController: UIViewController {
     lazy var foodItemsStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.spacing = 8
+        stackView.spacing = 20
         stackView.alignment = .fill
         stackView.distribution = .fillEqually
         return stackView
@@ -126,7 +125,7 @@ private extension FoodInputHomeViewController {
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
+            make.leading.equalToSuperview().inset(16)
             make.top.equalTo(view.safeAreaLayoutGuide).offset(32)
         }
         
@@ -138,8 +137,9 @@ private extension FoodInputHomeViewController {
         }
         
         foodItemsStackView.snp.makeConstraints { make in
-            make.top.equalTo(inputButton.snp.bottom).offset(16)
-            make.leading.trailing.equalTo(view).inset(20)
+            make.top.equalTo(inputButton.snp.bottom).offset(66)
+            make.leading.trailing.equalTo(glassImageView)
+            make.bottom.equalTo(glassImageView.snp.top).inset(-21)
         }
         
         glassImageView.snp.makeConstraints { make in
@@ -169,12 +169,24 @@ private extension FoodInputHomeViewController {
         foodItemsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         // Add new food items to the stack view
-        for item in items {
-            let label = UILabel()
-            label.text = item
-            label.textColor = .white
-            label.font = UIFont.systemFont(ofSize: 16)
-            foodItemsStackView.addArrangedSubview(label)
+        for (index, item) in items.enumerated() {
+            let label = BlurredButton()
+            label.setTitle(item, for: .normal)
+            label.titleLabel?.font = .pretendard(size: 16, weight: .bold)
+            label.isEnabled = false
+            
+            let arragnedView: UIStackView
+            let paddingView = UIView()
+            paddingView.snp.makeConstraints { make in
+                make.width.equalTo(50)
+            }
+            if (index + 1) % 2 == 0 {
+                arragnedView = UIStackView(arrangedSubviews: [paddingView, label])
+            } else {
+                arragnedView = UIStackView(arrangedSubviews: [label, paddingView])
+            }
+            foodItemsStackView.addArrangedSubview(arragnedView)
+                        
         }
     }
 }
@@ -207,5 +219,11 @@ private extension FoodInputHomeViewController {
 }
 import SwiftUI
 #Preview {
-    FoodInputHomeViewController.preview()
+    FoodInputHomeViewController.preview {
+        let vc = FoodInputHomeViewController()
+        UIView.animate(withDuration: 0.3) {
+            vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
+        }
+        return vc
+    }
 }
