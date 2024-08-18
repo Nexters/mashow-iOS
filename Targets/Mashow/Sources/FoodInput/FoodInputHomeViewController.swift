@@ -1,3 +1,10 @@
+//  FoodInputHomeViewController.swift
+//  Mashow
+//
+//  Created by Kai Lee on 8/4/24.
+//  Copyright © 2024 com.alcoholers. All rights reserved.
+//
+
 import UIKit
 import SnapKit
 import Combine
@@ -49,9 +56,9 @@ class FoodInputHomeViewController: UIViewController {
     }()
     
     lazy var saveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("저장", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        let button = BlurredButton()
+        button.setTitle("다음", for: .normal)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
         
         button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
@@ -59,9 +66,9 @@ class FoodInputHomeViewController: UIViewController {
     }()
     
     lazy var backButton: UIButton = {
-        let button = UIButton(type: .system)
+        let button = BlurredButton()
         button.setTitle("이전", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
         
         button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
@@ -84,6 +91,15 @@ class FoodInputHomeViewController: UIViewController {
         return imageView
     }()
     
+    lazy var buttonStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [backButton, saveButton])
+        stackView.axis = .horizontal
+        stackView.spacing = 9
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        return stackView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -100,9 +116,8 @@ private extension FoodInputHomeViewController {
         view.addSubview(titleLabel)
         view.addSubview(inputButton)
         view.addSubview(foodItemsStackView)
-        view.addSubview(saveButton)
-        view.addSubview(backButton)
         view.addSubview(glassImageView)
+        view.addSubview(buttonStackView)
     }
     
     func setupConstraints() {
@@ -134,14 +149,10 @@ private extension FoodInputHomeViewController {
             make.centerX.equalToSuperview()
         }
         
-        backButton.snp.makeConstraints { make in
-            make.leading.equalTo(view).offset(16)
+        buttonStackView.snp.makeConstraints { make in
+            make.leading.trailing.equalTo(view).inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-        }
-        
-        saveButton.snp.makeConstraints { make in
-            make.trailing.equalTo(view).offset(-16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
     }
     
@@ -182,7 +193,7 @@ private extension FoodInputHomeViewController {
         
         foodInputViewController.modalPresentationStyle = .fullScreen
         
-        show(foodInputViewController, sender: nil)
+        present(foodInputViewController, animated: true)
     }
     
     @objc func didTapSaveButton() {
@@ -194,7 +205,6 @@ private extension FoodInputHomeViewController {
         navigationController?.popViewController(animated: true)
     }
 }
-
 import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview()
