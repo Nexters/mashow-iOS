@@ -160,6 +160,7 @@ private extension FoodInputHomeViewController {
         viewModel.state.foodItems
             .sink { [weak self] items in
                 self?.updateFoodItemsStackView(with: items)
+                print("foodItems: \(items)")
             }
             .store(in: &cancellables)
     }
@@ -168,25 +169,53 @@ private extension FoodInputHomeViewController {
         // Clear previous views
         foodItemsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        // Add new food items to the stack view
-        for (index, item) in items.enumerated() {
-            let label = BlurredButton()
-            label.setTitle(item, for: .normal)
-            label.titleLabel?.font = .pretendard(size: 16, weight: .bold)
-            label.isEnabled = false
+        let minimumItems = 3
+        let emptyViewsCount = max(0, minimumItems - items.count)
+        
+        // Add empty views first
+        for _ in 0..<emptyViewsCount {
+            let emptyView = UIView()
+            emptyView.snp.makeConstraints { make in
+                make.height.greaterThanOrEqualTo(90)
+            }
             
-            let arragnedView: UIStackView
+            let arrangedView: UIStackView
             let paddingView = UIView()
             paddingView.snp.makeConstraints { make in
                 make.width.equalTo(50)
             }
-            if (index + 1) % 2 == 0 {
-                arragnedView = UIStackView(arrangedSubviews: [paddingView, label])
-            } else {
-                arragnedView = UIStackView(arrangedSubviews: [label, paddingView])
+            
+            arrangedView = UIStackView(arrangedSubviews: [emptyView, paddingView])
+            foodItemsStackView.addArrangedSubview(arrangedView)
+        }
+        
+        // Add actual food items to the stack view
+        for (index, item) in items.enumerated() {
+            let button = GradientButton()
+            button.gradientColors = GradientButton.doneButtonColorSet
+            button.setTitle(item, for: .normal)
+            button.setTitleColor(.black, for: .normal)
+            button.titleLabel?.font = .pretendard(size: 16, weight: .bold)
+            button.isEnabled = false
+            button.layer.cornerRadius = 20
+            button.clipsToBounds = true
+            button.snp.makeConstraints { make in
+                make.height.greaterThanOrEqualTo(90)
             }
-            foodItemsStackView.addArrangedSubview(arragnedView)
-                        
+            
+            let arrangedView: UIStackView
+            let paddingView = UIView()
+            paddingView.snp.makeConstraints { make in
+                make.width.equalTo(50)
+            }
+            
+            if (index + 1) % 2 == 0 {
+                arrangedView = UIStackView(arrangedSubviews: [paddingView, button])
+            } else {
+                arrangedView = UIStackView(arrangedSubviews: [button, paddingView])
+            }
+            
+            foodItemsStackView.addArrangedSubview(arrangedView)
         }
     }
 }
@@ -221,9 +250,9 @@ import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview {
         let vc = FoodInputHomeViewController()
-        UIView.animate(withDuration: 0.3) {
+//        UIView.animate(withDuration: 0.3) {
             vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
-        }
+//        }
         return vc
     }
 }

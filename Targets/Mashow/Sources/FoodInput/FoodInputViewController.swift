@@ -89,11 +89,14 @@ class FoodInputViewController: UIViewController {
     }()
     
     lazy var doneButton: UIButton = {
-        let button = BlurredButton()
+        let button = GradientButton()
+        button.gradientColors = GradientButton.doneButtonColorSet
         button.setTitle("완료", for: .normal)
+        button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
-        button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
+        button.layer.cornerRadius = 12
+        button.clipsToBounds = true
         return button
     }()
     
