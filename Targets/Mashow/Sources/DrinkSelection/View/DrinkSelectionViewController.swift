@@ -25,6 +25,10 @@ final class DrinkSelectionViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private let drinkTypeList = DrinkSelectionViewModel.DrinkType.allCases
     
+    private var removedButtonTag: Int?
+    typealias TypeButtonTag = Int
+    private var addedDrinkTypeButtons = [TypeButtonTag: UIButton]()
+    
     private let pageViewController = UIPageViewController(
         transitionStyle: .scroll,
         navigationOrientation: .horizontal
@@ -36,7 +40,7 @@ final class DrinkSelectionViewController: UIViewController {
         button.tintColor = .white
         return button
     }()
-
+    
     var backgroundView = UIImageView()
     
     private lazy var rightArrowButton: UIButton = {
@@ -44,6 +48,14 @@ final class DrinkSelectionViewController: UIViewController {
         button.setImage(UIImage(systemName: "arrowtriangle.right.fill"), for: .normal)
         button.tintColor = .white
         return button
+    }()
+    
+    private lazy var addedTypesStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 4
+        stack.alignment = .center
+        return stack
     }()
     
     private lazy var bottomNextButton: UIButton = {
@@ -92,6 +104,65 @@ private extension DrinkSelectionViewController {
                 setupBackground(currentType.rawValue)
             }
             .store(in: &cancellables)
+        
+        viewModel.state.addedTypesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] addedTypes in
+                guard let self = self else { return }
+                if let tag = self.removedButtonTag {
+                    // If type removed
+                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+                        self.addedDrinkTypeButtons[tag]!.removeFromSuperview()
+                        self.addedDrinkTypeButtons[tag] = nil
+                        self.removedButtonTag = nil
+                    }
+                } else {
+                    guard !addedTypes.isEmpty else { return }
+                    // If type added
+                    let newButton = self.makeAddedTypeButton()
+                    newButton.addTarget(self, action: #selector(didTapToRemoveType), for: .touchUpInside)
+                    self.addedDrinkTypeButtons[viewModel.state.currentType.value.tag] = newButton
+                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+                        self.addedTypesStackView.addArrangedSubview(newButton)
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    @objc private func didTapToRemoveType(_ sender: UIButton) {
+        removedButtonTag = sender.tag
+        guard let index = drinkTypeList.firstIndex(where: { $0.tag == removedButtonTag }) else { return }
+        viewModel.removeType(drinkTypeList[index])
+    }
+    
+    private func makeAddedTypeButton() -> UIButton {
+        let button = UIButton()
+        let view = UIStackView()
+        view.axis = .horizontal
+        view.spacing = 5
+        let label = UILabel()
+        label.text = viewModel.state.currentType.value.korean
+        label.font = .pretendard(size: 16, weight: .semibold)
+        label.textColor = .white
+        let icon = UIImageView(image: UIImage(systemName: "xmark"))
+        icon.tintColor = .white
+        icon.contentMode = .scaleAspectFit
+        icon.frame = CGRect(x: 0, y: 0, width: 12, height: 12)
+        view.addArrangedSubview(label)
+        view.addArrangedSubview(icon)
+        button.addSubview(view)
+        view.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(6)
+            make.bottom.equalToSuperview().offset(-6)
+        }
+        button.backgroundColor = UIColor.hex("151515").withAlphaComponent(0.5)
+        button.clipsToBounds = true
+        button.layer.cornerRadius = 15
+        button.tag = viewModel.state.currentType.value.tag
+        return button
     }
     
     private func setupNavigationBar() {
@@ -162,6 +233,12 @@ private extension DrinkSelectionViewController {
             make.trailing.equalTo(view).offset(-20)
             make.height.equalTo(56)
         }
+        
+        view.addSubview(addedTypesStackView)
+        addedTypesStackView.snp.makeConstraints { make in
+            make.bottom.equalTo(bottomNextButton.snp_topMargin).offset(-20)
+            make.centerX.equalToSuperview()
+        }
     }
     
     private func setupHandlers() {
@@ -195,16 +272,16 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
 }
 
 extension UIPageViewController {
-
+    
     func moveToNextPage() {
-       guard let currentViewController = self.viewControllers?.first else { return }
-       guard let nextViewController = dataSource?.pageViewController(self, viewControllerAfter: currentViewController) else { return }
-       setViewControllers([nextViewController], direction: .forward, animated: true)
+        guard let currentViewController = self.viewControllers?.first else { return }
+        guard let nextViewController = dataSource?.pageViewController(self, viewControllerAfter: currentViewController) else { return }
+        setViewControllers([nextViewController], direction: .forward, animated: true)
     }
-
+    
     func moveToPrevPage() {
-       guard let currentViewController = self.viewControllers?.first else { return }
-       guard let previousViewController = dataSource?.pageViewController(self, viewControllerBefore: currentViewController) else { return }
-       setViewControllers([previousViewController], direction: .reverse, animated: true)
+        guard let currentViewController = self.viewControllers?.first else { return }
+        guard let previousViewController = dataSource?.pageViewController(self, viewControllerBefore: currentViewController) else { return }
+        setViewControllers([previousViewController], direction: .reverse, animated: true)
     }
 }

@@ -11,7 +11,7 @@ import Combine
 
 class DrinkSelectionViewModel {
     enum DrinkType: String, CaseIterable {
-        case soju, liquor, makgeolli, sake, beer, wine, cocktail, highball, mixed
+        case soju, liquor, makgeolli, sake, beer, wine, cocktail, highball
         
         var colorHexValues: [String] {
             switch self {
@@ -31,8 +31,48 @@ class DrinkSelectionViewModel {
                 ["FFC46B", "FFF0BC"]
             case .highball:
                 ["FFFA81", "FFFCBC"]
-            case .mixed:
-                ["FFC1AD", "BCE7FF"]
+            }
+        }
+        
+        var korean: String {
+            switch self {
+            case .soju:
+                "소주"
+            case .liquor:
+                "양주"
+            case .makgeolli:
+                "막걸리"
+            case .sake:
+                "사케"
+            case .beer:
+                "맥주"
+            case .wine:
+                "와인"
+            case .cocktail:
+                "칵테일"
+            case .highball:
+                "하이볼"
+            }
+        }
+        
+        var tag: Int {
+            switch self {
+            case .soju:
+                0
+            case .liquor:
+                1
+            case .makgeolli:
+                2
+            case .sake:
+                3
+            case .beer:
+                4
+            case .wine:
+                5
+            case .cocktail:
+                6
+            case .highball:
+                7
             }
         }
     }
