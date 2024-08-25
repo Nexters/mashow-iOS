@@ -14,8 +14,9 @@ class RatingViewController: UIViewController {
     private var hasSetInitialPosition = false // Track if the initial position has been set
     
     // Limit the waveView's position to prevent it from escaping the screen
-    private var minY: CGFloat { view.bounds.height * 0.1 } // 10% from the bottom
-    private var maxY: CGFloat { view.bounds.height * 0.85 } // 10% from the top
+    private var minY: CGFloat { view.bounds.height * 0.15 } // 15% from the top
+    private var maxY: CGFloat { view.bounds.height * 0.8 } // 20% from the bottom
+    private var scorePositions: [CGFloat] = [] // Array to hold the Y positions for each score
 
     // MARK: - UI Elements
     
@@ -107,6 +108,7 @@ class RatingViewController: UIViewController {
         super.viewDidLayoutSubviews()
         if !hasSetInitialPosition {
             setInitialWavePosition() // Set the initial position at the midpoint (3 score)
+            calculateScorePositions()
             hasSetInitialPosition = true // Ensure this only runs once
         }
     }
@@ -138,8 +140,8 @@ class RatingViewController: UIViewController {
         
         rulerView.snp.makeConstraints { make in
             make.trailing.equalTo(view)
-            make.top.equalTo(view.snp.top).offset(minY) // Align with scale start
-            make.bottom.equalTo(view.snp.bottom).inset(view.bounds.height - maxY) // Align with scale end
+            make.top.equalTo(view.snp.top).offset(minY)
+            make.bottom.equalTo(view.snp.bottom).inset(view.bounds.height - maxY)
         }
         
         buttonStackView.snp.makeConstraints { make in
@@ -148,6 +150,7 @@ class RatingViewController: UIViewController {
             make.height.equalTo(50)
         }
     }
+
     private func setInitialWavePosition() {
         view.layoutIfNeeded()
 
@@ -177,13 +180,52 @@ class RatingViewController: UIViewController {
             updateScore(for: waveView.frame.origin.y)
             waveView.setNeedsDisplay() // Redraw the wave with the new position
         } else if gesture.state == .ended || gesture.state == .cancelled {
+            snapToNearestScore() // Snap to the nearest score position
             gesture.setTranslation(.zero, in: view)
         }
     }
+
+    // MARK: - Snap to Nearest Score
     
+    private func snapToNearestScore() {
+        // Find the nearest score position
+        let closestPosition = scorePositions.min(by: {
+            abs($0 - waveView.frame.origin.y) < abs($1 - waveView.frame.origin.y)
+        }) ?? initialWaveY
+        
+        // Animate the waveView to snap to the nearest position
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0,
+            usingSpringWithDamping: 0.7,
+            initialSpringVelocity: 1.0,
+            options: .curveEaseOut,
+            animations: {
+                self.waveView.frame.origin.y = closestPosition
+            })
+        
+        // Update the score based on the snapped position
+        updateScore(for: closestPosition)
+        
+        // Give haptic effect
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
     // MARK: - Scoring Logic
+
+    private func calculateScorePositions() {
+        // Calculate the Y positions corresponding to each score
+        scorePositions = [
+            minY,                                // 1st score position
+            minY + (maxY - minY) * 0.25,         // 2nd score position
+            minY + (maxY - minY) * 0.5,          // 3rd score position (midpoint)
+            minY + (maxY - minY) * 0.75,         // 4th score position
+            maxY                                 // 5th score position
+        ]
+    }
     
     private func updateScore(for waveY: CGFloat) {
+        // Calculate the current score based on the Y position of the waveView
         let normalizedPosition = (waveY - minY) / (maxY - minY)
         currentScore = Int(round(normalizedPosition * 4)) + 1
     }
