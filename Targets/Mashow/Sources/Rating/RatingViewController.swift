@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class RatingViewController: UIViewController {
     private var initialWaveY: CGFloat = 0.0
@@ -36,6 +37,19 @@ class RatingViewController: UIViewController {
         }
         
         return imageView
+    }()
+    
+    lazy var tooltipView: UILabel = {
+        let label = UILabel()
+        label.text = "만족한만큼 채워주세요!"
+        label.font = .pretendard(size: 16, weight: .semibold)
+        label.textColor = .white
+        label.textAlignment = .center
+        
+        label.layer.backgroundColor = UIColor.hex("5d6163").cgColor
+        label.layer.cornerRadius = 10
+        label.isHidden = true // Initially hidden
+        return label
     }()
     
     lazy var titleLabel: UILabel = {
@@ -114,9 +128,13 @@ class RatingViewController: UIViewController {
         if !hasSetInitialPosition {
             setInitialWavePosition() // Set the initial position at the midpoint (3 score)
             calculateScorePositions()
-            
             hasSetInitialPosition = true // Ensure this only runs once
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        showTooltipWithAnimation()
     }
     
     // MARK: - Setup Methods
@@ -127,6 +145,7 @@ class RatingViewController: UIViewController {
         view.addSubview(titleLabel)
         view.addSubview(buttonStackView)
         view.addSubview(rulerView)
+        view.addSubview(tooltipView)
     }
     
     private func setupConstraints() {
@@ -149,6 +168,12 @@ class RatingViewController: UIViewController {
             make.leading.trailing.equalTo(view).inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
             make.height.equalTo(50)
+        }
+        
+        tooltipView.snp.makeConstraints { make in
+            make.width.equalTo(310)
+            make.height.equalTo(51)
+            make.center.equalToSuperview()
         }
     }
 
@@ -241,6 +266,45 @@ class RatingViewController: UIViewController {
         // Calculate the current score based on the Y position of the waveView
         let normalizedPosition = (waveY - minY) / (maxY - minY)
         currentScore = Int(round(normalizedPosition * 4)) + 1
+    }
+    
+    // MARK: - Tooltip Animation
+    
+    private func showTooltipWithAnimation() {
+        tooltipView.isHidden = false
+        tooltipView.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
+        tooltipView.alpha = 0
+        
+        // Show with popping animation
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0.5,
+            usingSpringWithDamping: 0.5,
+            initialSpringVelocity: 1.0,
+            options: .curveEaseInOut,
+            animations: {
+                self.tooltipView.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+                self.tooltipView.alpha = 1.0
+            }) { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.hideTooltipWithAnimation()
+                }
+            }
+    }
+    
+    private func hideTooltipWithAnimation() {
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0,
+            usingSpringWithDamping: 0.5,
+            initialSpringVelocity: 1.0,
+            options: .curveEaseInOut,
+            animations: {
+                self.tooltipView.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
+                self.tooltipView.alpha = 0
+            }) { _ in
+                self.tooltipView.isHidden = true
+            }
     }
     
     // MARK: - Actions
