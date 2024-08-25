@@ -10,6 +10,8 @@ import UIKit
 import SnapKit
 
 class RatingViewController: UIViewController {
+    var viewModel: RatingViewModel!
+    
     private var initialWaveY: CGFloat = 0.0
     private var currentScore: Int = 3 // Start at the midpoint score
     private var hasSetInitialPosition = false // Track if the initial position has been set
@@ -314,11 +316,15 @@ class RatingViewController: UIViewController {
     }
     
     @objc private func didTapNextButton() {
-        // Handle next button tap
+        viewModel.updateScore(currentScore)
     }
 }
 
 import SwiftUI
 #Preview {
-    RatingViewController.preview()
+    RatingViewController.preview {
+        let vc = RatingViewController()
+        vc.viewModel = .init()
+        return vc
+    }
 }
