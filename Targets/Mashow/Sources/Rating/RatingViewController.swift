@@ -133,11 +133,6 @@ class RatingViewController: UIViewController {
             make.leading.equalTo(view).inset(16)
         }
         
-        waveView.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalTo(view)
-            make.width.height.equalToSuperview()
-        }
-        
         rulerView.snp.makeConstraints { make in
             make.trailing.equalTo(view)
             make.top.equalTo(view.snp.top).offset(minY)
@@ -206,6 +201,15 @@ class RatingViewController: UIViewController {
         
         // Update the score based on the snapped position
         updateScore(for: closestPosition)
+        
+        switch currentScore {
+            case 1: rulerView.triggerEvent(at: .one)
+            case 2: rulerView.triggerEvent(at: .two)
+            case 3: rulerView.triggerEvent(at: .three)
+            case 4: rulerView.triggerEvent(at: .four)
+            case 5: rulerView.triggerEvent(at: .five)
+            default: break
+        }
         
         // Give haptic effect
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
