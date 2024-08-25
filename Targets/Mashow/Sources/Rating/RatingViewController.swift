@@ -109,6 +109,7 @@ class RatingViewController: UIViewController {
         if !hasSetInitialPosition {
             setInitialWavePosition() // Set the initial position at the midpoint (3 score)
             calculateScorePositions()
+            
             hasSetInitialPosition = true // Ensure this only runs once
         }
     }
@@ -154,6 +155,9 @@ class RatingViewController: UIViewController {
         waveView.frame.origin.y = midY
         initialWaveY = midY
         updateScore(for: midY)
+        
+        // Showing label image for the first time
+        rulerView.triggerEvent(at: .three)
     }
     
     // MARK: - Gesture Handling
