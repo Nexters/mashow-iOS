@@ -13,17 +13,11 @@ class RulerView: UIView {
     
     // MARK: - Properties
     
-    var labels: [String] = [] // Array to store labels for highlighted ticks
-    var labelImages: [UIImage] = [
-        UIImage(systemName: "star.fill")!,
-        UIImage(systemName: "star.fill")!,
-        UIImage(systemName: "star.fill")!,
-        UIImage(systemName: "star.fill")!,
-        UIImage(systemName: "star.fill")!
-    ] // Array to store label images for highlighted ticks
+    var labelInformations: LabelInformation!
     
     private let tickCount = 20
     private let tickHeight: CGFloat = 8.0 // Height of the tick marks
+    private var labelArray: [UILabel] = [] // Store references to image views
     private var imageViewArray: [UIImageView] = [] // Store references to image views
     
     // MARK: - Layout
@@ -35,7 +29,8 @@ class RulerView: UIView {
         // Clear any previous subviews and reset imageViewArray
         self.subviews.forEach { $0.removeFromSuperview() }
         
-        createImageViewsIfNeeded()
+        setLabelArrayIfNeeded()
+        setImageViewArrayIfNeeded()
         
         // Create and position hStacks for each tick and label pair
         for i in 0...tickCount {
@@ -55,6 +50,54 @@ class RulerView: UIView {
 }
 
 extension RulerView {
+    struct LabelInformation {
+        typealias Label = (label: String, image: UIImage)
+        let firstLabel: Label
+        let secondLabel: Label
+        let thirdLabel: Label
+        let fourthLabel: Label
+        let fifthLabel: Label
+        
+        init(
+            _ firstLabel: Label,
+            _ secondLabel: Label,
+            _ thirdLabel: Label,
+            _ fourthLabel: Label,
+            _ fifthLabel: Label
+        ) {
+            self.firstLabel = firstLabel
+            self.secondLabel = secondLabel
+            self.thirdLabel = thirdLabel
+            self.fourthLabel = fourthLabel
+            self.fifthLabel = fifthLabel
+        }
+        
+        func createLabelArray() -> [UILabel] {
+            [firstLabel.label, secondLabel.label, thirdLabel.label, fourthLabel.label, fifthLabel.label].map { text in
+                let label = UILabel()
+                label.text = text
+                label.font = .pretendard(size: 16, weight: .semibold)
+                label.textColor = .hex("909090")
+                return label
+            }
+        }
+        
+        func createImageViewArray() -> [UIImageView] {
+            [firstLabel.image, secondLabel.image, thirdLabel.image, fourthLabel.image, fifthLabel.image].map { image in
+                let imageView = UIImageView()
+                imageView.image = image
+                imageView.contentMode = .scaleAspectFit
+                imageView.isHidden = true // Initially hidden
+                
+                // Set constraints for the imageView
+                imageView.snp.makeConstraints { make in
+                    make.width.height.equalTo(24) // Adjust size as needed
+                }
+                return imageView
+            }
+        }
+    }
+    
     // Enum to represent different levels
     enum Level {
         case one, two, three, four, five
@@ -83,30 +126,42 @@ extension RulerView {
 
 private extension RulerView {
     // Create image views if they haven't been created yet
-    func createImageViewsIfNeeded() {
+    func setImageViewArrayIfNeeded() {
         guard imageViewArray.isEmpty else { return }
-        
-        imageViewArray = labelImages.map { image in
-            let imageView = UIImageView()
-            imageView.image = image
-            imageView.contentMode = .scaleAspectFit
-            imageView.isHidden = true // Initially hidden
-            return imageView
-        }
+        imageViewArray = labelInformations.createImageViewArray()
+    }
+    
+    // Create image views if they haven't been created yet
+    func setLabelArrayIfNeeded() {
+        guard labelArray.isEmpty else { return }
+        labelArray = labelInformations.createLabelArray()
     }
     
     // Highlight the image view at the specified index
     func highlightLevel(at index: Int) {
-        createImageViewsIfNeeded()
+        setImageViewArrayIfNeeded()
         
         // Hide all images
         imageViewArray.forEach { $0.isHidden = true }
         
         // Unhide the image at the selected level
         if index < imageViewArray.count {
-            imageViewArray[index].isHidden = false
+            let imageView = imageViewArray[index]
+            imageView.isHidden = false
+            
+            // Add the popping animation
+            imageView.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+            UIView.animate(
+                withDuration: 0.3,
+                delay: 0,
+                usingSpringWithDamping: 0.5,
+                initialSpringVelocity: 1.0,
+                options: .curveEaseOut,
+                animations: {
+                    imageView.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+                })
         }
-    } 
+    }
     
     func createHStack(for index: Int) -> UIStackView {
         let hStack = UIStackView()
@@ -115,22 +170,14 @@ private extension RulerView {
         hStack.spacing = 8 // Spacing between image, label, and tick
         
         // Add the image view if this is a highlighted tick
-        if index % 5 == 0, index / 5 < labelImages.count {
+        if index % 5 == 0 {
             let imageView = imageViewArray[index / 5]
             hStack.addArrangedSubview(imageView)
-            
-            // Set constraints for the imageView
-            imageView.snp.makeConstraints { make in
-                make.width.height.equalTo(24) // Adjust size as needed
-            }
         }
         
         // Add the label if this is a highlighted tick
-        if index % 5 == 0, index / 5 < labels.count {
-            let label = UILabel()
-            label.text = labels[index / 5]
-            label.font = .systemFont(ofSize: 16, weight: .semibold)
-            label.textColor = UIColor.hex("909090")
+        if index % 5 == 0 {
+            let label = labelArray[index / 5]
             hStack.addArrangedSubview(label)
         }
         

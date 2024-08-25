@@ -41,7 +41,7 @@ class RatingViewController: UIViewController {
     lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = "마신 술은\n얼마나 만족스러웠나요?"
-        label.font = .systemFont(ofSize: 20, weight: .semibold)
+        label.font = .pretendard(size: 20, weight: .semibold)
         label.numberOfLines = 2
         label.textColor = .white
         label.textAlignment = .left
@@ -63,8 +63,13 @@ class RatingViewController: UIViewController {
     // Ruler View
     lazy var rulerView: RulerView = {
         let ruler = RulerView()
-        ruler.backgroundColor = .clear
-        ruler.labels = ["awesome", "very good!", "good", "Not bad", "umm.."]
+        ruler.labelInformations = RulerView.LabelInformation(
+            ("awesome", UIImage(resource: .flushedFace)),
+            ("very good!", UIImage(resource: .faceIcon)),
+            ("good", UIImage(resource: .faceIcon)),
+            ("Not bad", UIImage(resource: .faceIcon)),
+            ("umm..", UIImage(resource: .faceIcon))
+        )
         return ruler
     }()
     
