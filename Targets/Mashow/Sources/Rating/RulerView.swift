@@ -1,7 +1,18 @@
+//
+//  RulerView.swift
+//  Mashow
+//
+//  Created by Kai Lee on 8/21/24.
+//  Copyright © 2024 com.alcoholers. All rights reserved.
+//
+
 import UIKit
 import SnapKit
 
 class RulerView: UIView {
+    
+    // MARK: - Properties
+    
     var labels: [String] = [] // Array to store labels for highlighted ticks
     var labelImages: [UIImage] = [
         UIImage(systemName: "star.fill")!,
@@ -11,14 +22,47 @@ class RulerView: UIView {
         UIImage(systemName: "star.fill")!
     ] // Array to store label images for highlighted ticks
     
+    private let tickCount = 20
+    private let tickHeight: CGFloat = 8.0 // Height of the tick marks
     private var imageViewArray: [UIImageView] = [] // Store references to image views
     
+    // MARK: - Layout
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let tickSpacing: CGFloat = bounds.height / 20 // Spacing between ticks
+        
+        // Clear any previous subviews and reset imageViewArray
+        self.subviews.forEach { $0.removeFromSuperview() }
+        
+        createImageViewsIfNeeded()
+        
+        // Create and position hStacks for each tick and label pair
+        for i in 0...tickCount {
+            let yPosition = CGFloat(i) * tickSpacing
+            let hStack = createHStack(for: i)
+            
+            // Add the hStack to the view
+            addSubview(hStack)
+            
+            // Position the hStack using SnapKit
+            hStack.snp.makeConstraints { make in
+                make.trailing.equalToSuperview()
+                make.centerY.equalToSuperview().offset(yPosition - bounds.height / 2)
+            }
+        }
+    }
+}
+
+extension RulerView {
+    // Enum to represent different levels
     enum Level {
         case one, two, three, four, five
     }
     
+    // MARK: - Public Methods
+    
     func triggerEvent(at level: Level) {
-        // Adjust the UI based on the selected level
         switch level {
         case .one:
             highlightLevel(at: 0)
@@ -32,101 +76,75 @@ class RulerView: UIView {
             highlightLevel(at: 4)
         }
     }
-    
-    private func createImageViewsIfNeeded() {
-        if imageViewArray.isEmpty, labelImages.count >= 5 {
-            for i in 0...4 {
-                let imageView = UIImageView()
-                imageView.image = labelImages[i]
-                imageView.contentMode = .scaleAspectFit
-                imageView.isHidden = true
-                imageViewArray.append(imageView)
-            }
-            
-            print("Added image views")
+}
+
+
+// MARK: - Private Methods
+
+private extension RulerView {
+    // Create image views if they haven't been created yet
+    func createImageViewsIfNeeded() {
+        guard imageViewArray.isEmpty else { return }
+        
+        imageViewArray = labelImages.map { image in
+            let imageView = UIImageView()
+            imageView.image = image
+            imageView.contentMode = .scaleAspectFit
+            imageView.isHidden = true // Initially hidden
+            return imageView
         }
     }
     
-    private func highlightLevel(at index: Int) {
+    // Highlight the image view at the specified index
+    func highlightLevel(at index: Int) {
         createImageViewsIfNeeded()
         
         // Hide all images
         imageViewArray.forEach { $0.isHidden = true }
         
         // Unhide the image at the selected level
-        imageViewArray[index].isHidden = false
-    }
+        if index < imageViewArray.count {
+            imageViewArray[index].isHidden = false
+        }
+    } 
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    func createHStack(for index: Int) -> UIStackView {
+        let hStack = UIStackView()
+        hStack.axis = .horizontal
+        hStack.alignment = .center
+        hStack.spacing = 8 // Spacing between image, label, and tick
         
-        // Clear any previous subviews and reset imageViewArray
-        self.subviews.forEach { $0.removeFromSuperview() }
-        
-        // Calculate the spacing and setup the ruler
-        let tickHeight: CGFloat = 8.0  // Height of the tick marks
-        let tickSpacing: CGFloat = bounds.height / 20  // Spacing between ticks
-        
-        createImageViewsIfNeeded()
-
-        // Adjusted loop to ensure the bottommost tick is included
-        for i in 0...20 {
-            let yPosition = CGFloat(i) * tickSpacing
+        // Add the image view if this is a highlighted tick
+        if index % 5 == 0, index / 5 < labelImages.count {
+            let imageView = imageViewArray[index / 5]
+            hStack.addArrangedSubview(imageView)
             
-            // Create an HStack for each tick and label pair
-            let hStack = UIStackView()
-            hStack.axis = .horizontal
-            hStack.alignment = .center
-            hStack.spacing = 8  // Spacing between image, label, and tick
-            
-            
-            if i % 5 == 0, i / 5 < labelImages.count {
-                // Add image, label, and tick for every 5th tick
-                let imageView = imageViewArray[i / 5]
-                hStack.addArrangedSubview(imageView)
-                
-                // Set constraints for the imageView
-                imageView.snp.makeConstraints { make in
-                    make.width.height.equalTo(24) // Adjust size as needed
-                }
-            }
-
-            if i % 5 == 0, i / 5 < labels.count {
-                let label = UILabel()
-                label.text = labels[i / 5]
-                label.font = .systemFont(ofSize: 16, weight: .semibold)
-                label.textColor = UIColor.hex("909090")
-                hStack.addArrangedSubview(label)
-            }
-            
-            // Create the tick view
-            let tickView = UIView()
-            tickView.backgroundColor = (i % 5 == 0) ? UIColor.lightGray : UIColor.lightGray.withAlphaComponent(0.5)
-            hStack.addArrangedSubview(tickView)
-            
-            if i % 5 == 0 {
-                // Highlighted tick
-                tickView.snp.makeConstraints { make in
-                    make.width.equalTo(tickHeight)
-                }
-            } else {
-                // Regular tick
-                tickView.snp.makeConstraints { make in
-                    make.width.equalTo(tickHeight / 2)
-                }
-            }
-            tickView.snp.makeConstraints { make in
-                make.height.equalTo(1)  // Set tick height (thickness)
-            }
-            
-            // Add the hStack to the view
-            addSubview(hStack)
-            
-            // Position the hStack using SnapKit
-            hStack.snp.makeConstraints { make in
-                make.trailing.equalToSuperview()
-                make.centerY.equalToSuperview().offset(yPosition - bounds.height / 2)
+            // Set constraints for the imageView
+            imageView.snp.makeConstraints { make in
+                make.width.height.equalTo(24) // Adjust size as needed
             }
         }
+        
+        // Add the label if this is a highlighted tick
+        if index % 5 == 0, index / 5 < labels.count {
+            let label = UILabel()
+            label.text = labels[index / 5]
+            label.font = .systemFont(ofSize: 16, weight: .semibold)
+            label.textColor = UIColor.hex("909090")
+            hStack.addArrangedSubview(label)
+        }
+        
+        // Create and add the tick view
+        let tickView = UIView()
+        tickView.backgroundColor = (index % 5 == 0) ? UIColor.lightGray : UIColor.lightGray.withAlphaComponent(0.5)
+        hStack.addArrangedSubview(tickView)
+        
+        // Set constraints for the tick view
+        tickView.snp.makeConstraints { make in
+            make.width.equalTo(index % 5 == 0 ? tickHeight : tickHeight / 2)
+            make.height.equalTo(1) // Set tick height (thickness)
+        }
+        
+        return hStack
     }
 }
