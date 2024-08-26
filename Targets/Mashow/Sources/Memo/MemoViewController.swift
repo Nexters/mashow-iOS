@@ -10,6 +10,7 @@ import UIKit
 import SnapKit
 
 class MemoViewController: UIViewController {
+    var viewModel: MemoViewModel = MemoViewModel()
     
     // MARK: - UI Elements
     
@@ -65,6 +66,7 @@ class MemoViewController: UIViewController {
     lazy var saveButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("저장하기", for: .normal)
+        button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
         return button
     }()
     
@@ -91,6 +93,8 @@ class MemoViewController: UIViewController {
         view.addSubview(backgroundImageView)
         view.addSubview(buttonStackView)
         view.addSubview(memoTextView)
+        
+        setSaveButton(enabled: false)
     }
     
     private func setupConstraints() {
@@ -146,6 +150,8 @@ extension MemoViewController: UITextViewDelegate {
         }
         
         setLineHeight(for: textView, lineHeight: 8)
+        
+        setSaveButton(enabled: validateMemo(text: textView.text))
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -157,8 +163,38 @@ extension MemoViewController: UITextViewDelegate {
             placeholderLabel.isHidden = false
         }
     }
+}
+
+// MARK: - Actions
+
+private extension MemoViewController {
+    @objc func didTapPreviousButton() {
+    }
     
-    private func setLineHeight(for textView: UITextView, lineHeight: CGFloat) {
+    @objc func didTapSaveButton() {
+        guard let text = memoTextView.text, validateMemo(text: text) else { 
+            return
+        }
+        
+        viewModel.state.memo.send(text)
+    }
+}
+
+private extension MemoViewController {
+    func validateMemo(text: String?) -> Bool {
+        guard let text, !text.isEmpty, text.count <= 100 else {
+            return false
+        }
+        
+        return true
+    }
+    
+    func setSaveButton(enabled: Bool) {
+        saveButton.alpha = enabled ? 1 : 0.5
+        saveButton.isEnabled = enabled
+    }
+    
+    func setLineHeight(for textView: UITextView, lineHeight: CGFloat) {
         guard let font = textView.font else { return }
         
         let paragraphStyle = NSMutableParagraphStyle()
