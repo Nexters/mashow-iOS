@@ -80,11 +80,22 @@ class MemoViewController: UIViewController {
     }()
     
     // MARK: - Lifecycle
-    
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        registerForKeyboardNotifications()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // Dismiss keyboard by swipe
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
     }
     
     // MARK: - Setup Methods
@@ -177,6 +188,46 @@ private extension MemoViewController {
         }
         
         viewModel.state.memo.send(text)
+    }
+}
+
+// MARK: - Keyboard handling
+private extension MemoViewController {
+    func registerForKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+        if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            let keyboardHeight = keyboardFrame.cgRectValue.height
+            
+            // Calculate the difference between the buttonStackView's bottom and the keyboard's top
+            let bottomSpace = view.frame.height - (buttonStackView.frame.origin.y + buttonStackView.frame.height)
+            let adjustmentHeight = keyboardHeight - bottomSpace + 20 // Adding a little padding
+            
+            if adjustmentHeight > 0 {
+                UIView.animate(withDuration: 0.3) {
+                    self.memoTextView.transform = CGAffineTransform(translationX: 0, y: -adjustmentHeight / 2)
+                }
+            }
+        }
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+        UIView.animate(withDuration: 0.3) {
+            self.memoTextView.transform = .identity // Reset the transform to its original position
+        }
     }
 }
 
