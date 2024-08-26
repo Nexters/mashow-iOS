@@ -126,11 +126,23 @@ extension MemoViewController: UITextViewDelegate {
         // Show or hide the placeholder label
         placeholderLabel.isHidden = !textView.text.isEmpty
         
+        // Determine the maximum height
+        let maxHeight = 350.0
+        
         // Adjust the text view's height dynamically
         let size = CGSize(width: textView.frame.width, height: .infinity)
         let estimatedSize = textView.sizeThatFits(size)
-        textView.snp.updateConstraints { make in
-            make.height.greaterThanOrEqualTo(estimatedSize.height)
+        
+        if estimatedSize.height <= maxHeight {
+            textView.isScrollEnabled = false
+            textView.snp.updateConstraints { make in
+                make.height.greaterThanOrEqualTo(estimatedSize.height)
+            }
+        } else {
+            textView.isScrollEnabled = true
+            textView.snp.updateConstraints { make in
+                make.height.greaterThanOrEqualTo(maxHeight)
+            }
         }
         
         setLineHeight(for: textView, lineHeight: 8)
