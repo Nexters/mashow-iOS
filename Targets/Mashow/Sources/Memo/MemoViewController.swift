@@ -80,7 +80,6 @@ class MemoViewController: UIViewController {
     }()
     
     // MARK: - Lifecycle
-    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
