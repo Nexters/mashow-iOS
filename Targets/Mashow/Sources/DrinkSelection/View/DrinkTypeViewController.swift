@@ -124,11 +124,10 @@ private extension DrinkTypeViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
                 guard let self = self else { return }
-                if addedTypes.contains(self.drinkType) {
-                    UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve) {
-                        self.addDrinkTypeButton.isHidden = true
-                        self.addedDrinkTypeButton.isHidden = false
-                    }
+                let isTypeAdded = addedTypes.contains(self.drinkType)
+                UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve) {
+                    self.addDrinkTypeButton.isHidden = isTypeAdded
+                    self.addedDrinkTypeButton.isHidden = !isTypeAdded
                 }
             }
             .store(in: &cancellables)
