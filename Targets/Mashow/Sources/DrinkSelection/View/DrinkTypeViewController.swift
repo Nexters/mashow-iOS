@@ -129,6 +129,10 @@ private extension DrinkTypeViewController {
                     self.addDrinkTypeButton.isHidden = isTypeAdded
                     self.addedDrinkTypeButton.isHidden = !isTypeAdded
                 }
+                if !isTypeAdded, addedTypes.count < 3 {
+                    self.addDrinkTypeButton.isEnabled = true
+                    self.addDrinkTypeButton.layer.opacity = 1.0
+                }
             }
             .store(in: &cancellables)
     }
