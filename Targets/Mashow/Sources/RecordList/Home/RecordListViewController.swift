@@ -114,14 +114,53 @@ class RecordListViewController: UIViewController {
 
         // Create a menu with options
         let menuItems = [
-            UIAction(title: "Option 1", image: nil, handler: { _ in
-                print("Option 1 selected")
+            UIAction(title: "소주", image: UIImage(resource: .sojuTypo), handler: { [weak self] _ in
+                guard let self else { return }
+                self.records = [
+                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
+                    Record(id: UUID(), date: "2024.07.22", type: "진로", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.24", type: "참이슬", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.31", type: "참이슬", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.10", type: "참이슬", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.30", type: "참이슬", recordType: .record),
+                    Record(id: UUID(), date: "2024.05.30", type: "참이슬", recordType: .record),
+                    Record(id: UUID(), date: "2024.06.30", type: "참이슬", recordType: .record),
+                ]
+                
+                self.applySnapshot()
+                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
             }),
-            UIAction(title: "Option 2", image: nil, handler: { _ in
-                print("Option 2 selected")
+            UIAction(title: "양주", image: nil, handler: { [weak self] _ in
+                guard let self else { return }
+                self.records = [
+                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
+                    Record(id: UUID(), date: "2024.07.22", type: "양주1", recordType: .record),
+                    Record(id: UUID(), date: "2024.04.24", type: "양주2", recordType: .record),
+                    Record(id: UUID(), date: "2024.06.31", type: "양주3", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.10", type: "양주4", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.30", type: "양주5", recordType: .record),
+                    Record(id: UUID(), date: "2023.05.30", type: "양주6", recordType: .record),
+                    Record(id: UUID(), date: "2024.06.30", type: "양주7", recordType: .record),
+                ]
+                
+                self.applySnapshot()
+                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
             }),
-            UIAction(title: "Option 3", image: nil, handler: { _ in
-                print("Option 3 selected")
+            UIAction(title: "칵테일", image: nil, handler: { [weak self] _ in
+                guard let self else { return }
+                self.records = [
+                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
+                    Record(id: UUID(), date: "2024.07.22", type: "칵테일1", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.24", type: "칵테일2", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.31", type: "칵테일3", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.10", type: "칵테일4", recordType: .record),
+                    Record(id: UUID(), date: "2024.07.30", type: "칵테일5", recordType: .record),
+                    Record(id: UUID(), date: "2024.05.30", type: "칵테일6", recordType: .record),
+                    Record(id: UUID(), date: "2024.06.30", type: "칵테일7", recordType: .record),
+                ]
+                
+                self.applySnapshot()
+                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
             })
         ]
         
@@ -189,6 +228,7 @@ extension RecordListViewController {
                                 withReuseIdentifier: SectionHeaderView.reuseIdentifier)
         
         collectionView.delegate = self
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 70, right: 0)
     }
     
     private func setupDataSource() {
@@ -242,9 +282,11 @@ extension RecordListViewController {
     private func applySnapshot() {
         var snapshot = NSDiffableDataSourceSnapshot<Category, Record>()
         
-        let firstSection = Category(year: -1, month: -1)
-        snapshot.appendSections([firstSection])
-        snapshot.appendItems(records, toSection: firstSection)
+        if let firstRecord = records.first, firstRecord.recordType == .overview {
+            let overviewSection = Category(year: -1, month: -1)
+            snapshot.appendSections([overviewSection])
+            snapshot.appendItems([firstRecord], toSection: overviewSection)
+        }
         
         let groupedRecords = groupRecordsByMonth(records: records)
         
