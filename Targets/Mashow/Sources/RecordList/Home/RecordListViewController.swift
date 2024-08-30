@@ -35,6 +35,7 @@ class RecordListViewController: UIViewController {
         applySnapshot()
         setupViews()
         setupConstraints()
+        setupNavigationBar()
     }
     
     // MARK: - Setup Methods
@@ -57,22 +58,14 @@ class RecordListViewController: UIViewController {
         
         recordButton.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(50)
+            make.height.equalTo(60)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
         }
     }
-    
-    private func createButton(title: String, count: Int) -> UIView {
-        let button = UIButton(type: .system)
-        button.setTitle("\(title) \(count)", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-        button.backgroundColor = UIColor.hex("2F2F2F").withAlphaComponent(0.7)
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
-        return button
+    private func setupNavigationBar() {
+        navigationController?.navigationBar.isHidden = false
+        navigationItem.titleView = titleButton
     }
-    
     // MARK: - UI Elements
     
     lazy var backgroundImageView: UIImageView = {
@@ -91,6 +84,52 @@ class RecordListViewController: UIViewController {
         }
         
         return imageView
+    }()
+    
+    lazy var titleButton: UIButton = {
+        // Create a button to serve as the title view
+        let titleButton = UIButton(type: .system)
+
+        var config = UIButton.Configuration.plain()
+        config.title = "소주"
+        config.baseForegroundColor = .white
+        config.image = UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
+
+        // Adjust the spacing between the title and the image
+        config.imagePadding = 6.0
+
+        // Set the button configuration
+        titleButton.configuration = config
+        titleButton.configurationUpdateHandler = { button in
+            button.configuration?.baseForegroundColor = .white
+            button.configuration?.attributedTitle?.font = .pretendard(size: 16, weight: .semibold)
+        }
+
+        // Add an arrow image to the button
+        let arrowImage = UIImage(systemName: "chevron.down",
+                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
+        titleButton.setImage(arrowImage, for: .normal)
+        titleButton.semanticContentAttribute = .forceRightToLeft
+        titleButton.tintColor = .white
+
+        // Create a menu with options
+        let menuItems = [
+            UIAction(title: "Option 1", image: nil, handler: { _ in
+                print("Option 1 selected")
+            }),
+            UIAction(title: "Option 2", image: nil, handler: { _ in
+                print("Option 2 selected")
+            }),
+            UIAction(title: "Option 3", image: nil, handler: { _ in
+                print("Option 3 selected")
+            })
+        ]
+        
+        // Attach the menu to the button
+        titleButton.menu = UIMenu(title: "", children: menuItems)
+        titleButton.showsMenuAsPrimaryAction = true
+        
+        return titleButton
     }()
     
     lazy var recordButton: UIButton = {
