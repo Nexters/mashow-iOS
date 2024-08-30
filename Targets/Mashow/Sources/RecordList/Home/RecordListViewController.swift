@@ -212,11 +212,13 @@ extension RecordListViewController {
     struct Category: Hashable {
         let year: Int
         let month: Int
+        let totalRecordCount: Int
         let stringInfo: String
         
-        init(year: Int, month: Int) {
+        init(year: Int, month: Int, totalRecordCount: Int) {
             self.year = year
             self.month = month
+            self.totalRecordCount = totalRecordCount
             self.stringInfo = "\(year)년 \(month)월"
         }
     }
@@ -293,7 +295,7 @@ extension RecordListViewController {
             }
             
             let section = self.dataSource.snapshot().sectionIdentifiers[indexPath.section]
-            headerView.configure(with: section.stringInfo)
+            headerView.configure(with: section.stringInfo, count: section.totalRecordCount)
             return headerView
         }
     }
@@ -302,7 +304,7 @@ extension RecordListViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Category, Record>()
         
         if let firstRecord = records.first, firstRecord.recordType == .overview {
-            let overviewSection = Category(year: -1, month: -1)
+            let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
             snapshot.appendSections([overviewSection])
             snapshot.appendItems([firstRecord], toSection: overviewSection)
         }
@@ -335,17 +337,24 @@ extension RecordListViewController {
         dateFormatter.dateFormat = "yyyy.MM.dd"
         
         for record in records {
-            guard let date = dateFormatter.date(from: record.date ?? "") else { continue }
-            let year = Calendar.current.component(.year, from: date)
-            let month = Calendar.current.component(.month, from: date)
-            let category = Category(year: year, month: month)
-            
-            // Check if category already exists in groupedRecords
-            if let existingCategory = groupedRecords.keys.first(where: { $0 == category }) {
-                groupedRecords[existingCategory]?.append(record)
-            } else {
-                groupedRecords[category] = [record]
+            guard let dateString = record.date, let date = dateFormatter.date(from: dateString) else {
+                continue
             }
+            
+            let components = Calendar.current.dateComponents([.year, .month], from: date)
+            guard let year = components.year, let month = components.month else { continue }
+            
+            let category = Category(year: year, month: month, totalRecordCount: 0)
+            
+            // Append the record to the appropriate category, creating a new array if necessary
+            groupedRecords[category, default: []].append(record)
+        }
+        
+        // Update the totalRecordCount for each category
+        for (category, records) in groupedRecords {
+            let updatedCategory = Category(year: category.year, month: category.month, totalRecordCount: records.count)
+            groupedRecords[updatedCategory] = records
+            groupedRecords.removeValue(forKey: category)
         }
         
         return groupedRecords
