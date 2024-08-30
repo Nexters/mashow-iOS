@@ -8,6 +8,6 @@
 
 import Foundation
 
-enum DrinkType: CaseIterable {
+enum DrinkType: String, CaseIterable { // FIXME: STring
     case soju, liquor, makgeoli, sake, beer, wine, cocktail, highball
 }

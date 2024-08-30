@@ -8,6 +8,7 @@
 
 import UIKit
 import SnapKit
+import Combine
 
 class RecordListViewController: UIViewController {
     typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
@@ -15,16 +16,16 @@ class RecordListViewController: UIViewController {
     // MARK: - Properties
     private var collectionView: UICollectionView!
     private var dataSource: DataSourceType!
-    private var records: [Record] = [
-        Record(id: UUID(), date: nil, type: nil, recordType: .overview),
-        Record(id: UUID(), date: "2024.07.22", type: "진로", recordType: .record),
-        Record(id: UUID(), date: "2024.07.24", type: "참이슬", recordType: .record),
-        Record(id: UUID(), date: "2024.07.31", type: "참이슬", recordType: .record),
-        Record(id: UUID(), date: "2024.07.10", type: "참이슬", recordType: .record),
-        Record(id: UUID(), date: "2024.07.30", type: "참이슬", recordType: .record),
-        Record(id: UUID(), date: "2024.05.30", type: "참이슬", recordType: .record),
-        Record(id: UUID(), date: "2024.06.30", type: "참이슬", recordType: .record),
-    ]
+    private var viewModel: RecordListViewModel
+    
+    init(viewModel: RecordListViewModel = .init()) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Lifecycle
     
@@ -32,10 +33,54 @@ class RecordListViewController: UIViewController {
         super.viewDidLoad()
         setupCollectionView()
         setupDataSource()
-        applySnapshot()
+        applySnapshot(records: [])
         setupViews()
         setupConstraints()
         setupNavigationBar()
+        
+        bind()
+        viewModel.updateCurrentDrinkType(with: .soju)
+        viewModel.updateRecords(with: .soju)
+    }
+    
+    // MARK: - Bind
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    private func bind() {
+        viewModel.state.isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                guard let self else { return }
+                if isLoading {
+                    self.loadingView.isHidden = false
+                } else {
+                    self.loadingView.isHidden = true
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.state.currentDrinkType
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] drinkType in
+                guard let self = self else { return }
+                self.titleButton.setTitle(drinkType.rawValue, for: .normal)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.state.records
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] records in
+                guard let self = self else { return }
+                self.applySnapshot(records: records)
+                
+                if !records.isEmpty {
+                    self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), 
+                                                     at: .top,
+                                                     animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Setup Methods
@@ -44,6 +89,7 @@ class RecordListViewController: UIViewController {
         view.addSubview(backgroundImageView)
         view.addSubview(collectionView)
         view.addSubview(recordButton)
+        view.addSubview(loadingView)
     }
     
     private func setupConstraints() {
@@ -52,8 +98,8 @@ class RecordListViewController: UIViewController {
         }
         
         collectionView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.bottom.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide)
         }
         
         recordButton.snp.makeConstraints { make in
@@ -61,11 +107,18 @@ class RecordListViewController: UIViewController {
             make.height.equalTo(60)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
         }
+        
+        loadingView.snp.makeConstraints { make in
+            make.width.height.equalTo(35)
+            make.center.equalToSuperview()
+        }
     }
+    
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
         navigationItem.titleView = titleButton
     }
+    
     // MARK: - UI Elements
     
     lazy var backgroundImageView: UIImageView = {
@@ -87,7 +140,6 @@ class RecordListViewController: UIViewController {
     }()
     
     lazy var titleButton: UIButton = {
-        // Create a button to serve as the title view
         let titleButton = UIButton(type: .system)
 
         var config = UIButton.Configuration.plain()
@@ -113,61 +165,21 @@ class RecordListViewController: UIViewController {
         titleButton.tintColor = .white
 
         // Create a menu with options
-        let menuItems = [
-            UIAction(title: "소주", image: UIImage(resource: .sojuTypo), handler: { [weak self] _ in
+        let menuItems = DrinkType.allCases.map { type in
+            UIAction(title: type.rawValue, image: UIImage(resource: .sojuTypo), handler: { [weak self] _ in
                 guard let self else { return }
-                self.records = [
-                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
-                    Record(id: UUID(), date: "2024.07.22", type: "진로", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.24", type: "참이슬", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.31", type: "참이슬", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.10", type: "참이슬", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.30", type: "참이슬", recordType: .record),
-                    Record(id: UUID(), date: "2024.05.30", type: "참이슬", recordType: .record),
-                    Record(id: UUID(), date: "2024.06.30", type: "참이슬", recordType: .record),
-                ]
-                
-                self.applySnapshot()
-                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
-            }),
-            UIAction(title: "양주", image: nil, handler: { [weak self] _ in
-                guard let self else { return }
-                self.records = [
-                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
-                    Record(id: UUID(), date: "2024.07.22", type: "양주1", recordType: .record),
-                    Record(id: UUID(), date: "2024.04.24", type: "양주2", recordType: .record),
-                    Record(id: UUID(), date: "2024.06.31", type: "양주3", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.10", type: "양주4", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.30", type: "양주5", recordType: .record),
-                    Record(id: UUID(), date: "2023.05.30", type: "양주6", recordType: .record),
-                    Record(id: UUID(), date: "2024.06.30", type: "양주7", recordType: .record),
-                ]
-                
-                self.applySnapshot()
-                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
-            }),
-            UIAction(title: "칵테일", image: nil, handler: { [weak self] _ in
-                guard let self else { return }
-                self.records = [
-                    Record(id: UUID(), date: nil, type: nil, recordType: .overview),
-                    Record(id: UUID(), date: "2024.07.22", type: "칵테일1", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.24", type: "칵테일2", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.31", type: "칵테일3", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.10", type: "칵테일4", recordType: .record),
-                    Record(id: UUID(), date: "2024.07.30", type: "칵테일5", recordType: .record),
-                    Record(id: UUID(), date: "2024.05.30", type: "칵테일6", recordType: .record),
-                    Record(id: UUID(), date: "2024.06.30", type: "칵테일7", recordType: .record),
-                ]
-                
-                self.applySnapshot()
-                self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
+                self.viewModel.updateRecords(with: type)
+                self.viewModel.updateCurrentDrinkType(with: type)
             })
-        ]
+        }
         
         // Attach the menu to the button
         titleButton.menu = UIMenu(title: "", children: menuItems)
         titleButton.showsMenuAsPrimaryAction = true
         
+        titleButton.snp.makeConstraints { make in
+            make.width.equalTo(150)
+        }
         return titleButton
     }()
     
@@ -175,6 +187,13 @@ class RecordListViewController: UIViewController {
         let button = BlurredButton()
         button.setTitle("기록하기", for: .normal)
         return button
+    }()
+    
+    lazy var loadingView: UIActivityIndicatorView = {
+        let loadingView = UIActivityIndicatorView()
+        loadingView.color = .white
+        loadingView.startAnimating()
+        return loadingView
     }()
 }
 
@@ -279,7 +298,7 @@ extension RecordListViewController {
         }
     }
     
-    private func applySnapshot() {
+    private func applySnapshot(records: [Record]) {
         var snapshot = NSDiffableDataSourceSnapshot<Category, Record>()
         
         if let firstRecord = records.first, firstRecord.recordType == .overview {
