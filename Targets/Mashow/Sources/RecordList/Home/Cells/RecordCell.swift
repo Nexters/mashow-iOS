@@ -16,7 +16,7 @@ class RecordCell: UICollectionViewCell {
     // Date label that remains at the top of the cell
     private lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .pretendard(size: 24, weight: .regular)
+        label.font = .roadRage(size: 24)
         label.textColor = .hex("00FF00")
         return label
     }()
@@ -69,8 +69,6 @@ class RecordCell: UICollectionViewCell {
         // Clear the stack view before adding new content
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         var spacer: UIView { UIView() }
-        
-        stackView.addArrangedSubview(spacer)
         
         for record in records {
             // Create and configure type button
