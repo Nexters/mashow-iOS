@@ -27,3 +27,14 @@ extension UIFont {
         return UIFont(name: "BlankSansOTF\(weight.rawValue)", size: fontSize) ?? .systemFont(ofSize: fontSize, weight: .bold)
     }
 }
+
+extension UIFont {
+    enum RoadRage: String {
+        case medium
+    }
+    
+    /// It only has 1 weight
+    static func roadRage(size fontSize: CGFloat) -> UIFont {
+        return UIFont(name: "RoadRage", size: fontSize) ?? .systemFont(ofSize: fontSize, weight: .bold)
+    }
+}
