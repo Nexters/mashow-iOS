@@ -13,21 +13,22 @@ class RecordCell: UICollectionViewCell {
     
     static let reuseIdentifier = "RecordCell"
     
-    lazy var dateLabel: UILabel = {
+    // Date label that remains at the top of the cell
+    private lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .pretendard(size: 24, weight: .regular)
         label.textColor = .hex("00FF00")
         return label
     }()
     
-    lazy var typeButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("타입", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor.hex("2F2F2F").withAlphaComponent(0.7)
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
-        return button
+    // Stack view that holds the type buttons
+    private lazy var stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing // Ensures elements keep their intrinsic height
+        return stackView
     }()
     
     override init(frame: CGRect) {
@@ -43,19 +44,47 @@ class RecordCell: UICollectionViewCell {
         backgroundColor = UIColor.hex("2F2F2F").withAlphaComponent(0.7)
         layer.cornerRadius = 10
         
-        let stackView = UIStackView(arrangedSubviews: [dateLabel, typeButton])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        
+        addSubview(dateLabel)
         addSubview(stackView)
+        
+        dateLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(27)
+            make.centerX.equalToSuperview()
+        }
+        
         stackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.top.equalTo(dateLabel.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(10)
+            make.trailing.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-10)
         }
     }
     
-    func configure(with record: RecordListViewController.Record) {
-        dateLabel.text = record.date
-        typeButton.setTitle(record.type, for: .normal)
+    func configure(with records: [RecordListViewController.Record]) {
+        // Set the date for the first record, assuming the date is the same for all records in the cell
+        if let firstRecord = records.first {
+            dateLabel.text = firstRecord.date
+        }
+        
+        // Clear the stack view before adding new content
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        var spacer: UIView { UIView() }
+        
+        stackView.addArrangedSubview(spacer)
+        
+        for record in records {
+            // Create and configure type button
+            let typeButton = CapsuleShapeButton(title: record.type ?? "")
+            typeButton.isUserInteractionEnabled = false
+            
+            // Ensure the button keeps its intrinsic height
+            typeButton.setContentHuggingPriority(.defaultHigh, for: .vertical)
+            typeButton.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+            
+            // Add button to the stack view
+            stackView.addArrangedSubview(typeButton)
+        }
+        
+        stackView.addArrangedSubview(spacer)
     }
 }

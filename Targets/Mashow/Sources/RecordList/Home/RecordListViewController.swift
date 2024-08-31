@@ -279,7 +279,7 @@ extension RecordListViewController {
                 else {
                     return nil
                 }
-                cell.configure(with: record)
+                cell.configure(with: [record])
                 return cell
             }
         }
@@ -350,6 +350,7 @@ extension RecordListViewController {
             groupedRecords[category, default: []].append(record)
         }
         
+        // FIXME: 나중에 서버에서 개수를 직접 받아오게 될지도
         // Update the totalRecordCount for each category
         for (category, records) in groupedRecords {
             let updatedCategory = Category(year: category.year, month: category.month, totalRecordCount: records.count)
