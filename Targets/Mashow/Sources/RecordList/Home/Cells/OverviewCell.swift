@@ -12,43 +12,65 @@ import SnapKit
 class OverviewCell: UICollectionViewCell {
     static let reuseIdentifier = "OverviewCell"
     
+    var horizontalPadding: CGFloat = 20
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "MYUNG님의 이번달"
-        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.font = .pretendard(size: 18, weight: .medium)
         label.textColor = .white
         return label
     }()
     
     private let concentrationLabel: UILabel = {
         let label = UILabel()
-        label.text = "혈중 소주 농도"
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.textColor = .hex("00FF00")
+        label.font = .pretendard(size: 28, weight: .bold)
+        label.textColor = .white
         return label
     }()
     
     private let percentageLabel: UILabel = {
         let label = UILabel()
-        label.text = "41%"
-        label.font = .systemFont(ofSize: 30, weight: .bold)
+        label.font = .pretendard(size: 28, weight: .bold)
         label.textColor = .white
         return label
     }()
     
-    private lazy var buttonStack: UIStackView = {
-        let stackView = UIStackView()
+    // Stack view that holds the concentration and percentage labels
+    private lazy var concentrationPercentageStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [concentrationLabel, percentageLabel])
         stackView.axis = .horizontal
         stackView.spacing = 10
-        stackView.distribution = .fillEqually
+        stackView.alignment = .fill
+        stackView.distribution = .fill
         return stackView
     }()
     
-    private lazy var stackView: UIStackView = {
+    // Stack view that holds the buttons
+    private lazy var buttonStack: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 6
+        stackView.distribution = .fillProportionally
+        return stackView
+    }()
+    
+    // Scroll view that wraps the button stack view
+    private lazy var buttonScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.contentInset = UIEdgeInsets(top: 0, left: horizontalPadding, bottom: 0, right: horizontalPadding)
+        scrollView.addSubview(buttonStack)
+        return scrollView
+    }()
+    
+    // Main stack view that arranges the title, labels, and the scrollable button stack
+    private lazy var labelVstackView: UIStackView = {
+        let spacer = UIView()
         let stackView = UIStackView(arrangedSubviews: [
-            titleLabel, concentrationLabel, percentageLabel, buttonStack
+            titleLabel, concentrationPercentageStack, spacer
         ])
         stackView.axis = .vertical
+        stackView.distribution = .fillProportionally
         stackView.spacing = 10
         return stackView
     }()
@@ -63,13 +85,28 @@ class OverviewCell: UICollectionViewCell {
     }
     
     private func setupView() {
-        contentView.addSubview(stackView)
-        stackView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(16)
+        contentView.addSubview(labelVstackView)
+        labelVstackView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(horizontalPadding)
+        }
+        
+        contentView.addSubview(buttonScrollView)
+        buttonScrollView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+        buttonScrollView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        buttonScrollView.snp.makeConstraints { make in
+            make.top.equalTo(labelVstackView.snp.bottom).offset(16)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+        
+        // Set constraints for the button stack view within the scroll view
+        buttonStack.snp.makeConstraints { make in
+            make.edges.equalToSuperview() // superView == scrollView
+            make.height.equalToSuperview()
         }
     }
     
-    // This is the configure method that allows injecting data from outside
+    // Configure method to set the data for the cell
     func configure(title: String, concentration: String, percentage: String, buttons: [(title: String, count: Int)]) {
         titleLabel.text = title
         concentrationLabel.text = concentration
@@ -83,16 +120,15 @@ class OverviewCell: UICollectionViewCell {
             let button = createButton(title: buttonInfo.title, count: buttonInfo.count)
             buttonStack.addArrangedSubview(button)
         }
+        
+        // Update content size of the scroll view after adding buttons
+        buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2, height: buttonScrollView.frame.height)
     }
     
     private func createButton(title: String, count: Int) -> UIButton {
-        let button = UIButton(type: .system)
-        button.setTitle("\(title) \(count)", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-        button.backgroundColor = UIColor.hex("2F2F2F").withAlphaComponent(0.7)
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
+        let button = CapsuleShapeButton(title: "\(title) \(count)")
+        button.padding = .init(top: 12, leading: 20, bottom: 12, trailing: 20)
+        button.isUserInteractionEnabled = false
         return button
     }
 }

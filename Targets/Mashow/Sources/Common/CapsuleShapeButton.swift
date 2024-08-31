@@ -13,13 +13,16 @@ import UIKit
 
 class CapsuleShapeButton: UIButton {
     var customTitle: String! { didSet { configure() } }
+    var padding: NSDirectionalEdgeInsets! { didSet { configure() } }
     
     // Initializer for easy setup
     init(
-        title: String
+        title: String,
+        padding: NSDirectionalEdgeInsets = .init(top: 12, leading: 30, bottom: 12, trailing: 30)
     ) {
         super.init(frame: .zero)
         setTitle(title, for: .normal)
+        self.padding = padding
         setupButton()
     }
     
@@ -42,7 +45,7 @@ class CapsuleShapeButton: UIButton {
         }
         
         config.cornerStyle = .capsule
-        config.contentInsets = .init(top: 12, leading: 30, bottom: 12, trailing: 30)
+        config.contentInsets = padding
         config.baseBackgroundColor = .hex("FCFCFC").withAlphaComponent(0.2)
         config.titleAlignment = .center
         
