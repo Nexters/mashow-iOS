@@ -249,7 +249,7 @@ extension RecordListViewController {
                                 withReuseIdentifier: SectionHeaderView.reuseIdentifier)
         
         collectionView.delegate = self
-        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 70, right: 0)
+        collectionView.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 100, right: 0)
     }
     
     private func setupDataSource() {
@@ -267,7 +267,7 @@ extension RecordListViewController {
                     title: "MYUNG님의 이번달",
                     concentration: "혈중 소주 농도",
                     percentage: "41%",
-                    buttons: [("처음처럼", 4), ("참이슬", 2), ("진로", 1)]
+                    buttons: [("처음처럼", 4), ("참이슬", 2), ("진로", 1), ("진로", 1), ("진로", 1), ("진로", 1)]
                 )
                 return headerCell
                 
@@ -376,19 +376,20 @@ extension RecordListViewController {
                 item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
                 groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .estimated(230))
+                                                   heightDimension: .estimated(140))
                 group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
                 
                 section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .none
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 35, trailing: 0)
             } else {
                 // Layout for regular records
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5),
-                                                  heightDimension: .fractionalHeight(0.9))
+                                                  heightDimension: .fractionalHeight(1.0))
                 item = NSCollectionLayoutItem(layoutSize: itemSize)
                 item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 11)
                 
-                groupSize = NSCollectionLayoutSize(widthDimension: .absolute(360),
+                groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                    heightDimension: .absolute(210))
                 group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
@@ -402,10 +403,8 @@ extension RecordListViewController {
                                                                          elementKind: UICollectionView.elementKindSectionHeader,
                                                                          alignment: .top)
                 section.boundarySupplementaryItems = [header]
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20)
             }
-            
-            // Apply consistent content insets for all sections
-            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20)
             
             return section
         }
