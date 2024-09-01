@@ -41,10 +41,10 @@ class RecordDetailViewController: UIViewController {
     
     private let commentaryLabel: UILabel = {
         let label = UILabel()
-        label.font = .pretendard(size: 16, weight: .medium)
+        label.font = .pretendard(size: 18, weight: .medium)
         label.textColor = .white.withAlphaComponent(0.8)
         label.numberOfLines = 0
-        label.text = "오늘은 알중단 사람들과 맛있는 술을 마셨당 좋사좋시~ 다음에도 같이 술 마시고 싶다!!"
+        label.text = "오늘은 알중단 사람들과 맛있는 술을 마셨당. 좋사좋시~ 다음에도 같이 술 마시고 싶다!!"
         return label
     }()
     
@@ -61,12 +61,36 @@ class RecordDetailViewController: UIViewController {
     private func setupView() {
         view.addSubview(backgroundImageView)
         view.addSubview(cardView)
-        view.addSubview(descriptionWrapperView)
+        view.addSubview(descriptionWrapperContainerView)
     }
+    
+    private lazy var descriptionWrapperContainerView: UIView = {
+        let containerView = UIView()
+        containerView.layer.cornerRadius = 12
+        containerView.clipsToBounds = true
+        
+        // Add blur effect
+        let blurEffect = UIBlurEffect(style: .systemMaterialDark)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        containerView.addSubview(blurView)
+        blurView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        // Add stack view to the container
+        blurView.contentView.addSubview(descriptionWrapperView)
+        descriptionWrapperView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(28.5) // Content insets
+            make.top.equalToSuperview().inset(40)
+        }
+        
+        return containerView
+    }()
     
     private lazy var descriptionWrapperView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
             commentaryLabel,
+            DividerView(color: .white.withAlphaComponent(0.1)),
             createDetailHStack(category: "주종", detail: "소주_진로 막걸리_복순도가 하이볼_레몬 하이볼"),
             createRatingHStack(category: "평점", rating: 5),
             createDetailHStack(category: "먹은 음식", detail: "오징어 순대 해물 파전 방어회")
@@ -76,7 +100,6 @@ class RecordDetailViewController: UIViewController {
         stackView.spacing = 20
         stackView.alignment = .fill
         stackView.distribution = .fill
-        stackView.backgroundColor = .clear
         return stackView
     }()
     
@@ -88,14 +111,13 @@ class RecordDetailViewController: UIViewController {
         cardView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.centerX.equalToSuperview()
-            make.width.equalToSuperview().multipliedBy(0.85)
-            make.height.equalTo(cardView.snp.width).multipliedBy(0.75)
+            make.height.equalTo(400)
         }
         
-        descriptionWrapperView.snp.makeConstraints { make in
-            make.top.equalTo(cardView.snp.bottom).offset(20)
-            make.centerX.equalToSuperview()
-            make.width.equalToSuperview().multipliedBy(0.85)
+        descriptionWrapperContainerView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(cardView.snp.bottom).offset(25.5)
+            make.bottom.equalToSuperview()
         }
     }
 }
