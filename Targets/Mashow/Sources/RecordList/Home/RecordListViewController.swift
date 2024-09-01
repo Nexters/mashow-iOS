@@ -155,7 +155,7 @@ class RecordListViewController: UIViewController {
         let titleButton = UIButton(type: .system)
 
         var config = UIButton.Configuration.plain()
-        config.title = "소주"
+        config.title = ""
         config.baseForegroundColor = .white
         config.image = UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
 
@@ -178,11 +178,11 @@ class RecordListViewController: UIViewController {
 
         // Create a menu with options
         let menuItems = DrinkType.allCases.map { type in
-            UIAction(title: type.rawValue, image: UIImage(resource: .sojuTypo), handler: { [weak self] _ in
+            UIAction(title: type.rawValue) { [weak self] _ in
                 guard let self else { return }
                 self.viewModel.updateRecords(with: type)
                 self.viewModel.updateCurrentDrinkType(with: type)
-            })
+            }
         }
         
         // Attach the menu to the button
