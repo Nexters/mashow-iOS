@@ -106,7 +106,17 @@ class OverviewCell: UICollectionViewCell {
         }
     }
     
-    // Configure method to set the data for the cell
+    private func createButton(title: String, count: Int) -> UIButton {
+        let button = CapsuleShapeButton(title: "\(title) \(count)")
+        button.padding = .init(top: 12, leading: 20, bottom: 12, trailing: 20)
+        button.isUserInteractionEnabled = false
+        return button
+    }
+}
+
+// MARK: - Non private methods
+
+extension OverviewCell {
     func configure(title: String, concentration: String, percentage: String, buttons: [(title: String, count: Int)]) {
         titleLabel.text = title
         concentrationLabel.text = concentration
@@ -125,10 +135,7 @@ class OverviewCell: UICollectionViewCell {
         buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2, height: buttonScrollView.frame.height)
     }
     
-    private func createButton(title: String, count: Int) -> UIButton {
-        let button = CapsuleShapeButton(title: "\(title) \(count)")
-        button.padding = .init(top: 12, leading: 20, bottom: 12, trailing: 20)
-        button.isUserInteractionEnabled = false
-        return button
+    func resetScrollPosition() {
+        buttonScrollView.setContentOffset(.init(x: -horizontalPadding, y: 0), animated: false)
     }
 }

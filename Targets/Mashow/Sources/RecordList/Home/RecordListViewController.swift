@@ -56,6 +56,10 @@ class RecordListViewController: UIViewController {
                     self.loadingView.isHidden = false
                 } else {
                     self.loadingView.isHidden = true
+                    
+                    if self.refreshControl.isRefreshing {
+                        self.refreshControl.endRefreshing()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -72,12 +76,15 @@ class RecordListViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] records in
                 guard let self = self else { return }
+                // Prepare fade in
+                self.collectionView.alpha = 0.0
+
+                self.applySnapshot(records: []) // To reset all scroll positions
                 self.applySnapshot(records: records)
-                
-                if !records.isEmpty {
-                    self.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), 
-                                                     at: .top,
-                                                     animated: true)
+
+                // Fade in
+                UIView.animate(withDuration: 0.15) {
+                    self.collectionView.alpha = 1.0
                 }
             }
             .store(in: &cancellables)
@@ -120,7 +127,12 @@ class RecordListViewController: UIViewController {
     }
     
     // MARK: - UI Elements
-    
+    lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.tintColor = .white
+        return refreshControl
+    }()
+
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(resource: .loginBackground)
@@ -250,6 +262,10 @@ extension RecordListViewController {
         
         collectionView.delegate = self
         collectionView.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 100, right: 0)
+        
+        // Configure the refresh control
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
     }
     
     private func setupDataSource() {
@@ -408,6 +424,15 @@ extension RecordListViewController {
             
             return section
         }
+    }
+}
+
+// MARK: - Actions
+
+extension RecordListViewController {
+    @objc private func didPullToRefresh() {
+        viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
+        refreshControl.beginRefreshing()
     }
 }
 
