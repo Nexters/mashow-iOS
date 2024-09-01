@@ -50,7 +50,7 @@ class OverviewCell: UICollectionViewCell {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.spacing = 6
-        stackView.distribution = .fillProportionally
+        stackView.distribution = .equalSpacing
         return stackView
     }()
     
@@ -105,26 +105,19 @@ class OverviewCell: UICollectionViewCell {
             make.height.equalToSuperview()
         }
     }
-    
-    private func createButton(title: String, count: Int) -> UIButton {
-        let button = CapsuleShapeButton(title: "\(title) \(count)")
-        button.padding = .init(top: 12, leading: 20, bottom: 12, trailing: 20)
-        button.isUserInteractionEnabled = false
-        return button
-    }
 }
 
-// MARK: - Non private methods
+// MARK: - Configuration
 
 extension OverviewCell {
-    func configure(title: String, concentration: String, percentage: String, buttons: [(title: String, count: Int)]) {
+    func configure(title: String, drinkType: String, percentage: String, buttons: [(title: String, count: Int)]) {
         titleLabel.text = title
-        concentrationLabel.text = concentration
         percentageLabel.text = percentage
+        
+        configureConcentrationLabel(drinkType)
         
         // Remove existing buttons in the stack before adding new ones
         buttonStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        
         // Add the buttons to the buttonStack
         for buttonInfo in buttons {
             let button = createButton(title: buttonInfo.title, count: buttonInfo.count)
@@ -135,7 +128,66 @@ extension OverviewCell {
         buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2, height: buttonScrollView.frame.height)
     }
     
-    func resetScrollPosition() {
-        buttonScrollView.setContentOffset(.init(x: -horizontalPadding, y: 0), animated: false)
+    private func configureConcentrationLabel(_ drinkType: String) {
+        // Create an attributed string for concentrationLabel
+        let attributedText = NSMutableAttributedString(
+            string: "혈중 " + drinkType + " 농도",
+            attributes: [.foregroundColor: UIColor.white]
+        )
+        
+        // Apply different color to the second word
+        let secondWordRange = (attributedText.string as NSString).range(of: drinkType)
+        attributedText.addAttribute(.foregroundColor, value: UIColor.hex("63FFD0"), range: secondWordRange)
+        concentrationLabel.attributedText = attributedText
+    }
+    
+    private func createButton(title: String, count: Int) -> UIButton {
+        let button = UIButton(type: .system)
+        
+        // Create a horizontal stack to hold the title and the custom count label
+        let hStack = UIStackView(arrangedSubviews: [
+            createTitleLabel(with: title), createCountLabel(with: count)
+        ])
+        hStack.axis = .horizontal
+        hStack.alignment = .center
+        hStack.distribution = .fill
+        hStack.spacing = 6
+        
+        // Set hugging priority for labels to ensure they don't stretch
+        hStack.arrangedSubviews.forEach {
+            $0.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+            $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+        }
+        
+        // Embed the stack view inside the button and set constraints
+        button.addSubview(hStack)
+        hStack.snp.makeConstraints { make in
+            make.left.right.equalToSuperview().inset(20)
+            make.top.bottom.equalToSuperview().inset(12)
+        }
+        
+        // Set the background color and corner radius for the button
+        button.backgroundColor = .hex("FCFCFC").withAlphaComponent(0.05)
+        button.layer.cornerRadius = 12
+        button.clipsToBounds = true
+        
+        button.isUserInteractionEnabled = false
+        return button
+    }
+    
+    private func createTitleLabel(with text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = .pretendard(size: 16, weight: .regular)
+        label.textColor = .white
+        return label
+    }
+    
+    private func createCountLabel(with count: Int) -> UILabel {
+        let label = UILabel()
+        label.text = "\(count)"
+        label.font = .pretendard(size: 16, weight: .bold)
+        label.textColor = .hex("63FFD0")
+        return label
     }
 }

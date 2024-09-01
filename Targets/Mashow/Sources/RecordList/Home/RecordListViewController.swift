@@ -269,7 +269,9 @@ extension RecordListViewController {
     }
     
     private func setupDataSource() {
-        dataSource = DataSourceType(collectionView: collectionView) { (collectionView, indexPath, record) -> UICollectionViewCell? in
+        dataSource = DataSourceType(collectionView: collectionView) { [weak self] (collectionView, indexPath, record) -> UICollectionViewCell? in
+            guard let self else { return nil }
+            
             switch record.recordType {
             case .overview:
                 guard let headerCell = collectionView.dequeueReusableCell(
@@ -281,7 +283,7 @@ extension RecordListViewController {
                 }
                 headerCell.configure(
                     title: "MYUNG님의 이번달",
-                    concentration: "혈중 소주 농도",
+                    drinkType: "\(self.viewModel.currentDrinkType.rawValue)",
                     percentage: "41%",
                     buttons: [("처음처럼", 4), ("참이슬", 2), ("진로", 1), ("진로", 1), ("진로", 1), ("진로", 1)]
                 )

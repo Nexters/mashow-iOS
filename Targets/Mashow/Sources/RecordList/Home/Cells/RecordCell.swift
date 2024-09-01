@@ -17,7 +17,7 @@ class RecordCell: UICollectionViewCell {
     private lazy var dateLabel: UILabel = {
         let label = UILabel()
         label.font = .roadRage(size: 24)
-        label.textColor = .hex("00FF00")
+        label.textColor = .hex("63FFD0")
         return label
     }()
     

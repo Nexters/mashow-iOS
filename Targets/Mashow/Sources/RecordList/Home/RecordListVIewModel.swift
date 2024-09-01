@@ -20,6 +20,11 @@ class RecordListViewModel {
     
     let state: State
     
+    // MARK: - Convenience
+    var currentDrinkType: DrinkType {
+        state.currentDrinkType.value
+    }
+    
     init() {
         self.state = State(
             isLoading: .init(false),
