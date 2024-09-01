@@ -8,9 +8,6 @@
 
 import UIKit
 
-import UIKit
-import UIKit
-
 class CapsuleShapeButton: UIButton {
     var customTitle: String! { didSet { configure() } }
     var padding: NSDirectionalEdgeInsets! { didSet { configure() } }
