@@ -31,11 +31,9 @@ class RecordDetailViewController: UIViewController {
         return imageView
     }()
     
-    private let cardView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(resource: .sojuBottle) // Replace with your asset
-        imageView.contentMode = .scaleAspectFit
-        imageView.clipsToBounds = true
+    private let cardView: CardStackView = {
+        let images = [UIImage(resource: .sojuCard), UIImage(resource: .beerCard), UIImage(resource: .cocktailCard)].compactMap({ $0 })
+        let imageView = CardStackView(cardImages: images)
         return imageView
     }()
     
@@ -116,7 +114,7 @@ class RecordDetailViewController: UIViewController {
         
         descriptionWrapperContainerView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
-            make.top.equalTo(cardView.snp.bottom).offset(25.5)
+            make.top.equalTo(cardView.snp.bottom).offset(26)
             make.bottom.equalToSuperview()
         }
     }
