@@ -22,6 +22,7 @@ class MashowRootViewController: UIViewController {
         
         // Remove back button title("Back")
         navigationItem.backButtonTitle = ""
+        navigationController?.pushViewController(DrinkSelectionViewController(viewModel: DrinkSelectionViewModel(state: DrinkSelectionViewModel.State())), animated: true)
     }
     
     private func bind() {

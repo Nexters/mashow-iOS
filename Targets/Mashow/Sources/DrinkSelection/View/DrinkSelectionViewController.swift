@@ -12,7 +12,7 @@ import SnapKit
 
 final class DrinkSelectionViewController: UIViewController {
     
-    init(viewModel: DrinkSelectionViewModel!) {
+    init(viewModel: DrinkSelectionViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -21,9 +21,9 @@ final class DrinkSelectionViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let viewModel: DrinkSelectionViewModel!
+    let viewModel: DrinkSelectionViewModel
     private var cancellables = Set<AnyCancellable>()
-    private let drinkTypeList = DrinkSelectionViewModel.DrinkType.allCases
+    private let drinkTypeList = DrinkType.allCases
     
     private var removedButtonTag: Int?
     typealias TypeButtonTag = Int
@@ -94,7 +94,7 @@ final class DrinkSelectionViewController: UIViewController {
     }
 }
 
-private extension DrinkSelectionViewController {
+extension DrinkSelectionViewController {
     
     private func bind() {
         viewModel.state.currentType
@@ -105,7 +105,7 @@ private extension DrinkSelectionViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.state.addedTypesPublisher
+        viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
                 guard let self = self else { return }
@@ -119,7 +119,7 @@ private extension DrinkSelectionViewController {
                 } else {
                     guard !addedTypes.isEmpty else { return }
                     // If type added
-                    let newButton = self.makeAddedTypeButton()
+                    let newButton = self.makeAddedTypeButton(for: viewModel.state.currentType.value)
                     newButton.addTarget(self, action: #selector(didTapToRemoveType), for: .touchUpInside)
                     self.addedDrinkTypeButtons[viewModel.state.currentType.value.tag] = newButton
                     UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
@@ -136,23 +136,27 @@ private extension DrinkSelectionViewController {
         viewModel.removeType(drinkTypeList[index])
     }
     
-    private func makeAddedTypeButton() -> UIButton {
-        let button = UIButton()
-        let view = UIStackView()
-        view.axis = .horizontal
-        view.spacing = 5
+    private func makeAddedTypeButton(for type: DrinkType) -> UIButton {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 5
+        stackView.isUserInteractionEnabled = false
+        
         let label = UILabel()
-        label.text = viewModel.state.currentType.value.korean
+        label.text = type.korean
         label.font = .pretendard(size: 16, weight: .semibold)
         label.textColor = .white
+        
         let icon = UIImageView(image: UIImage(systemName: "xmark"))
         icon.tintColor = .white
         icon.contentMode = .scaleAspectFit
         icon.frame = CGRect(x: 0, y: 0, width: 12, height: 12)
-        view.addArrangedSubview(label)
-        view.addArrangedSubview(icon)
-        button.addSubview(view)
-        view.snp.makeConstraints { make in
+        
+        stackView.addArrangedSubview(label)
+        stackView.addArrangedSubview(icon)
+        let button = UIButton()
+        button.addSubview(stackView)
+        stackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().offset(-20)
             make.top.equalToSuperview().offset(6)
@@ -161,7 +165,7 @@ private extension DrinkSelectionViewController {
         button.backgroundColor = UIColor.hex("151515").withAlphaComponent(0.5)
         button.clipsToBounds = true
         button.layer.cornerRadius = 15
-        button.tag = viewModel.state.currentType.value.tag
+        button.tag = type.tag
         return button
     }
     

@@ -12,11 +12,11 @@ import SnapKit
 
 final class DrinkTypeViewController: UIViewController {
     
-    let viewModel: DrinkSelectionViewModel!
-    var drinkType: DrinkSelectionViewModel.DrinkType
+    let viewModel: DrinkSelectionViewModel
+    var drinkType: DrinkType
     var cancellables = Set<AnyCancellable>()
     
-    init(viewModel: DrinkSelectionViewModel, drinkType: DrinkSelectionViewModel.DrinkType) {
+    init(viewModel: DrinkSelectionViewModel, drinkType: DrinkType) {
         self.viewModel = viewModel
         self.drinkType = drinkType
         super.init(nibName: nil, bundle: nil)
@@ -36,27 +36,30 @@ final class DrinkTypeViewController: UIViewController {
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 127, height: 40))
         button.layer.cornerRadius = 20
         button.layer.masksToBounds = true
+        button.backgroundColor = .white.withAlphaComponent(0.15)
         
-        let view = UIStackView()
-        view.axis = .horizontal
-        view.spacing = 4
-        view.alignment = .center
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.bounds = button.bounds
+        stackView.isUserInteractionEnabled = false
+        
         let label = UILabel()
         label.font = .pretendard(size: 16, weight: .bold)
-        var icon = UIImageView(image: UIImage(systemName: "plus"))
-        
-        button.backgroundColor = .white.withAlphaComponent(0.15)
         label.text = "주종 추가"
         label.textColor = .white.withAlphaComponent(0.7)
+        
+        var icon = UIImageView(image: UIImage(systemName: "plus"))
         icon.tintColor = .white.withAlphaComponent(0.7)
-        view.addArrangedSubview(label)
-        view.addArrangedSubview(icon)
-        button.addSubview(view)
-        view.bounds = button.bounds
-        view.snp.makeConstraints { make in
+        
+        stackView.addArrangedSubview(label)
+        stackView.addArrangedSubview(icon)
+        button.addSubview(stackView)
+        stackView.snp.makeConstraints { make in
             make.center.equalTo(button)
         }
-        if viewModel.state.addedTypesPublisher.value.count >= 3 {
+        if viewModel.state.addedTypes.value.count >= 3 {
             button.isEnabled = false
             button.layer.opacity = 0.3
         }
@@ -68,13 +71,20 @@ final class DrinkTypeViewController: UIViewController {
         button.layer.cornerRadius = 20
         button.layer.masksToBounds = true
         
-        let view = UIStackView()
-        view.axis = .horizontal
-        view.spacing = 4
-        view.alignment = .center
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.bounds = button.bounds
+        
         let label = UILabel()
         label.font = .pretendard(size: 16, weight: .bold)
+        label.text = "추가됨"
+        label.textColor = UIColor.hex("434343")
+        
         var icon = UIImageView(image: UIImage(systemName: "plus"))
+        icon = UIImageView(image: UIImage(systemName: "checkmark"))
+        icon.tintColor = UIColor.hex("434343")
         
         let gradient = CAGradientLayer()
         gradient.frame = button.bounds
@@ -85,16 +95,11 @@ final class DrinkTypeViewController: UIViewController {
         gradient.startPoint = CGPoint(x: 0.0, y: 0.0)
         gradient.endPoint = CGPoint(x: 1.0, y: 0.0)
         button.layer.insertSublayer(gradient, at: 0)
-        label.text = "추가됨"
-        label.textColor = UIColor.hex("434343")
-        icon = UIImageView(image: UIImage(systemName: "checkmark"))
-        icon.tintColor = UIColor.hex("434343")
         
-        view.addArrangedSubview(label)
-        view.addArrangedSubview(icon)
-        button.addSubview(view)
-        view.bounds = button.bounds
-        view.snp.makeConstraints { make in
+        stackView.addArrangedSubview(label)
+        stackView.addArrangedSubview(icon)
+        button.addSubview(stackView)
+        stackView.snp.makeConstraints { make in
             make.center.equalTo(button)
         }
         button.isEnabled = false
@@ -120,7 +125,7 @@ final class DrinkTypeViewController: UIViewController {
 private extension DrinkTypeViewController {
     
     private func bind() {
-        viewModel.state.addedTypesPublisher
+        viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
                 guard let self = self else { return }
