@@ -30,20 +30,8 @@ class CardView: UIView {
         return label
     }()
     
-    lazy var actionButton: CircularButton = {
-        let button = CircularButton()
-        button.setImage(
-            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .heavy)),
-            for: .normal)
-        button.tintColor = .white
-        button.backgroundColor = .black.withAlphaComponent(0.2)
-        
-        button.addTarget(self, action: #selector(didTapActionButton), for: .touchUpInside)
-        return button
-    }()
-    
     lazy var stackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [cardLabel, actionButton])
+        let stackView = UIStackView(arrangedSubviews: [cardLabel])
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
@@ -77,12 +65,7 @@ class CardView: UIView {
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         
         stackView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview().multipliedBy(1.05)
-        }
-        
-        actionButton.snp.makeConstraints { make in
-            make.width.height.equalTo(56)
+            make.center.equalToSuperview()
         }
     }
 }

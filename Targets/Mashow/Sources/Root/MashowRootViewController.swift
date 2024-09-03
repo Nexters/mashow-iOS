@@ -35,12 +35,17 @@ class MashowRootViewController: UIViewController {
             .store(in: &cancellables)
     }
     
-    private func checkLoginStatus(with accessToken: String?) {
-        // 로그인이 되어 있다면 accessToken이 존재한다
-        if accessToken != nil {
-            showMainViewController()
-        } else {
-            showLoginViewController()
+    @MainActor private func checkLoginStatus(with accessToken: String?) {
+        Task {
+            // 로그인이 되어 있다면 accessToken이 존재한다
+            if
+                let accessToken,
+                let user = await viewModel.validateUser(with: accessToken)
+            {
+                showMainViewController(with: user.nickname)
+            } else {
+                showLoginViewController()
+            }
         }
     }
     
@@ -66,16 +71,17 @@ class MashowRootViewController: UIViewController {
         loginViewController.didMove(toParent: self)
     }
     
-    private func showMainViewController() {
+    private func showMainViewController(with nickname: String) {
         removeCurrentChildViewController()
 
-        let mainViewController = HomeViewController()
+        let homeViewController = HomeViewController()
+        homeViewController.viewModel = HomeViewModel(state: .init(nickname: nickname))
         
-        addChild(mainViewController)
-        view.addSubview(mainViewController.view)
-        mainViewController.view.frame = view.bounds
+        addChild(homeViewController)
+        view.addSubview(homeViewController.view)
+        homeViewController.view.frame = view.bounds
         
-        mainViewController.didMove(toParent: self)
+        homeViewController.didMove(toParent: self)
     }
 }
 
