@@ -12,6 +12,7 @@ import Combine
 final class DrinkDetailViewController: UIViewController {
     
     let viewModel = DrinkDetailViewModel()
+    var subscriptions = Set<AnyCancellable>()
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
@@ -39,13 +40,7 @@ final class DrinkDetailViewController: UIViewController {
         return label
     }()
     
-    private lazy var drinkTypeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "소주"
-        label.textColor = .white
-        label.font = .pretendard(size: 16, weight: .semibold)
-        return label
-    }()
+    private let tableScrollView = UIScrollView()
     
     private lazy var prevButton: UIButton = {
         let button = BlurredButton()
@@ -78,46 +73,15 @@ final class DrinkDetailViewController: UIViewController {
         return stackView
     }()
     
-    lazy var tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.backgroundColor = .clear
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(FoodCell.self, forCellReuseIdentifier: FoodCell.identifier)
-        tableView.separatorStyle = .none
-        tableView.estimatedRowHeight = 60
-        tableView.rowHeight = UITableView.automaticDimension
-        return tableView
-    }()
-    
-    lazy var addFooterView: UIView = {
-        let footerView = UIView()
-        footerView.backgroundColor = .clear
-        
-        let addButton = UIButton(type: .system)
-        addButton.setTitle("+ 추가하기", for: .normal)
-        addButton.titleLabel?.font = .pretendard(size: 14, weight: .regular)
-        addButton.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
-        addButton.addTarget(self, action: #selector(didTapAddButton), for: .touchUpInside)
-        
-        footerView.addSubview(addButton)
-        addButton.snp.makeConstraints { make in
-            make.centerX.equalTo(footerView)
-            make.top.equalTo(footerView)
-        }
-        return footerView
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
-        setupTableFooter()
         setupLayouts()
+        setupTableViews()
     }
 }
 
 private extension DrinkDetailViewController {
-    
     private func setupNavigationBar() {
         self.navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
@@ -138,13 +102,34 @@ private extension DrinkDetailViewController {
         )
     }
     
-    private func setupTableFooter() {
-        addFooterView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 60)
-        tableView.tableFooterView = addFooterView
+    private func setupTableViews() {
+        for (drinkType, _) in viewModel.drinkDetails {
+            let singleView = SingleDrinkDetailView(
+                drinkType: drinkType,
+                viewModel: viewModel
+            )
+            let prevView = tableScrollView.subviews.last
+            tableScrollView.addSubview(singleView)
+            singleView.setupSelf()
+            if let prevView {
+                singleView.snp.makeConstraints { make in
+                    make.top.equalTo(prevView.snp.bottom)
+                    make.centerX.equalToSuperview()
+                    make.width.equalToSuperview()
+                    make.height.equalTo(singleView.tableView.contentSize.height + 100)
+                }
+            } else {
+                singleView.snp.makeConstraints { make in
+                    make.top.equalToSuperview()
+                    make.centerX.equalToSuperview()
+                    make.width.equalToSuperview()
+                    make.height.equalTo(singleView.tableView.contentSize.height + 100)
+                }
+            }
+        }
     }
     
     private func setupLayouts() {
-        
         view.addSubview(backgroundImageView)
         backgroundImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -156,13 +141,6 @@ private extension DrinkDetailViewController {
             make.top.equalTo(view.safeAreaLayoutGuide).offset(26)
         }
         
-        view.addSubview(drinkTypeLabel)
-        drinkTypeLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(30)
-            make.leading.equalToSuperview().offset(16)
-        }
-        
-        view.addSubview(tableView)
         view.addSubview(buttonStackView)
         buttonStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
@@ -170,53 +148,23 @@ private extension DrinkDetailViewController {
             make.bottom.bottom.equalToSuperview().offset(-30)
             make.height.equalTo(60)
         }
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(drinkTypeLabel.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(buttonStackView)
+        
+        view.addSubview(tableScrollView)
+        tableScrollView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(32)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalTo(buttonStackView.snp.top)
         }
-    }
-    
-    @objc private func didTapAddButton() {
-        viewModel.drinkDetails.append("")
-        tableView.reloadData()
     }
 }
 
 private extension DrinkDetailViewController {
+    private func bind() {
+        // TODO: - layoutIfNeeded()
+    }
+    
     @objc private func didTapBackButton() {
         navigationController?.popViewController(animated: true)
-    }
-}
-
-extension DrinkDetailViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
-    }
-}
-
-extension DrinkDetailViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.drinkDetails.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: FoodCell.identifier, for: indexPath) as? FoodCell else {
-            return UITableViewCell()
-        }
-        
-        cell.configure(with: viewModel.drinkDetails[indexPath.row], tag: indexPath.row)
-        cell.textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        cell.onTapDelete { [weak self] in
-            self?.viewModel.drinkDetails.remove(at: indexPath.row)
-            self?.tableView.reloadData()
-        }
-        cell.textField.showDeleteButtonIfNeeded()
-        
-        return cell
-    }
-    
-    @objc func textFieldDidChange(_ textField: UITextField) {
-        viewModel.drinkDetails[textField.tag] = textField.text ?? ""
     }
 }

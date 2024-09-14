@@ -10,6 +10,10 @@ import Foundation
 
 final class DrinkDetailViewModel {
     
-    // FIXME: 최대 3개까지의 주종에 대해
-    var drinkDetails = ["hi", "hihihi"]
+    // FIXME: get real data
+    var drinkDetails: [DrinkType: [String]] = [
+        .beer: ["beer", "비루"],
+        .cocktail: ["콕테일"],
+        .highball: ["하이하이", "볼", "하볼"]
+    ]
 }
