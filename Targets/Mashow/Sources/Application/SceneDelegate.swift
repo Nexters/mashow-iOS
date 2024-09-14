@@ -27,6 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Set nav bar design
         viewController.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         viewController.navigationBar.tintColor = .white
+        viewController.navigationItem.backButtonTitle = ""
         
         window.rootViewController = viewController
         self.window = window
