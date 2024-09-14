@@ -87,6 +87,7 @@ extension Project {
                 "Pretendard-SemiBold.otf",
                 "Pretendard-Thin.otf",
                 "BlankSans-bold.otf",
+                "Road_Rage.otf"
             ],
             "CFBundleURLTypes": [
                 [
