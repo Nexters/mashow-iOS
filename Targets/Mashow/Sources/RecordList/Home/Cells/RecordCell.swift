@@ -31,8 +31,16 @@ class RecordCell: UICollectionViewCell {
     }
     
     private func setupView() {
-        backgroundColor = UIColor.hex("2F2F2F").withAlphaComponent(0.7)
+        // Give linear gradient to background
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        gradientLayer.frame = bounds
+        layer.insertSublayer(gradientLayer, at: 0)
+        
         layer.cornerRadius = 10
+        layer.masksToBounds = true
         
         addSubview(dateLabel)
         
