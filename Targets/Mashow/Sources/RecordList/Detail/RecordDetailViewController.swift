@@ -46,12 +46,21 @@ class RecordDetailViewController: UIViewController {
         return label
     }()
     
+    private let deleteRecordButton: UIBarButtonItem = {
+        let button = UIBarButtonItem()
+        button.title = "삭제"
+        button.setTitleTextAttributes([.foregroundColor: UIColor.white.withAlphaComponent(0.5)], for: .normal)
+        button.action = #selector(didTapDeleteRecordButton)
+        return button
+    }()
+    
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
         setupConstraints()
+        setupNavigationBar()
     }
     
     // MARK: - Setup Methods
@@ -117,6 +126,30 @@ class RecordDetailViewController: UIViewController {
             make.top.equalTo(cardView.snp.bottom).offset(26)
             make.bottom.equalToSuperview()
         }
+    }
+    
+    private func setupNavigationBar() {
+        navigationController?.navigationBar.isHidden = false
+        
+        navigationItem.title = "기록"
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: NavigationAsset.backButtonImage,
+                                                           style: .plain,
+                                                           target: self,
+                                                           action: #selector(didTapBackButton))
+        navigationItem.rightBarButtonItem = deleteRecordButton
+    }
+}
+
+
+// MARK: - Actions
+
+private extension RecordDetailViewController {
+    @objc func didTapDeleteRecordButton() {
+        // TODO: implement
+    }
+    
+    @objc private func didTapBackButton() {
+        navigationController?.popViewController(animated: true)
     }
 }
 

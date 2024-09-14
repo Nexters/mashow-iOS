@@ -16,17 +16,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-        let rootViewController = RecordDetailViewController()
+        let rootViewController = MashowRootViewController()
         let viewController = UINavigationController(rootViewController: rootViewController)
-
         
-        if let backImage = UIImage(
-            systemName: "chevron.left",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .bold)
-        ) {
+        if let backImage = NavigationAsset.backButtonImage {
             viewController.navigationBar.backIndicatorImage = backImage
             viewController.navigationBar.backIndicatorTransitionMaskImage = backImage
         }
+        
+        // Set nav bar design
+        viewController.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         viewController.navigationBar.tintColor = .white
         
         window.rootViewController = viewController
