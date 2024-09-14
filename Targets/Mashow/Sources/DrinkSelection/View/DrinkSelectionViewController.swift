@@ -84,9 +84,27 @@ final class DrinkSelectionViewController: UIViewController {
         return button
     }()
     
+    private lazy var cancelButton: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            title: "취소",
+            style: .done,
+            target: self,
+            action: #selector(didTapBackButton)
+        )
+        
+        // Give alpha to text
+        button.setTitleTextAttributes([
+            .foregroundColor: UIColor.white.withAlphaComponent(0.5)
+        ], for: .normal)
+        
+        return button
+    }()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .hex("151515") // Prevent weird transition
+        
         bind()
         setupNavigationBar()
         setupLayouts()
@@ -111,20 +129,20 @@ extension DrinkSelectionViewController {
                 guard let self = self else { return }
                 if let tag = self.removedButtonTag {
                     // If type removed
-                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
                         self.addedDrinkTypeButtons[tag]!.removeFromSuperview()
                         self.addedDrinkTypeButtons[tag] = nil
                         self.removedButtonTag = nil
-                    }
+//                    }
                 } else {
                     guard !addedTypes.isEmpty else { return }
                     // If type added
                     let newButton = self.makeAddedTypeButton(for: viewModel.state.currentType.value)
                     newButton.addTarget(self, action: #selector(didTapToRemoveType), for: .touchUpInside)
                     self.addedDrinkTypeButtons[viewModel.state.currentType.value.tag] = newButton
-                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
                         self.addedTypesStackView.addArrangedSubview(newButton)
-                    }
+//                    }
                 }
             }
             .store(in: &cancellables)
@@ -154,29 +172,23 @@ extension DrinkSelectionViewController {
         
         stackView.addArrangedSubview(label)
         stackView.addArrangedSubview(icon)
-        let button = UIButton()
+        let button = CapsuleShapeButton(title: "", 
+                                        backgroundColor: .hex("151515").withAlphaComponent(0.5))
         button.addSubview(stackView)
         stackView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.top.equalToSuperview().offset(6)
-            make.bottom.equalToSuperview().offset(-6)
+            make.leading.equalToSuperview().offset(17)
+            make.trailing.equalToSuperview().offset(-17)
+            make.top.equalToSuperview().offset(9)
+            make.bottom.equalToSuperview().offset(-9)
         }
-        button.backgroundColor = UIColor.hex("151515").withAlphaComponent(0.5)
-        button.clipsToBounds = true
-        button.layer.cornerRadius = 15
         button.tag = type.tag
         return button
     }
     
     private func setupNavigationBar() {        
-        navigationItem.title = "7월 16일 화요일" // FIXME: set formmatted date string
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "취소",
-            style: .done,
-            target: self,
-            action: #selector(didTapBackButton)
-        )
+        navigationController?.navigationBar.isHidden = false
+        navigationItem.title = self.today()
+        navigationItem.leftBarButtonItem = cancelButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "저장",
             style: .plain,
@@ -255,6 +267,17 @@ extension DrinkSelectionViewController {
     }
 }
 
+// MARK: - Utils
+extension DrinkSelectionViewController {
+    private func today() -> String {
+        // In M월 DD일 E요일
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        dateFormatter.dateFormat = "M월 dd일 EEEE"
+        return dateFormatter.string(from: Date())
+    }
+}
+
 extension DrinkSelectionViewController: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let viewController = viewController as? DrinkTypeViewController else { return nil }
@@ -272,7 +295,6 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
 }
 
 extension UIPageViewController {
-    
     func moveToNextPage() {
         guard let currentViewController = self.viewControllers?.first else { return }
         guard let nextViewController = dataSource?.pageViewController(self, viewControllerAfter: currentViewController) else { return }

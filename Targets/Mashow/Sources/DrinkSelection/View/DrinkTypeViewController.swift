@@ -130,10 +130,10 @@ private extension DrinkTypeViewController {
             .sink { [weak self] addedTypes in
                 guard let self = self else { return }
                 let isTypeAdded = addedTypes.contains(self.drinkType)
-                UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve) {
+//                UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve) {
                     self.addDrinkTypeButton.isHidden = isTypeAdded
                     self.addedDrinkTypeButton.isHidden = !isTypeAdded
-                }
+//                }
                 if !isTypeAdded, addedTypes.count < 3 {
                     self.addDrinkTypeButton.isEnabled = true
                     self.addDrinkTypeButton.layer.opacity = 1.0

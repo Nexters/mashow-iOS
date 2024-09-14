@@ -54,7 +54,12 @@ class HomeViewController: UIViewController {
     }()
     
     lazy var recordButton: AddButton = {
-        AddButton()
+        let button = AddButton()
+        button.onTap = { [weak self] in
+            guard let self else { return }
+            self.didTapRecordButton()
+        }
+        return button
     }()
 
     lazy var myPageButton: CircularButton = {
@@ -191,6 +196,19 @@ class HomeViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
+    }
+}
+
+// MARK: - Action
+
+extension HomeViewController {
+    @objc private func didTapRecordButton() {
+        let vc = DrinkSelectionViewController(viewModel: .init(state: .init()))
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc private func didTapMyPageButton() {
+        // TODO: implement
     }
 }
 
