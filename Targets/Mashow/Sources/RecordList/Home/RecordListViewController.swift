@@ -407,8 +407,8 @@ extension RecordListViewController {
                 item = NSCollectionLayoutItem(layoutSize: itemSize)
                 item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 11)
                 
-                groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .absolute(210))
+                groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.25),
+                                                   heightDimension: .estimated(100))
                 group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 section = NSCollectionLayoutSection(group: group)

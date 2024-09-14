@@ -59,7 +59,7 @@ class RecordListViewModel {
                 baseRecordSet += testDateSet.map {
                     Record(id: UUID(), date: $0, type: "짐빔", recordType: .record)
                 }
-            case .makgeoli:
+            case .makgeolli:
                 baseRecordSet += testDateSet.map {
                     Record(id: UUID(), date: $0, type: "느린마을", recordType: .record)
                 }
