@@ -169,12 +169,8 @@ extension DrinkSelectionViewController {
         return button
     }
     
-    private func setupNavigationBar() {
-        self.navigationController?.navigationBar.tintColor = .white
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
-        
+    private func setupNavigationBar() {        
         navigationItem.title = "7월 16일 화요일" // FIXME: set formmatted date string
-        navigationItem.hidesBackButton = true
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "취소",
             style: .done,

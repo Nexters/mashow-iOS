@@ -11,9 +11,93 @@ import SnapKit
 import Combine
 
 class RecordListViewController: UIViewController {
-    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
+    
+    // MARK: - UI Elements
+    lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.tintColor = .white
+        return refreshControl
+    }()
+
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .loginBackground)
+        imageView.contentMode = .scaleAspectFill
+        
+        // Add a dimming effect
+        let dimmingView = UIView()
+        dimmingView.backgroundColor = .black
+        dimmingView.alpha = 0.5
+        
+        imageView.addSubview(dimmingView)
+        dimmingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        return imageView
+    }()
+    
+    lazy var titleButton: UIButton = {
+        let titleButton = UIButton(type: .system)
+
+        var config = UIButton.Configuration.plain()
+        config.title = ""
+        config.baseForegroundColor = .white
+        config.image = UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
+
+        // Adjust the spacing between the title and the image
+        config.imagePadding = 6.0
+
+        // Set the button configuration
+        titleButton.configuration = config
+        titleButton.configurationUpdateHandler = { button in
+            button.configuration?.baseForegroundColor = .white
+            button.configuration?.attributedTitle?.font = .pretendard(size: 16, weight: .semibold)
+        }
+
+        // Add an arrow image to the button
+        let arrowImage = UIImage(systemName: "chevron.down",
+                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
+        titleButton.setImage(arrowImage, for: .normal)
+        titleButton.semanticContentAttribute = .forceRightToLeft
+        titleButton.tintColor = .white
+
+        // Create a menu with options
+        let menuItems = DrinkType.allCases.map { type in
+            UIAction(title: type.rawValue) { [weak self] _ in
+                guard let self else { return }
+                self.viewModel.updateRecords(with: type)
+                self.viewModel.updateCurrentDrinkType(with: type)
+            }
+        }
+        
+        // Attach the menu to the button
+        titleButton.menu = UIMenu(title: "", children: menuItems)
+        titleButton.showsMenuAsPrimaryAction = true
+        
+        titleButton.snp.makeConstraints { make in
+            make.width.equalTo(150)
+        }
+        return titleButton
+    }()
+    
+    lazy var recordButton: UIButton = {
+        let button = BlurredButton()
+        button.setTitle("기록하기", for: .normal)
+        return button
+    }()
+    
+    lazy var loadingView: UIActivityIndicatorView = {
+        let loadingView = UIActivityIndicatorView()
+        loadingView.color = .white
+        loadingView.startAnimating()
+        return loadingView
+    }()
     
     // MARK: - Properties
+    
+    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
+    
     private var collectionView: UICollectionView!
     private var dataSource: DataSourceType!
     private var viewModel: RecordListViewModel
@@ -125,88 +209,6 @@ class RecordListViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
         navigationItem.titleView = titleButton
     }
-    
-    // MARK: - UI Elements
-    lazy var refreshControl: UIRefreshControl = {
-        let refreshControl = UIRefreshControl()
-        refreshControl.tintColor = .white
-        return refreshControl
-    }()
-
-    lazy var backgroundImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground)
-        imageView.contentMode = .scaleAspectFill
-        
-        // Add a dimming effect
-        let dimmingView = UIView()
-        dimmingView.backgroundColor = .black
-        dimmingView.alpha = 0.5
-        
-        imageView.addSubview(dimmingView)
-        dimmingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
-        return imageView
-    }()
-    
-    lazy var titleButton: UIButton = {
-        let titleButton = UIButton(type: .system)
-
-        var config = UIButton.Configuration.plain()
-        config.title = ""
-        config.baseForegroundColor = .white
-        config.image = UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
-
-        // Adjust the spacing between the title and the image
-        config.imagePadding = 6.0
-
-        // Set the button configuration
-        titleButton.configuration = config
-        titleButton.configurationUpdateHandler = { button in
-            button.configuration?.baseForegroundColor = .white
-            button.configuration?.attributedTitle?.font = .pretendard(size: 16, weight: .semibold)
-        }
-
-        // Add an arrow image to the button
-        let arrowImage = UIImage(systemName: "chevron.down",
-                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .bold))
-        titleButton.setImage(arrowImage, for: .normal)
-        titleButton.semanticContentAttribute = .forceRightToLeft
-        titleButton.tintColor = .white
-
-        // Create a menu with options
-        let menuItems = DrinkType.allCases.map { type in
-            UIAction(title: type.rawValue) { [weak self] _ in
-                guard let self else { return }
-                self.viewModel.updateRecords(with: type)
-                self.viewModel.updateCurrentDrinkType(with: type)
-            }
-        }
-        
-        // Attach the menu to the button
-        titleButton.menu = UIMenu(title: "", children: menuItems)
-        titleButton.showsMenuAsPrimaryAction = true
-        
-        titleButton.snp.makeConstraints { make in
-            make.width.equalTo(150)
-        }
-        return titleButton
-    }()
-    
-    lazy var recordButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("기록하기", for: .normal)
-        return button
-    }()
-    
-    lazy var loadingView: UIActivityIndicatorView = {
-        let loadingView = UIActivityIndicatorView()
-        loadingView.color = .white
-        loadingView.startAnimating()
-        return loadingView
-    }()
 }
 
 extension RecordListViewController {
