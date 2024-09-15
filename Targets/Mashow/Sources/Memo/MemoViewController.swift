@@ -10,7 +10,8 @@ import UIKit
 import SnapKit
 
 class MemoViewController: UIViewController {
-    var viewModel: MemoViewModel = MemoViewModel()
+    var environmentViewModel: DrinkSelectionViewModel!
+    private let viewModel: MemoViewModel = MemoViewModel()
     
     // MARK: - UI Elements
     
@@ -186,6 +187,7 @@ private extension MemoViewController {
             return
         }
         
+        environmentViewModel.submitMemo(DrinkSelectionResult.Memo(description: text))
         viewModel.state.memo.send(text)
     }
 }

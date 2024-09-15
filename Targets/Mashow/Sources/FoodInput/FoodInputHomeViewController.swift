@@ -250,6 +250,12 @@ private extension FoodInputHomeViewController {
         // Handle back button tap action
         navigationController?.popViewController(animated: true)
     }
+    
+    @objc private func didTapSaveButton() {
+        let vc = MemoViewController()
+        vc.environmentViewModel = environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 import SwiftUI
 #Preview {
