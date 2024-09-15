@@ -44,7 +44,7 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(FoodCell.self, forCellReuseIdentifier: FoodCell.identifier)
+        tableView.register(DrinkCell.self, forCellReuseIdentifier: DrinkCell.identifier)
         tableView.separatorStyle = .none
         
         // Enable automatic dimension for cell height
@@ -75,7 +75,13 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupLayouts()
+        
+        // 기본 셀 잡아줌
+        environmentViewModel.state.addedTypes.value.forEach { type in
+            viewModel.drinkDetails[type] = [""]
+        }
     }
     
     @objc override func didTapBackButton() {
@@ -136,14 +142,23 @@ extension DrinkDetailViewController: UITableViewDelegate, UITableViewDataSource 
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: FoodCell.identifier, for: indexPath) as? FoodCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: DrinkCell.identifier, for: indexPath) as? DrinkCell else {
             return UITableViewCell()
         }
         
         let drinkType = environmentViewModel.state.addedTypes.value[indexPath.section]
         if let detail = viewModel.drinkDetails[drinkType]?[indexPath.row] {
-            cell.configure(with: detail, tag: indexPath.row)
+            cell.configure(with: detail, section: indexPath.section, row: indexPath.row)
         }
+
+        cell.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        cell.onTapDelete { [weak self] in
+            // Delete specific row
+            self?.viewModel.drinkDetails[drinkType]?.remove(at: indexPath.row)
+            self?.tableView.reloadData()
+        }
+        // To fix buggy reused cells
+        cell.textField.showDeleteButtonIfNeeded()
         
         return cell
     }
@@ -182,18 +197,46 @@ extension DrinkDetailViewController: UITableViewDelegate, UITableViewDataSource 
         return footerView
     }
     
-    // 푸터 높이 설정
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 60
+        return 40
     }
-    
+}
+
+// MARK: - Actions
+
+extension DrinkDetailViewController {
     @objc private func didTapAddButton(_ sender: UIButton) {
         let section = sender.tag
         let drinkType = environmentViewModel.state.addedTypes.value[section]
         viewModel.drinkDetails[drinkType, default: []].append("")
         
+        print(viewModel.drinkDetails)
+        
         UIView.performWithoutAnimation {
             tableView.reloadSections([section], with: .none)
         }
+    }
+    
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        // Find the cell that contains this text field
+        if let cell = textField.superview(of: DrinkCell.self),
+           let section = cell.section,
+           let row = cell.row {
+            let drinkType = environmentViewModel.state.addedTypes.value[section]
+            viewModel.drinkDetails[drinkType]?[row] = textField.text ?? ""
+        }
+    }
+}
+
+private extension UIView {
+    func superview<T>(of type: T.Type) -> T? {
+        var currentSuperview = self.superview
+        while let superview = currentSuperview {
+            if let typedSuperview = superview as? T {
+                return typedSuperview
+            }
+            currentSuperview = superview.superview
+        }
+        return nil
     }
 }
