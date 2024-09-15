@@ -9,14 +9,14 @@
 import UIKit
 import SnapKit
 
-class MemoViewController: UIViewController {
-    var viewModel: MemoViewModel = MemoViewModel()
+class MemoViewController: DrinkSelectionSubViewController {
+    private let viewModel: MemoViewModel = MemoViewModel()
     
     // MARK: - UI Elements
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground)
+        imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
         // Add a dimming effect
@@ -57,34 +57,14 @@ class MemoViewController: UIViewController {
         return label
     }()
     
-    lazy var previousButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("이전", for: .normal)
-        return button
-    }()
-    
-    lazy var saveButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("저장하기", for: .normal)
-        button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [previousButton, saveButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
-    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        setupNavigationBar()
+
         registerForKeyboardNotifications()
     }
 
@@ -97,14 +77,32 @@ class MemoViewController: UIViewController {
         view.endEditing(true)
     }
     
-    // MARK: - Setup Methods
+    @objc override func didTapBackButton() {
+        environmentViewModel.clearMemo()
+        navigationController?.popViewController(animated: true)
+    }
     
+    @objc override func didTapNextButton() {
+        guard let text = memoTextView.text, validateMemo(text: text) else {
+            return
+        }
+        
+        environmentViewModel.submitMemo(DrinkSelectionResult.Memo(description: text))
+        environmentViewModel.saveRecord()
+        viewModel.state.memo.send(text)
+        navigationController?.popToRootViewController(animated: true)
+    }
+}
+
+// MARK: - Setup Methods
+
+extension MemoViewController {
     private func setupViews() {
         view.addSubview(backgroundImageView)
-        view.addSubview(buttonStackView)
         view.addSubview(memoTextView)
-        
-        setSaveButton(enabled: false)
+
+        super.nextButton.setTitle("저장", for: .normal)
+        view.addSubview(super.buttonStackView)
     }
     
     private func setupConstraints() {
@@ -128,14 +126,27 @@ class MemoViewController: UIViewController {
         }
         
         buttonStackView.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(view).inset(20)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
-            make.height.equalTo(50)
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
     }
 }
 
 extension MemoViewController: UITextViewDelegate {
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        // Get the current text
+        let currentText = textView.text ?? ""
+        
+        // Compute the proposed new text
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: text)
+        
+        // Check if the updated text is valid
+        return validateMemo(text: updatedText)
+    }
+    
     func textViewDidChange(_ textView: UITextView) {
         // Show or hide the placeholder label
         placeholderLabel.isHidden = !textView.text.isEmpty
@@ -161,7 +172,7 @@ extension MemoViewController: UITextViewDelegate {
         
         setLineHeight(for: textView, lineHeight: 8)
         
-        setSaveButton(enabled: validateMemo(text: textView.text))
+        setNextButton(enabled: validateMemo(text: textView.text))
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -172,21 +183,6 @@ extension MemoViewController: UITextViewDelegate {
         if textView.text.isEmpty {
             placeholderLabel.isHidden = false
         }
-    }
-}
-
-// MARK: - Actions
-
-private extension MemoViewController {
-    @objc func didTapPreviousButton() {
-    }
-    
-    @objc func didTapSaveButton() {
-        guard let text = memoTextView.text, validateMemo(text: text) else { 
-            return
-        }
-        
-        viewModel.state.memo.send(text)
     }
 }
 
@@ -239,9 +235,9 @@ private extension MemoViewController {
         return true
     }
     
-    func setSaveButton(enabled: Bool) {
-        saveButton.alpha = enabled ? 1 : 0.5
-        saveButton.isEnabled = enabled
+    func setNextButton(enabled: Bool) {
+        nextButton.alpha = enabled ? 1 : 0.5
+        nextButton.isEnabled = enabled
     }
     
     func setLineHeight(for textView: UITextView, lineHeight: CGFloat) {

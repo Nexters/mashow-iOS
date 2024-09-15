@@ -59,34 +59,19 @@ final class DrinkSelectionViewController: UIViewController {
     }()
     
     private lazy var bottomNextButton: UIButton = {
-        let button = UIButton()
+        let button = BlurredButton()
         button.setTitle("다음", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.tintColor = .white
-        button.layer.cornerRadius = 13
-        button.backgroundColor = UIColor.clear
-        button.layer.masksToBounds = true
-        
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.layer.cornerRadius = 13
-        blurEffectView.layer.masksToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        button.insertSubview(blurEffectView, at: 0)
-        
-        NSLayoutConstraint.activate([
-            blurEffectView.leadingAnchor.constraint(equalTo: button.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: button.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: button.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: button.bottomAnchor)
-        ])
+        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button
     }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .hex("151515") // Prevent weird transition
+        
         bind()
         setupNavigationBar()
         setupLayouts()
@@ -108,23 +93,33 @@ extension DrinkSelectionViewController {
         viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
-                guard let self = self else { return }
+                guard let self else { return }
+                
+                guard addedTypes.isEmpty == false else {
+                    bottomNextButton.alpha = 0.5
+                    bottomNextButton.isEnabled = false
+                    return
+                }
+                
+                bottomNextButton.alpha = 1
+                bottomNextButton.isEnabled = true
+                
                 if let tag = self.removedButtonTag {
                     // If type removed
-                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
                         self.addedDrinkTypeButtons[tag]!.removeFromSuperview()
                         self.addedDrinkTypeButtons[tag] = nil
                         self.removedButtonTag = nil
-                    }
+//                    }
                 } else {
                     guard !addedTypes.isEmpty else { return }
                     // If type added
                     let newButton = self.makeAddedTypeButton(for: viewModel.state.currentType.value)
                     newButton.addTarget(self, action: #selector(didTapToRemoveType), for: .touchUpInside)
                     self.addedDrinkTypeButtons[viewModel.state.currentType.value.tag] = newButton
-                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
+//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
                         self.addedTypesStackView.addArrangedSubview(newButton)
-                    }
+//                    }
                 }
             }
             .store(in: &cancellables)
@@ -154,39 +149,24 @@ extension DrinkSelectionViewController {
         
         stackView.addArrangedSubview(label)
         stackView.addArrangedSubview(icon)
-        let button = UIButton()
+        let button = CapsuleShapeButton(title: "", 
+                                        backgroundColor: .hex("151515").withAlphaComponent(0.5))
         button.addSubview(stackView)
         stackView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.top.equalToSuperview().offset(6)
-            make.bottom.equalToSuperview().offset(-6)
+            make.leading.equalToSuperview().offset(17)
+            make.trailing.equalToSuperview().offset(-17)
+            make.top.equalToSuperview().offset(9)
+            make.bottom.equalToSuperview().offset(-9)
         }
-        button.backgroundColor = UIColor.hex("151515").withAlphaComponent(0.5)
-        button.clipsToBounds = true
-        button.layer.cornerRadius = 15
         button.tag = type.tag
         return button
     }
     
     private func setupNavigationBar() {        
-        navigationItem.title = "7월 16일 화요일" // FIXME: set formmatted date string
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "취소",
-            style: .done,
-            target: self,
-            action: #selector(didTapBackButton)
-        )
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "저장",
-            style: .plain,
-            target: self,
-            action: nil // FIXME: set action
-        )
-    }
-    
-    @objc private func didTapBackButton() {
-        navigationController?.popViewController(animated: true)
+        navigationController?.navigationBar.isHidden = false
+        navigationItem.title = Date.todayStringWrittenInKorean()
+        navigationItem.leftBarButtonItem = NavigationAsset.makeCancelButton(target: self, #selector(didTapCancelButton))
+        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
     }
     
     private func setupBackground(_ currentType: String) {
@@ -228,10 +208,9 @@ extension DrinkSelectionViewController {
         
         view.addSubview(bottomNextButton)
         bottomNextButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view).offset(-30)
-            make.leading.equalTo(view).offset(20)
-            make.trailing.equalTo(view).offset(-20)
-            make.height.equalTo(56)
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
         
         view.addSubview(addedTypesStackView)
@@ -245,13 +224,35 @@ extension DrinkSelectionViewController {
         leftArrowButton.addTarget(self, action: #selector(didTapLeftArrow), for: .touchUpInside)
         rightArrowButton.addTarget(self, action: #selector(didTapRightArrow), for: .touchUpInside)
     }
-    
+}
+
+// MARK: - Actions
+extension DrinkSelectionViewController {
     @objc private func didTapLeftArrow() {
         pageViewController.moveToPrevPage()
     }
     
     @objc private func didTapRightArrow() {
         pageViewController.moveToNextPage()
+    }
+    
+    @objc private func didTapNextButton() {
+        guard viewModel.state.addedTypes.value.isEmpty == false else {
+            return
+        }
+        
+        let vc = DrinkDetailViewController()
+        vc.environmentViewModel = viewModel
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc private func didTapCancelButton() {
+        viewModel.flush()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapSaveButton() {
+        navigationController?.popViewController(animated: true)
     }
 }
 
@@ -272,7 +273,6 @@ extension DrinkSelectionViewController: UIPageViewControllerDataSource {
 }
 
 extension UIPageViewController {
-    
     func moveToNextPage() {
         guard let currentViewController = self.viewControllers?.first else { return }
         guard let nextViewController = dataSource?.pageViewController(self, viewControllerAfter: currentViewController) else { return }

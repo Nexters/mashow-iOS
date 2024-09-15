@@ -15,7 +15,7 @@ class RecordDetailViewController: UIViewController {
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground) // Replace with your asset
+        imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
         // Add a dimming effect

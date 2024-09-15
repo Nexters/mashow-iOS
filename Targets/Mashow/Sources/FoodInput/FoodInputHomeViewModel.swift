@@ -11,8 +11,12 @@ import Combine
 
 class FoodInputHomeViewModel {
     struct State {
-        var foodItems: PassthroughSubject<[String], Never> = .init()
+        var foodItems: PassthroughSubject<[DrinkSelectionResult.Food], Never> = .init()
     }
     
     var state: State = State()
+    
+    init(state: State = .init()) {
+        self.state = state
+    }
 }

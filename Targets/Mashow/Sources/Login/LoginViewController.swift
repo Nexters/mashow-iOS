@@ -16,7 +16,7 @@ class LoginViewController: UIViewController {
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground)
+        imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()

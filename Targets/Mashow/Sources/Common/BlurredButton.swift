@@ -9,59 +9,50 @@
 import UIKit
 
 class BlurredButton: UIButton {
-
-    private let blurEffectView: UIVisualEffectView
     
+    // The blur effect view is still initialized, with a default effect set to .dark
+    private let blurEffectView: UIVisualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+    
+    // The blur effect can be updated through this property, and it starts with .dark as default
+    var blurEffect: UIBlurEffect = UIBlurEffect(style: .dark) {
+        didSet {
+            blurEffectView.effect = blurEffect
+        }
+    }
+
     override init(frame: CGRect) {
-        // Initialize the blur effect with a light style
-        let blurEffect = UIBlurEffect(style: .dark)
-        blurEffectView = UIVisualEffectView(effect: blurEffect)
-        
         super.init(frame: frame)
         
-        // Set up the blur effect view
-        self.setupBlurEffectView()
-        
-        // Customize the button
-        self.setupButton()
+        // Set up the blur effect view and button
+        setupBlurEffectView()
+        setupButton()
     }
     
     required init?(coder: NSCoder) {
-        // Initialize the blur effect with a light style
-        let blurEffect = UIBlurEffect(style: .dark)
-        blurEffectView = UIVisualEffectView(effect: blurEffect)
-        
         super.init(coder: coder)
         
-        // Set up the blur effect view
-        self.setupBlurEffectView()
-        
-        // Customize the button
-        self.setupButton()
+        // Set up the blur effect view and button
+        setupBlurEffectView()
+        setupButton()
     }
     
     private func setupBlurEffectView() {
         blurEffectView.layer.cornerRadius = 13
         blurEffectView.clipsToBounds = true
         blurEffectView.isUserInteractionEnabled = false // Pass touches through
-        
+
         // Add blur effect as a background view
         self.insertSubview(blurEffectView, at: 0)
-        
+
         // Set up constraints for the blur effect view
         blurEffectView.snp.makeConstraints { make in
-            make.edges.equalTo(self)
+            make.edges.equalToSuperview()
         }
     }
     
     private func setupButton() {
         self.layer.cornerRadius = 13
         self.clipsToBounds = true
-        self.backgroundColor = .hex("FCFCFC").withAlphaComponent(0.12)
-    }
-    
-    // Method to update the blur effect style
-    func updateBlurEffectStyle(_ style: UIBlurEffect.Style) {
-        blurEffectView.effect = UIBlurEffect(style: style)
+        self.backgroundColor = UIColor.hex("FCFCFC").withAlphaComponent(0.12)
     }
 }

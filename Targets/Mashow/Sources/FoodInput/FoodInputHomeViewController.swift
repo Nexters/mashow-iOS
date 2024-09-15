@@ -9,15 +9,16 @@ import UIKit
 import SnapKit
 import Combine
 
-class FoodInputHomeViewController: UIViewController {
+class FoodInputHomeViewController: DrinkSelectionSubViewController {
     private let viewModel = FoodInputHomeViewModel()
+    
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Elements
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground)
+        imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
         // Add a dimming effect
@@ -55,25 +56,6 @@ class FoodInputHomeViewController: UIViewController {
         return button
     }()
     
-    lazy var saveButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
-        button.setTitleColor(.white, for: .normal)
-        
-        button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var backButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("이전", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
-        button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
-        return button
-    }()
-    
     lazy var foodItemsStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -90,21 +72,24 @@ class FoodInputHomeViewController: UIViewController {
         return imageView
     }()
     
-    lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [backButton, saveButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 9
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupViews()
         setupConstraints()
+        setupNavigationBar()
         bind()
+    }
+    
+    @objc override func didTapBackButton() {
+        environmentViewModel.clearFoods()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc override func didTapNextButton() {
+        let vc = MemoViewController()
+        vc.environmentViewModel = environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -116,7 +101,7 @@ private extension FoodInputHomeViewController {
         view.addSubview(inputButton)
         view.addSubview(foodItemsStackView)
         view.addSubview(glassImageView)
-        view.addSubview(buttonStackView)
+        view.addSubview(super.buttonStackView)
     }
     
     func setupConstraints() {
@@ -158,9 +143,10 @@ private extension FoodInputHomeViewController {
     
     func bind() {
         viewModel.state.foodItems
-            .sink { [weak self] items in
-                self?.updateFoodItemsStackView(with: items)
-                print("foodItems: \(items)")
+            .sink { [weak self] foods in
+                guard let self else { return }
+                self.updateFoodItemsStackView(with: foods.map(\.description))
+                self.environmentViewModel.submitFoods(foods)
             }
             .store(in: &cancellables)
     }
@@ -192,7 +178,7 @@ private extension FoodInputHomeViewController {
         // Add actual food items to the stack view
         for (index, item) in items.enumerated() {
             let button = GradientButton()
-            button.gradientColors = GradientButton.doneButtonColorSet
+            button.gradientColors = GradientButton.nextButtonColorSet
             button.setTitle(item, for: .normal)
             button.setTitleColor(.black, for: .normal)
             button.titleLabel?.font = .pretendard(size: 16, weight: .bold)
@@ -229,30 +215,22 @@ private extension FoodInputHomeViewController {
             action: .init(
                 onSubmitResult: { [weak self] chosenFoods in
                     guard let self else { return }
-                    self.viewModel.state.foodItems.send(chosenFoods)
+                    self.viewModel.state
+                        .foodItems
+                        .send(chosenFoods.map { DrinkSelectionResult.Food(description: $0) })
                 }))
         
         foodInputViewController.modalPresentationStyle = .fullScreen
         
         present(foodInputViewController, animated: true)
     }
-    
-    @objc func didTapSaveButton() {
-        // Handle save button tap action
-    }
-    
-    @objc func didTapBackButton() {
-        // Handle back button tap action
-        navigationController?.popViewController(animated: true)
-    }
 }
+
 import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview {
         let vc = FoodInputHomeViewController()
-//        UIView.animate(withDuration: 0.3) {
-            vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
-//        }
+        vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
         return vc
     }
 }

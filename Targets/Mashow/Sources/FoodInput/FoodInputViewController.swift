@@ -19,7 +19,7 @@ class FoodInputViewController: UIViewController {
     
     lazy var backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .loginBackground)
+        imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
         // Add a dimming effect
@@ -88,13 +88,13 @@ class FoodInputViewController: UIViewController {
         return footerView
     }()
     
-    lazy var doneButton: UIButton = {
+    lazy var nextButton: UIButton = {
         let button = GradientButton()
-        button.gradientColors = GradientButton.doneButtonColorSet
+        button.gradientColors = GradientButton.nextButtonColorSet
         button.setTitle("완료", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
-        button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         button.layer.cornerRadius = 12
         button.clipsToBounds = true
         return button
@@ -117,7 +117,7 @@ private extension FoodInputViewController {
         view.addSubview(dismissButton)
         view.addSubview(titleLabel)
         view.addSubview(tableView)
-        view.addSubview(doneButton)
+        view.addSubview(nextButton)
     }
     
     func setupConstraints() {
@@ -138,10 +138,10 @@ private extension FoodInputViewController {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(16)
             make.leading.trailing.equalTo(view).inset(16)
-            make.bottom.equalTo(doneButton.snp.top).offset(-16)
+            make.bottom.equalTo(nextButton.snp.top).offset(-16)
         }
         
-        doneButton.snp.makeConstraints { make in
+        nextButton.snp.makeConstraints { make in
             make.leading.trailing.equalTo(view).inset(20)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
             make.height.equalTo(50)
@@ -165,8 +165,8 @@ private extension FoodInputViewController {
     }
     
     func updateDoneButtonEnability() {
-        doneButton.isEnabled = isResultSubmittable(result: foodItems)
-        doneButton.alpha = doneButton.isEnabled ? 1.0 : 0.5
+        nextButton.isEnabled = isResultSubmittable(result: foodItems)
+        nextButton.alpha = nextButton.isEnabled ? 1.0 : 0.5
     }
 }
 
@@ -178,7 +178,7 @@ private extension FoodInputViewController {
         updateFooterVisibility()
     }
     
-    @objc func didTapDoneButton() {
+    @objc func didTapNextButton() {
         let chosenFoods = foodItems.filter { !$0.isEmpty }
         viewModel.submitResult(chosenFoods: chosenFoods)
         dismiss(animated: true)
