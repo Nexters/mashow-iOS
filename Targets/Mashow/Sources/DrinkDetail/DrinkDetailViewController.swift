@@ -90,6 +90,15 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapNextButton() {
+        let drinkDetails = environmentViewModel.state.addedTypes.value
+            .reduce([DrinkType: [String]]()) { partialResult, type in
+                var result = partialResult
+                result[type] = viewModel.drinkDetails[type] ?? []
+                return result
+            }
+        
+        environmentViewModel.submitDrinks(drinkDetails)
+        
         let vc = RatingViewController()
         vc.environmentViewModel = environmentViewModel
         navigationController?.pushViewController(vc, animated: true)
@@ -103,23 +112,28 @@ private extension DrinkDetailViewController {
             make.edges.equalToSuperview()
         }
         
-        view.addSubview(titleLabel)
+        let headerContainer = UIView()
+        headerContainer.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(26)
+            make.edges.equalToSuperview().inset(16) // Add padding around titleLabel
         }
         
-        view.addSubview(buttonStackView)
+        let headerHeight: CGFloat = 100 // Adjust this height based on your titleLabel's content
+        headerContainer.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: headerHeight)
+        
+        // Set tableHeaderView
+        tableView.tableHeaderView = headerContainer
+        
+        view.addSubview(super.buttonStackView)
         buttonStackView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-            make.bottom.equalToSuperview().offset(-30)
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
             make.height.equalTo(60)
         }
         
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(32)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
             make.bottom.equalTo(buttonStackView.snp.top)

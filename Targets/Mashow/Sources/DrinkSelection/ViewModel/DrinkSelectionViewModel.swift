@@ -40,12 +40,12 @@ class DrinkSelectionViewModel {
     }
 
     // About drinks
-    func submitDrinks(_ drinks: [DrinkSelectionResult.DrinkDetail]) {
+    func submitDrinks(_ drinks: [DrinkType: [String]]) {
         state.selectionResult.drinks = drinks
     }
     
     func clearDrinks() {
-        state.selectionResult.drinks = []
+        state.selectionResult.drinks = [:]
     }
     
     // About rating
@@ -87,7 +87,7 @@ class DrinkSelectionViewModel {
 }
 
 struct DrinkSelectionResult {
-    var drinks: [DrinkDetail] = []
+    var drinks: [DrinkType: [String]] = [:]
     var rating: Int?
     var foods: [Food]?
     var memo: Memo?
