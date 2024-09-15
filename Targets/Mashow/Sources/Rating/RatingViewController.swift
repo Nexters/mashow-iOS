@@ -9,8 +9,8 @@
 import UIKit
 import SnapKit
 
-class RatingViewController: UIViewController {
-    var viewModel: RatingViewModel!
+class RatingViewController: DrinkSelectionSubViewController {
+    private let viewModel = RatingViewModel()
     
     private var initialWaveY: CGFloat = 0.0
     private var currentScore: Int = 3 // Start at the midpoint score
@@ -89,33 +89,6 @@ class RatingViewController: UIViewController {
         return ruler
     }()
     
-    lazy var backButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("이전", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var nextButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -145,9 +118,9 @@ class RatingViewController: UIViewController {
         view.addSubview(backgroundImageView)
         view.addSubview(waveView)
         view.addSubview(titleLabel)
-        view.addSubview(buttonStackView)
         view.addSubview(rulerView)
         view.addSubview(tooltipView)
+        view.addSubview(super.buttonStackView)
     }
     
     private func setupConstraints() {
@@ -166,16 +139,16 @@ class RatingViewController: UIViewController {
             make.bottom.equalTo(view.snp.bottom).inset(view.bounds.height - maxY)
         }
         
-        buttonStackView.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(view).inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            make.height.equalTo(50)
-        }
-        
         tooltipView.snp.makeConstraints { make in
             make.width.equalTo(310)
             make.height.equalTo(51)
             make.center.equalToSuperview()
+        }
+        
+        buttonStackView.snp.makeConstraints { make in
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
     }
 
@@ -280,7 +253,7 @@ class RatingViewController: UIViewController {
         // Show with popping animation
         UIView.animate(
             withDuration: 0.5,
-            delay: 0.5,
+            delay: 0.1,
             usingSpringWithDamping: 0.5,
             initialSpringVelocity: 1.0,
             options: .curveEaseInOut,
@@ -311,20 +284,22 @@ class RatingViewController: UIViewController {
     
     // MARK: - Actions
     
-    @objc private func didTapBackButton() {
-        // Handle previous button tap
+    @objc override func didTapBackButton() {
+        environmentViewModel.clearRating()
+        navigationController?.popViewController(animated: true)
     }
     
-    @objc private func didTapNextButton() {
+    @objc override func didTapNextButton() {
         viewModel.updateScore(currentScore)
+        environmentViewModel.submitRating(currentScore)
+        
+        let vc = FoodInputHomeViewController()
+        vc.environmentViewModel = self.environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
 import SwiftUI
 #Preview {
-    RatingViewController.preview {
-        let vc = RatingViewController()
-        vc.viewModel = .init()
-        return vc
-    }
+    RatingViewController.preview()
 }

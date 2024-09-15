@@ -48,6 +48,15 @@ class DrinkSelectionViewModel {
         state.selectionResult.drinks = []
     }
     
+    // About rating
+    func submitRating(_ rating: Int) {
+        state.selectionResult.rating = rating
+    }
+    
+    func clearRating() {
+        state.selectionResult.rating = nil
+    }
+    
     // About foods
     func submitFoods(_ foods: [DrinkSelectionResult.Food]) {
         state.selectionResult.foods = foods
@@ -74,6 +83,7 @@ class DrinkSelectionViewModel {
 
 struct DrinkSelectionResult {
     var drinks: [DrinkDetail] = []
+    var rating: Int?
     var foods: [Food]?
     var memo: Memo?
 }

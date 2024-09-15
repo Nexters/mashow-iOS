@@ -228,7 +228,7 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapNextButton() {
-        let vc = FoodInputHomeViewController()
+        let vc = RatingViewController()
         vc.environmentViewModel = viewModel
         navigationController?.pushViewController(vc, animated: true)
     }

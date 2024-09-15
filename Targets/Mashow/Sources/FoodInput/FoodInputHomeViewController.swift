@@ -56,25 +56,6 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
         return button
     }()
     
-    lazy var nextButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
-        button.setTitleColor(.white, for: .normal)
-        
-        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var backButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("이전", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
-        button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
-        return button
-    }()
-    
     lazy var foodItemsStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -91,15 +72,6 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
         return imageView
     }()
     
-    lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 9
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -107,6 +79,17 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
         setupConstraints()
         setupNavigationBar()
         bind()
+    }
+    
+    @objc override func didTapBackButton() {
+        environmentViewModel.clearFoods()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc override func didTapNextButton() {
+        let vc = MemoViewController()
+        vc.environmentViewModel = environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -118,7 +101,7 @@ private extension FoodInputHomeViewController {
         view.addSubview(inputButton)
         view.addSubview(foodItemsStackView)
         view.addSubview(glassImageView)
-        view.addSubview(buttonStackView)
+        view.addSubview(super.buttonStackView)
     }
     
     func setupConstraints() {
@@ -241,18 +224,8 @@ private extension FoodInputHomeViewController {
         
         present(foodInputViewController, animated: true)
     }
-    
-    @objc private func didTapBackButton() {
-        environmentViewModel.clearFoods()
-        navigationController?.popViewController(animated: true)
-    }
-    
-    @objc private func didTapNextButton() {
-        let vc = MemoViewController()
-        vc.environmentViewModel = environmentViewModel
-        navigationController?.pushViewController(vc, animated: true)
-    }
 }
+
 import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview {

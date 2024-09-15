@@ -57,28 +57,6 @@ class MemoViewController: DrinkSelectionSubViewController {
         return label
     }()
     
-    lazy var backButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("이전", for: .normal)
-        return button
-    }()
-    
-    lazy var nextButton: UIButton = {
-        let button = BlurredButton()
-        button.setTitle("저장하기", for: .normal)
-        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
-        return button
-    }()
-    
-    lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        return stackView
-    }()
-    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -99,13 +77,31 @@ class MemoViewController: DrinkSelectionSubViewController {
         view.endEditing(true)
     }
     
-    // MARK: - Setup Methods
+    @objc override func didTapBackButton() {
+        environmentViewModel.clearMemo()
+        navigationController?.popViewController(animated: true)
+    }
     
+    @objc override func didTapNextButton() {
+        guard let text = memoTextView.text, validateMemo(text: text) else {
+            return
+        }
+        
+        environmentViewModel.submitMemo(DrinkSelectionResult.Memo(description: text))
+        viewModel.state.memo.send(text)
+    }
+}
+
+// MARK: - Setup Methods
+
+extension MemoViewController {
     private func setupViews() {
         view.addSubview(backgroundImageView)
-        view.addSubview(buttonStackView)
         view.addSubview(memoTextView)
-        
+
+        super.nextButton.setTitle("저장", for: .normal)
+        view.addSubview(super.buttonStackView)
+
         setNextButton(enabled: false)
     }
     
@@ -130,9 +126,9 @@ class MemoViewController: DrinkSelectionSubViewController {
         }
         
         buttonStackView.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(view).inset(20)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
-            make.height.equalTo(50)
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
     }
 }
@@ -174,24 +170,6 @@ extension MemoViewController: UITextViewDelegate {
         if textView.text.isEmpty {
             placeholderLabel.isHidden = false
         }
-    }
-}
-
-// MARK: - Actions
-
-private extension MemoViewController {
-    @objc func didTapBackButton() {
-        environmentViewModel.clearMemo()
-        navigationController?.popViewController(animated: true)
-    }
-    
-    @objc func didTapNextButton() {
-        guard let text = memoTextView.text, validateMemo(text: text) else { 
-            return
-        }
-        
-        environmentViewModel.submitMemo(DrinkSelectionResult.Memo(description: text))
-        viewModel.state.memo.send(text)
     }
 }
 
