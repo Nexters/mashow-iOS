@@ -93,7 +93,17 @@ extension DrinkSelectionViewController {
         viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
-                guard let self = self else { return }
+                guard let self else { return }
+                
+                guard addedTypes.isEmpty == false else {
+                    bottomNextButton.alpha = 0.5
+                    bottomNextButton.isEnabled = false
+                    return
+                }
+                
+                bottomNextButton.alpha = 1
+                bottomNextButton.isEnabled = true
+                
                 if let tag = self.removedButtonTag {
                     // If type removed
 //                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
@@ -227,7 +237,11 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapNextButton() {
-        let vc = RatingViewController()
+        guard viewModel.state.addedTypes.value.isEmpty == false else {
+            return
+        }
+        
+        let vc = DrinkDetailViewController()
         vc.environmentViewModel = viewModel
         navigationController?.pushViewController(vc, animated: true)
     }

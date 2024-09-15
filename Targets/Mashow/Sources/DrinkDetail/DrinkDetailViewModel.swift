@@ -9,11 +9,5 @@
 import Foundation
 
 final class DrinkDetailViewModel {
-    
-    // FIXME: get real data
-    var drinkDetails: [DrinkType: [String]] = [
-        .beer: ["beer", "비루"],
-        .cocktail: ["콕테일"],
-        .highball: ["하이하이", "볼", "하볼"]
-    ]
+    var drinkDetails: [DrinkType: [String]] = [:]
 }

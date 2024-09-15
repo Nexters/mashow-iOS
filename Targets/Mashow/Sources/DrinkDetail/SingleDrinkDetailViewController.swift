@@ -81,7 +81,7 @@ class SingleDrinkDetailView: UIStackView {
     }
     
     @objc private func didTapAddButton() {
-        viewModel.drinkDetails[drinkType]?.append("")
+        viewModel.drinkDetails[drinkType, default: []].append("")
         tableView.reloadData()
     }
 }

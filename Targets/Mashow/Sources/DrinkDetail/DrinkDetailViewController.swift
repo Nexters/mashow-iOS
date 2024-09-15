@@ -9,9 +9,8 @@
 import UIKit
 import Combine
 
-final class DrinkDetailViewController: UIViewController {
-    
-    let viewModel = DrinkDetailViewModel()
+class DrinkDetailViewController: DrinkSelectionSubViewController {
+    private let viewModel = DrinkDetailViewModel()
     var subscriptions = Set<AnyCancellable>()
     
     lazy var backgroundImageView: UIImageView = {
@@ -40,95 +39,58 @@ final class DrinkDetailViewController: UIViewController {
         return label
     }()
     
-    private let tableScrollView = UIScrollView()
-    
-    private lazy var prevButton: UIButton = {
-        let button = BlurredButton()
-        button.updateBlurEffectStyle(.light)
-        button.layer.cornerRadius = 12
-        button.clipsToBounds = true
-        button.setTitle("이전", for: .normal)
-        button.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .semibold)
-        return button
+    lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .grouped)
+        tableView.backgroundColor = .clear
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(FoodCell.self, forCellReuseIdentifier: FoodCell.identifier)
+        tableView.separatorStyle = .none
+        
+        // Enable automatic dimension for cell height
+        tableView.estimatedRowHeight = 60
+        tableView.rowHeight = UITableView.automaticDimension
+        
+        return tableView
     }()
     
-    private lazy var nextButton: UIButton = {
-        let button = BlurredButton()
-        button.layer.cornerRadius = 12
-        button.clipsToBounds = true
-        button.setTitle("다음", for: .normal)
-        button.setTitleColor(UIColor.hex("FCFCFC"), for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .semibold)
-        return button
-    }()
-    
-    private lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 10
-        stackView.distribution = .fillEqually
-        stackView.addArrangedSubview(prevButton)
-        stackView.addArrangedSubview(nextButton)
-        return stackView
-    }()
+    func makeFooterView() -> UIView {
+        let footerView = UIView()
+        footerView.backgroundColor = .clear
+        
+        let addButton = UIButton(type: .system)
+        addButton.setTitle("+ 추가하기", for: .normal)
+        addButton.titleLabel?.font = .pretendard(size: 14, weight: .regular)
+        addButton.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
+        addButton.addTarget(self, action: #selector(didTapAddButton), for: .touchUpInside)
+        
+        footerView.addSubview(addButton)
+        addButton.snp.makeConstraints { make in
+            make.centerX.equalTo(footerView)
+            make.top.equalTo(footerView)
+        }
+        
+        return footerView
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavigationBar()
         setupLayouts()
-        setupTableViews()
+    }
+    
+    @objc override func didTapBackButton() {
+        environmentViewModel.flush()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc override func didTapNextButton() {
+        let vc = RatingViewController()
+        vc.environmentViewModel = environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
 private extension DrinkDetailViewController {
-    private func setupNavigationBar() {
-        self.navigationController?.navigationBar.tintColor = .white
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
-
-        navigationItem.title = "7월 16일 화요일" // FIXME: set formmatted date string
-        navigationItem.hidesBackButton = true
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "취소",
-            style: .done,
-            target: self,
-            action: #selector(didTapBackButton)
-        )
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "저장",
-            style: .plain,
-            target: self,
-            action: nil // FIXME: set action
-        )
-    }
-    
-    private func setupTableViews() {
-        for (drinkType, _) in viewModel.drinkDetails {
-            let singleView = SingleDrinkDetailView(
-                drinkType: drinkType,
-                viewModel: viewModel
-            )
-            let prevView = tableScrollView.subviews.last
-            tableScrollView.addSubview(singleView)
-            singleView.setupSelf()
-            if let prevView {
-                singleView.snp.makeConstraints { make in
-                    make.top.equalTo(prevView.snp.bottom)
-                    make.centerX.equalToSuperview()
-                    make.width.equalToSuperview()
-                    make.height.equalTo(singleView.tableView.contentSize.height + 100)
-                }
-            } else {
-                singleView.snp.makeConstraints { make in
-                    make.top.equalToSuperview()
-                    make.centerX.equalToSuperview()
-                    make.width.equalToSuperview()
-                    make.height.equalTo(singleView.tableView.contentSize.height + 100)
-                }
-            }
-        }
-    }
-    
     private func setupLayouts() {
         view.addSubview(backgroundImageView)
         backgroundImageView.snp.makeConstraints { make in
@@ -145,12 +107,12 @@ private extension DrinkDetailViewController {
         buttonStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
-            make.bottom.bottom.equalToSuperview().offset(-30)
+            make.bottom.equalToSuperview().offset(-30)
             make.height.equalTo(60)
         }
         
-        view.addSubview(tableScrollView)
-        tableScrollView.snp.makeConstraints { make in
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(32)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
@@ -159,12 +121,79 @@ private extension DrinkDetailViewController {
     }
 }
 
-private extension DrinkDetailViewController {
-    private func bind() {
-        // TODO: - layoutIfNeeded()
+extension DrinkDetailViewController: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return environmentViewModel.state.addedTypes.value.count
     }
     
-    @objc private func didTapBackButton() {
-        navigationController?.popViewController(animated: true)
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let drinkType = environmentViewModel.state.addedTypes.value[section]
+        return viewModel.drinkDetails[drinkType]?.count ?? 0
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FoodCell.identifier, for: indexPath) as? FoodCell else {
+            return UITableViewCell()
+        }
+        
+        let drinkType = environmentViewModel.state.addedTypes.value[indexPath.section]
+        if let detail = viewModel.drinkDetails[drinkType]?[indexPath.row] {
+            cell.configure(with: detail, tag: indexPath.row)
+        }
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        let drinkTypeLabel = UILabel()
+        drinkTypeLabel.text = environmentViewModel.state.addedTypes.value[section].korean
+        drinkTypeLabel.textColor = .white
+        drinkTypeLabel.font = .pretendard(size: 16, weight: .semibold)
+        
+        headerView.addSubview(drinkTypeLabel)
+        drinkTypeLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(16)
+        }
+        
+        return headerView
+    }
+    
+    // 섹션 푸터 ("추가하기" 버튼)
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView()
+        
+        let addButton = UIButton(type: .system)
+        addButton.setTitle("+ 추가하기", for: .normal)
+        addButton.titleLabel?.font = .pretendard(size: 14, weight: .regular)
+        addButton.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
+        addButton.tag = section
+        addButton.addTarget(self, action: #selector(didTapAddButton(_:)), for: .touchUpInside)
+        
+        footerView.addSubview(addButton)
+        addButton.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
+        return footerView
+    }
+    
+    // 푸터 높이 설정
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 60
+    }
+    
+    @objc private func didTapAddButton(_ sender: UIButton) {
+        let section = sender.tag
+        let drinkType = environmentViewModel.state.addedTypes.value[section]
+        viewModel.drinkDetails[drinkType, default: []].append("")
+        
+        UIView.performWithoutAnimation {
+            tableView.reloadSections([section], with: .none)
+        }
     }
 }
