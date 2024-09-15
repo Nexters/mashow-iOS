@@ -59,28 +59,11 @@ final class DrinkSelectionViewController: UIViewController {
     }()
     
     private lazy var bottomNextButton: UIButton = {
-        let button = UIButton()
+        let button = BlurredButton()
         button.setTitle("다음", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.tintColor = .white
-        button.layer.cornerRadius = 13
-        button.backgroundColor = UIColor.clear
-        button.layer.masksToBounds = true
-        
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.layer.cornerRadius = 13
-        blurEffectView.layer.masksToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        button.insertSubview(blurEffectView, at: 0)
-        
-        NSLayoutConstraint.activate([
-            blurEffectView.leadingAnchor.constraint(equalTo: button.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: button.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: button.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: button.bottomAnchor)
-        ])
+        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button
     }()
     
@@ -257,13 +240,20 @@ extension DrinkSelectionViewController {
         leftArrowButton.addTarget(self, action: #selector(didTapLeftArrow), for: .touchUpInside)
         rightArrowButton.addTarget(self, action: #selector(didTapRightArrow), for: .touchUpInside)
     }
-    
+}
+
+// MARK: - Actions
+extension DrinkSelectionViewController {
     @objc private func didTapLeftArrow() {
         pageViewController.moveToPrevPage()
     }
     
     @objc private func didTapRightArrow() {
         pageViewController.moveToNextPage()
+    }
+    
+    @objc private func didTapNextButton() {
+        navigationController?.pushViewController(FoodInputHomeViewController(), animated: true)
     }
 }
 
