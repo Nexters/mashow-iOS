@@ -10,7 +10,9 @@ import SnapKit
 import Combine
 
 class FoodInputHomeViewController: UIViewController {
+    var environmentViewModel: DrinkSelectionViewModel!
     private let viewModel = FoodInputHomeViewModel()
+    
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Elements
@@ -158,9 +160,10 @@ private extension FoodInputHomeViewController {
     
     func bind() {
         viewModel.state.foodItems
-            .sink { [weak self] items in
-                self?.updateFoodItemsStackView(with: items)
-                print("foodItems: \(items)")
+            .sink { [weak self] foods in
+                guard let self else { return }
+                self.updateFoodItemsStackView(with: foods.map(\.description))
+                self.environmentViewModel.submitFoods(foods)
             }
             .store(in: &cancellables)
     }
@@ -229,7 +232,9 @@ private extension FoodInputHomeViewController {
             action: .init(
                 onSubmitResult: { [weak self] chosenFoods in
                     guard let self else { return }
-                    self.viewModel.state.foodItems.send(chosenFoods)
+                    self.viewModel.state
+                        .foodItems
+                        .send(chosenFoods.map { DrinkSelectionResult.Food(description: $0) })
                 }))
         
         foodInputViewController.modalPresentationStyle = .fullScreen
@@ -250,9 +255,7 @@ import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview {
         let vc = FoodInputHomeViewController()
-//        UIView.animate(withDuration: 0.3) {
-            vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
-//        }
+        vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
         return vc
     }
 }
