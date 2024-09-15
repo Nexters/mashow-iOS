@@ -198,10 +198,9 @@ extension DrinkSelectionViewController {
         
         view.addSubview(bottomNextButton)
         bottomNextButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view).offset(-30)
-            make.leading.equalTo(view).offset(20)
-            make.trailing.equalTo(view).offset(-20)
-            make.height.equalTo(56)
+            make.leading.trailing.equalTo(view).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.equalTo(60)
         }
         
         view.addSubview(addedTypesStackView)

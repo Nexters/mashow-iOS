@@ -32,6 +32,7 @@ class DrinkSelectionSubViewController: UIViewController {
     
     lazy var backButton: UIButton = {
         let button = BlurredButton()
+        button.blurEffect = UIBlurEffect(style: .light)
         button.setTitle("이전", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
@@ -66,9 +67,9 @@ class DrinkSelectionSubViewController: UIViewController {
     }
     
     @objc private func didTapSaveButton() {
-        let vc = MemoViewController()
-        vc.environmentViewModel = environmentViewModel
-        navigationController?.pushViewController(vc, animated: true)
+        environmentViewModel.saveRecord()
+        // FIXME: Maybe need to wait server response
+        navigationController?.popToRootViewController(animated: true)
     }
     
     @objc func didTapBackButton() {

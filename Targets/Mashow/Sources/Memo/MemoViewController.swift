@@ -101,8 +101,6 @@ extension MemoViewController {
 
         super.nextButton.setTitle("저장", for: .normal)
         view.addSubview(super.buttonStackView)
-
-        setNextButton(enabled: false)
     }
     
     private func setupConstraints() {
@@ -134,6 +132,19 @@ extension MemoViewController {
 }
 
 extension MemoViewController: UITextViewDelegate {
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        // Get the current text
+        let currentText = textView.text ?? ""
+        
+        // Compute the proposed new text
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: text)
+        
+        // Check if the updated text is valid
+        return validateMemo(text: updatedText)
+    }
+    
     func textViewDidChange(_ textView: UITextView) {
         // Show or hide the placeholder label
         placeholderLabel.isHidden = !textView.text.isEmpty

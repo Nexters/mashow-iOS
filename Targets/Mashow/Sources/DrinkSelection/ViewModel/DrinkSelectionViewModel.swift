@@ -79,6 +79,11 @@ class DrinkSelectionViewModel {
     func flush() {
         state.selectionResult = .init()
     }
+    
+    // Save to server
+    func saveRecord() {
+        state.drinkSelectionResult.send(state.selectionResult)
+    }
 }
 
 struct DrinkSelectionResult {
