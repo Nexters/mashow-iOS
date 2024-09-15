@@ -45,10 +45,10 @@ class GradientButton: UIButton {
     }
     
     private func setup() {
-        setGradient(with: GradientButton.doneButtonColorSet)
+        setGradient(with: GradientButton.nextButtonColorSet)
     }
     
-    private func setGradient(with colorSet: [UIColor] = GradientButton.doneButtonColorSet) {
+    private func setGradient(with colorSet: [UIColor] = GradientButton.nextButtonColorSet) {
         gradientLayer?.removeFromSuperlayer()
         
         let gradientLayer = CAGradientLayer()
@@ -79,7 +79,7 @@ class GradientButton: UIButton {
 }
 
 extension GradientButton {
-    static var doneButtonColorSet: [UIColor] {
+    static var nextButtonColorSet: [UIColor] {
         return [.hex("F9FFF4"), .hex("FFCDCD"), .hex("F9FFF4")]
     }
 }

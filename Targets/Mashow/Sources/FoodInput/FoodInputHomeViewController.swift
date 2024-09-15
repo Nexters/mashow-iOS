@@ -62,7 +62,7 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
         
-        button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button
     }()
     
@@ -195,7 +195,7 @@ private extension FoodInputHomeViewController {
         // Add actual food items to the stack view
         for (index, item) in items.enumerated() {
             let button = GradientButton()
-            button.gradientColors = GradientButton.doneButtonColorSet
+            button.gradientColors = GradientButton.nextButtonColorSet
             button.setTitle(item, for: .normal)
             button.setTitleColor(.black, for: .normal)
             button.titleLabel?.font = .pretendard(size: 16, weight: .bold)
@@ -247,7 +247,7 @@ private extension FoodInputHomeViewController {
         navigationController?.popViewController(animated: true)
     }
     
-    @objc private func didTapDoneButton() {
+    @objc private func didTapNextButton() {
         let vc = MemoViewController()
         vc.environmentViewModel = environmentViewModel
         navigationController?.pushViewController(vc, animated: true)

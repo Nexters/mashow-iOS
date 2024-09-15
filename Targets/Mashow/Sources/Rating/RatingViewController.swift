@@ -89,12 +89,12 @@ class RatingViewController: UIViewController {
         return ruler
     }()
     
-    lazy var previousButton: UIButton = {
+    lazy var backButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("이전", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(didTapPreviousButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
         return button
     }()
     
@@ -108,7 +108,7 @@ class RatingViewController: UIViewController {
     }()
     
     lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [previousButton, nextButton])
+        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
         stackView.axis = .horizontal
         stackView.spacing = 16
         stackView.alignment = .fill
@@ -311,7 +311,7 @@ class RatingViewController: UIViewController {
     
     // MARK: - Actions
     
-    @objc private func didTapPreviousButton() {
+    @objc private func didTapBackButton() {
         // Handle previous button tap
     }
     

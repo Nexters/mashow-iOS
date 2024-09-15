@@ -57,7 +57,7 @@ class MemoViewController: DrinkSelectionSubViewController {
         return label
     }()
     
-    lazy var previousButton: UIButton = {
+    lazy var backButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("이전", for: .normal)
         return button
@@ -71,7 +71,7 @@ class MemoViewController: DrinkSelectionSubViewController {
     }()
     
     lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [previousButton, nextButton])
+        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
         stackView.axis = .horizontal
         stackView.spacing = 16
         stackView.alignment = .fill
@@ -180,7 +180,9 @@ extension MemoViewController: UITextViewDelegate {
 // MARK: - Actions
 
 private extension MemoViewController {
-    @objc func didTapPreviousButton() {
+    @objc func didTapBackButton() {
+        environmentViewModel.clearMemo()
+        navigationController?.popViewController(animated: true)
     }
     
     @objc func didTapNextButton() {
