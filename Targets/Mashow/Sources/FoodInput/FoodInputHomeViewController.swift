@@ -9,8 +9,7 @@ import UIKit
 import SnapKit
 import Combine
 
-class FoodInputHomeViewController: UIViewController {
-    var environmentViewModel: DrinkSelectionViewModel!
+class FoodInputHomeViewController: DrinkSelectionSubViewController {
     private let viewModel = FoodInputHomeViewModel()
     
     private var cancellables = Set<AnyCancellable>()
@@ -57,13 +56,13 @@ class FoodInputHomeViewController: UIViewController {
         return button
     }()
     
-    lazy var saveButton: UIButton = {
+    lazy var nextButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("다음", for: .normal)
         button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
         button.setTitleColor(.white, for: .normal)
         
-        button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
         return button
     }()
     
@@ -93,7 +92,7 @@ class FoodInputHomeViewController: UIViewController {
     }()
     
     lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [backButton, saveButton])
+        let stackView = UIStackView(arrangedSubviews: [backButton, nextButton])
         stackView.axis = .horizontal
         stackView.spacing = 9
         stackView.alignment = .fill
@@ -106,6 +105,7 @@ class FoodInputHomeViewController: UIViewController {
 
         setupViews()
         setupConstraints()
+        setupNavigationBar()
         bind()
     }
 }
@@ -242,16 +242,12 @@ private extension FoodInputHomeViewController {
         present(foodInputViewController, animated: true)
     }
     
-    @objc func didTapSaveButton() {
-        // Handle save button tap action
-    }
-    
-    @objc func didTapBackButton() {
-        // Handle back button tap action
+    @objc private func didTapBackButton() {
+        environmentViewModel.clearFoods()
         navigationController?.popViewController(animated: true)
     }
     
-    @objc private func didTapSaveButton() {
+    @objc private func didTapDoneButton() {
         let vc = MemoViewController()
         vc.environmentViewModel = environmentViewModel
         navigationController?.pushViewController(vc, animated: true)

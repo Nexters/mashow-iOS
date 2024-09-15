@@ -39,16 +39,36 @@ class DrinkSelectionViewModel {
         state.addedTypes.send(current)
     }
 
+    // About drinks
     func submitDrinks(_ drinks: [DrinkSelectionResult.DrinkDetail]) {
         state.selectionResult.drinks = drinks
     }
     
+    func clearDrinks() {
+        state.selectionResult.drinks = []
+    }
+    
+    // About foods
     func submitFoods(_ foods: [DrinkSelectionResult.Food]) {
         state.selectionResult.foods = foods
     }
     
+    func clearFoods() {
+        state.selectionResult.foods = []
+    }
+    
+    // About memos
     func submitMemo(_ memo: DrinkSelectionResult.Memo) {
         state.selectionResult.memo = memo
+    }
+    
+    func clearMemo() {
+        state.selectionResult.memo = nil
+    }
+    
+    // Clear all
+    func flush() {
+        state.selectionResult = .init()
     }
 }
 

@@ -9,8 +9,7 @@
 import UIKit
 import SnapKit
 
-class MemoViewController: UIViewController {
-    var environmentViewModel: DrinkSelectionViewModel!
+class MemoViewController: DrinkSelectionSubViewController {
     private let viewModel: MemoViewModel = MemoViewModel()
     
     // MARK: - UI Elements
@@ -64,15 +63,15 @@ class MemoViewController: UIViewController {
         return button
     }()
     
-    lazy var saveButton: UIButton = {
+    lazy var nextButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("저장하기", for: .normal)
-        button.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button
     }()
     
     lazy var buttonStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [previousButton, saveButton])
+        let stackView = UIStackView(arrangedSubviews: [previousButton, nextButton])
         stackView.axis = .horizontal
         stackView.spacing = 16
         stackView.alignment = .fill
@@ -86,6 +85,8 @@ class MemoViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        setupNavigationBar()
+
         registerForKeyboardNotifications()
     }
 
@@ -105,7 +106,7 @@ class MemoViewController: UIViewController {
         view.addSubview(buttonStackView)
         view.addSubview(memoTextView)
         
-        setSaveButton(enabled: false)
+        setNextButton(enabled: false)
     }
     
     private func setupConstraints() {
@@ -162,7 +163,7 @@ extension MemoViewController: UITextViewDelegate {
         
         setLineHeight(for: textView, lineHeight: 8)
         
-        setSaveButton(enabled: validateMemo(text: textView.text))
+        setNextButton(enabled: validateMemo(text: textView.text))
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -182,7 +183,7 @@ private extension MemoViewController {
     @objc func didTapPreviousButton() {
     }
     
-    @objc func didTapSaveButton() {
+    @objc func didTapNextButton() {
         guard let text = memoTextView.text, validateMemo(text: text) else { 
             return
         }
@@ -241,9 +242,9 @@ private extension MemoViewController {
         return true
     }
     
-    func setSaveButton(enabled: Bool) {
-        saveButton.alpha = enabled ? 1 : 0.5
-        saveButton.isEnabled = enabled
+    func setNextButton(enabled: Bool) {
+        nextButton.alpha = enabled ? 1 : 0.5
+        nextButton.isEnabled = enabled
     }
     
     func setLineHeight(for textView: UITextView, lineHeight: CGFloat) {

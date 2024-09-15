@@ -67,22 +67,6 @@ final class DrinkSelectionViewController: UIViewController {
         return button
     }()
     
-    private lazy var cancelButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(
-            title: "취소",
-            style: .done,
-            target: self,
-            action: #selector(didTapBackButton)
-        )
-        
-        // Give alpha to text
-        button.setTitleTextAttributes([
-            .foregroundColor: UIColor.white.withAlphaComponent(0.5)
-        ], for: .normal)
-        
-        return button
-    }()
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -170,18 +154,9 @@ extension DrinkSelectionViewController {
     
     private func setupNavigationBar() {        
         navigationController?.navigationBar.isHidden = false
-        navigationItem.title = self.today()
-        navigationItem.leftBarButtonItem = cancelButton
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "저장",
-            style: .plain,
-            target: self,
-            action: nil // FIXME: set action
-        )
-    }
-    
-    @objc private func didTapBackButton() {
-        navigationController?.popViewController(animated: true)
+        navigationItem.title = Date.todayStringWrittenInKorean()
+        navigationItem.leftBarButtonItem = NavigationAsset.makeCancelButton(target: self, #selector(didTapCancelButton))
+        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
     }
     
     private func setupBackground(_ currentType: String) {
@@ -257,16 +232,14 @@ extension DrinkSelectionViewController {
         vc.environmentViewModel = viewModel
         navigationController?.pushViewController(vc, animated: true)
     }
-}
-
-// MARK: - Utils
-extension DrinkSelectionViewController {
-    private func today() -> String {
-        // In M월 DD일 E요일
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "ko_KR")
-        dateFormatter.dateFormat = "M월 dd일 EEEE"
-        return dateFormatter.string(from: Date())
+    
+    @objc private func didTapCancelButton() {
+        viewModel.flush()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapSaveButton() {
+        navigationController?.popViewController(animated: true)
     }
 }
 
