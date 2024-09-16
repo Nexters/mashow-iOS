@@ -187,13 +187,22 @@ class HomeViewController: UIViewController {
         viewModel.state.records
             .receive(on: DispatchQueue.main)
             .sink { [weak self] records in
-                guard let self = self else { return }
+                guard let self else { return }
                 
                 if records.isEmpty {
                     showEmptyStateView()
                 } else {
                     showMiniCardListView(with: Array(records))
                 }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.state.error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let self else { return }
+                
+                self.showErrorAlert()
             }
             .store(in: &cancellables)
     }
