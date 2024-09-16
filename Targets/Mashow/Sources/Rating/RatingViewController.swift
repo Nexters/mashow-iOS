@@ -291,7 +291,7 @@ class RatingViewController: DrinkSelectionSubViewController {
     
     @objc override func didTapNextButton() {
         viewModel.updateScore(currentScore)
-        environmentViewModel.submitRating(currentScore)
+        environmentViewModel.saveRating(currentScore)
         
         let vc = FoodInputHomeViewController()
         vc.environmentViewModel = self.environmentViewModel

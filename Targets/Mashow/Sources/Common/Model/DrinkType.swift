@@ -53,6 +53,27 @@ enum DrinkType: String, CaseIterable {
         }
     }
     
+    var forAPIParameter: String {
+        switch self {
+        case .soju:
+            "SOJU"
+        case .liquor:
+            "LIQUOR"
+        case .makgeolli:
+            "MAKGEOLLI"
+        case .sake:
+            "SAKE"
+        case .beer:
+            "BEER"
+        case .wine:
+            "WINE"
+        case .cocktail:
+            "COCKTAIL"
+        case .highball:
+            "HIGHBALL"
+        }
+    }
+    
     var tag: Int {
         switch self {
         case .soju:

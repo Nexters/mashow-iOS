@@ -67,9 +67,14 @@ class DrinkSelectionSubViewController: UIViewController {
     }
     
     @objc private func didTapSaveButton() {
-        environmentViewModel.saveRecord()
-        // FIXME: Maybe need to wait server response
-        navigationController?.popToRootViewController(animated: true)
+        Task {
+            do {
+                try await environmentViewModel.submit()
+                navigationController?.popToRootViewController(animated: true)
+            } catch {
+                showErrorAlert(title: "네트워크 에러")
+            }
+        }
     }
     
     @objc func didTapBackButton() {

@@ -35,10 +35,13 @@ final class NetworkManager<Target> where Target: TargetType {
     }
     
     // MARK: API Request
+    @discardableResult
+    func request(_ api: Target) async throws -> Response {
+        try await provider.request(api)
+    }
+    
     func request<T>(_ api: Target, of type: T.Type) async throws -> T where T: Decodable {
-        try await provider
-            .request(api)
-            .map(T.self)
+        try await request(api).map(T.self)
     }
 }
 
