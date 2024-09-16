@@ -82,7 +82,7 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
-        environmentViewModel.clearFoods()
+        environmentViewModel.clearSideDishes()
         navigationController?.popViewController(animated: true)
     }
     
@@ -145,8 +145,8 @@ private extension FoodInputHomeViewController {
         viewModel.state.foodItems
             .sink { [weak self] foods in
                 guard let self else { return }
-                self.updateFoodItemsStackView(with: foods.map(\.description))
-                self.environmentViewModel.submitFoods(foods)
+                self.updateFoodItemsStackView(with: foods.map(\.title))
+                self.environmentViewModel.saveSideDishes(foods)
             }
             .store(in: &cancellables)
     }
@@ -217,7 +217,7 @@ private extension FoodInputHomeViewController {
                     guard let self else { return }
                     self.viewModel.state
                         .foodItems
-                        .send(chosenFoods.map { DrinkSelectionResult.Food(description: $0) })
+                        .send(chosenFoods.map { DrinkDetail.SideDish(title: $0) })
                 }))
         
         foodInputViewController.modalPresentationStyle = .fullScreen

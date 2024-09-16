@@ -25,7 +25,7 @@ class MashowRootViewController: UIViewController {
         viewModel.state.accessToken
             .receive(on: DispatchQueue.main)
             .sink { [weak self] accessToken in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.checkLoginStatus(with: accessToken)
                 self.viewModel.saveTokenToStorage(accessToken: accessToken)
             }

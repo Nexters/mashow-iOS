@@ -40,6 +40,9 @@ class MashowRootViewModel {
     }
     
     func saveTokenToStorage(accessToken: String?) {
-        self.storageManager.accessToken = accessToken
+        storageManager.accessToken = accessToken
+        if let accessToken {
+            networkManager.registerAccessToken(accessToken: accessToken)
+        }
     }
 }

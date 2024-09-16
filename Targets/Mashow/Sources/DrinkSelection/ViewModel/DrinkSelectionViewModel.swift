@@ -10,18 +10,21 @@ import UIKit
 import Combine
 
 class DrinkSelectionViewModel {
+    private let networkManager: NetworkManager<API>
+    
     struct State {
         let currentType = CurrentValueSubject<DrinkType, Never>(DrinkType.soju)
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
-        let drinkSelectionResult = PassthroughSubject<DrinkSelectionResult, Never>()
+        let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
         
-        var selectionResult = DrinkSelectionResult()
+        var selectionResult = DrinkDetail()
     }
     
     var state: State
     
-    init(state: State) {
+    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
         self.state = state
+        self.networkManager = networkManager
     }
     
     func addType(_ type: DrinkType) {
@@ -40,16 +43,16 @@ class DrinkSelectionViewModel {
     }
 
     // About drinks
-    func submitDrinks(_ drinks: [DrinkType: [String]]) {
-        state.selectionResult.drinks = drinks
+    func saveLiquors(_ liquors: [DrinkDetail.Liquor]) {
+        state.selectionResult.liquors = liquors
     }
     
-    func clearDrinks() {
-        state.selectionResult.drinks = [:]
+    func clearLiquors() {
+        state.selectionResult.liquors = []
     }
     
     // About rating
-    func submitRating(_ rating: Int) {
+    func saveRating(_ rating: Int) {
         state.selectionResult.rating = rating
     }
     
@@ -58,16 +61,16 @@ class DrinkSelectionViewModel {
     }
     
     // About foods
-    func submitFoods(_ foods: [DrinkSelectionResult.Food]) {
-        state.selectionResult.foods = foods
+    func saveSideDishes(_ sideDishes: [DrinkDetail.SideDish]) {
+        state.selectionResult.sideDishes = sideDishes
     }
     
-    func clearFoods() {
-        state.selectionResult.foods = []
+    func clearSideDishes() {
+        state.selectionResult.sideDishes = []
     }
     
     // About memos
-    func submitMemo(_ memo: DrinkSelectionResult.Memo) {
+    func saveMemo(_ memo: DrinkDetail.Memo) {
         state.selectionResult.memo = memo
     }
     
@@ -75,35 +78,16 @@ class DrinkSelectionViewModel {
         state.selectionResult.memo = nil
     }
     
-    // Clear all
+    /// Clear all
     func flush() {
         state.selectionResult = .init()
     }
     
-    // Save to server
-    func saveRecord() {
+    /// Submit saved record to server
+    func submit() async throws {
+        _ = try await networkManager.request(
+            .history(.postLiquorHistory(drinkDetail: state.selectionResult)))
+        
         state.drinkSelectionResult.send(state.selectionResult)
-    }
-}
-
-struct DrinkSelectionResult {
-    var drinks: [DrinkType: [String]] = [:]
-    var rating: Int?
-    var foods: [Food]?
-    var memo: Memo?
-}
-
-extension DrinkSelectionResult {
-    struct DrinkDetail {
-        let drinkType: DrinkType
-        let description: String
-    }
-    
-    struct Food {
-        let description: String
-    }
-    
-    struct Memo {
-        let description: String
     }
 }

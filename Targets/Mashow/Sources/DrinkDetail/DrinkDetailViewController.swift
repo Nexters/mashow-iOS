@@ -97,7 +97,7 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
                 return result
             }
         
-        environmentViewModel.submitDrinks(drinkDetails)
+        environmentViewModel.saveLiquors(drinkDetails.toLiquorArray())
         
         let vc = RatingViewController()
         vc.environmentViewModel = environmentViewModel
@@ -252,5 +252,16 @@ private extension UIView {
             currentSuperview = superview.superview
         }
         return nil
+    }
+}
+
+private extension [DrinkType:[String]] {
+    typealias Liquor = DrinkDetail.Liquor
+    
+    func toLiquorArray() -> [Liquor] {
+        return compactMap { (drinkType, names) in
+            let names = names.filter { $0.isEmpty == false }
+            return Liquor(liquorType: drinkType.forAPIParameter, names: names)
+        }
     }
 }

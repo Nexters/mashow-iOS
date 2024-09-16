@@ -87,10 +87,16 @@ class MemoViewController: DrinkSelectionSubViewController {
             return
         }
         
-        environmentViewModel.submitMemo(DrinkSelectionResult.Memo(description: text))
-        environmentViewModel.saveRecord()
-        viewModel.state.memo.send(text)
-        navigationController?.popToRootViewController(animated: true)
+        environmentViewModel.saveMemo(DrinkDetail.Memo(description: text))
+        Task {
+            do {
+                try await environmentViewModel.submit()
+                viewModel.state.memo.send(text)
+                navigationController?.popToRootViewController(animated: true)
+            } catch {
+                showErrorAlert(title: "네트워크 에러")
+            }
+        }
     }
 }
 

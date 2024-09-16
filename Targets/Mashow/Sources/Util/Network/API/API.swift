@@ -11,6 +11,7 @@ import Foundation
 
 enum API {
     case user(UsertAPI)
+    case history(HistoryAPI)
 }
 
 extension API: TargetType {
@@ -31,23 +32,27 @@ extension API: TargetType {
     var path: String {
         switch self {
         case .user(let api): api.path
+        case .history(let api): api.path
         }
     }
     
     var method: Moya.Method {
         switch self {
         case .user(let api): api.method
+        case .history(let api): api.method
         }
     }
     
     var task: Task {
         switch self {
         case .user(let api): api.task
+        case .history(let api): api.task
         }
     }
     var sampleData: Data {
         switch self {
         case .user(let api): api.sampleData
+        case .history(let api): api.sampleData
         }
     }
 }
