@@ -212,7 +212,15 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController {
     @objc private func didTapRecordButton() {
-        let vc = DrinkSelectionViewController(viewModel: .init(state: .init()))
+        let vc = DrinkSelectionViewController(
+            viewModel: .init(
+                state: .init(),
+                action: .init(
+                    refreshHome: { [weak self] in
+                        guard let self else { return }
+                        try await self.viewModel.refresh()
+                    }))
+        )
         navigationController?.pushViewController(vc, animated: true)
     }
     

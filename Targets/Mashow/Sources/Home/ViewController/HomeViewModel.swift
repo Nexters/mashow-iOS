@@ -26,16 +26,22 @@ class HomeViewModel {
         
         Task {
             do {
-                let fetchedRecords = try await fetchRecordsFromServer()
-                state.records.send(fetchedRecords)
+                try await refresh()
             } catch {
                 state.error.send(error)
             }
         }
     }
     
-    func fetchRecordsFromServer() async throws -> Set<DrinkType> {
-        let response = try await networkManager.request(.history(.getLiquorTypes), 
+    func refresh() async throws {
+        let fetchedRecords = try await fetchRecordsFromServer()
+        state.records.send(fetchedRecords)
+    }
+}
+
+extension HomeViewModel {
+    private func fetchRecordsFromServer() async throws -> Set<DrinkType> {
+        let response = try await networkManager.request(.history(.getLiquorTypes),
                                                         of: LiquorTypesResponse.self)
         let types = response.value.liquorHistoryTypes.map { DrinkType.fromAPIResoponse($0) }
         return Set(types)

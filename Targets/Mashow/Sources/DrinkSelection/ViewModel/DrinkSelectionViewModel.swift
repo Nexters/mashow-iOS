@@ -16,14 +16,25 @@ class DrinkSelectionViewModel {
         let currentType = CurrentValueSubject<DrinkType, Never>(DrinkType.soju)
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
+        let isLoading = CurrentValueSubject<Bool, Never>(false)
         
         var selectionResult = DrinkDetail()
     }
     
-    var state: State
+    struct Action {
+        let refreshHome: @Sendable () async throws -> Void
+    }
     
-    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
+    var state: State
+    var action: Action
+    
+    init(
+        state: State,
+        action: Action,
+        networkManager: NetworkManager<API> = Environment.network
+    ) {
         self.state = state
+        self.action = action
         self.networkManager = networkManager
     }
     
@@ -85,8 +96,13 @@ class DrinkSelectionViewModel {
     
     /// Submit saved record to server
     func submit() async throws {
+        state.isLoading.send(true)
+        defer { state.isLoading.send(false) }
+        
         _ = try await networkManager.request(
             .history(.postLiquorHistory(drinkDetail: state.selectionResult)))
+        
+        try await action.refreshHome()
         
         state.drinkSelectionResult.send(state.selectionResult)
     }

@@ -8,14 +8,17 @@
 
 import UIKit
 import SnapKit
+import Combine
 
 class DrinkSelectionSubViewController: UIViewController {
     var environmentViewModel: DrinkSelectionViewModel!
+    private var cancellables = Set<AnyCancellable>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupNavigationBar()
+        bindLoadingView()
     }
     
     // MARK: - Properties
@@ -49,6 +52,13 @@ class DrinkSelectionSubViewController: UIViewController {
         return stackView
     }()
     
+    lazy var loadingView: UIActivityIndicatorView = {
+        let loadingView = UIActivityIndicatorView()
+        loadingView.color = .white
+        loadingView.startAnimating()
+        return loadingView
+    }()
+    
     // MARK: - Setup
     
     func setupNavigationBar() {
@@ -56,6 +66,20 @@ class DrinkSelectionSubViewController: UIViewController {
         navigationItem.title = Date.todayStringWrittenInKorean()
         navigationItem.leftBarButtonItem = NavigationAsset.makeCancelButton(target: self, #selector(didTapCancelButton))
         navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
+    }
+    
+    func bindLoadingView() {
+        environmentViewModel.state.isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                guard let self else { return }
+                if isLoading {
+                    self.loadingView.isHidden = false
+                } else {
+                    self.loadingView.isHidden = true
+                }
+            }
+            .store(in: &cancellables)
     }
     
     
