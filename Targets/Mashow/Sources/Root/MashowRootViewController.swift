@@ -72,7 +72,9 @@ class MashowRootViewController: UIViewController {
         removeCurrentChildViewController()
 
         let homeViewController = HomeViewController()
-        homeViewController.viewModel = HomeViewModel(state: .init(nickname: nickname))
+        homeViewController.viewModel = HomeViewModel(
+            state: .init(nickname: nickname,
+                         accessToken: viewModel.state.accessToken))
         
         addChild(homeViewController)
         view.addSubview(homeViewController.view)

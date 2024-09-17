@@ -71,8 +71,7 @@ class HomeViewController: UIViewController {
             for: .normal)
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
-        button.layer.masksToBounds = true
-        button.layer.cornerRadius = button.frame.width / 2
+        button.addTarget(self, action: #selector(didTapMyPageButton), for: .touchUpInside)
 
         return button
     }()
@@ -87,6 +86,10 @@ class HomeViewController: UIViewController {
         setupConstraints()
         setupSubViewAction()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -221,11 +224,13 @@ extension HomeViewController {
                         try await self.viewModel.refresh()
                     }))
         )
-        navigationController?.pushViewController(vc, animated: true)
+        
+        show(vc, sender: nil)
     }
     
     @objc private func didTapMyPageButton() {
-        // TODO: implement
+        let vc = MyPageViewController()
+        show(vc, sender: nil)
     }
 }
 
@@ -233,7 +238,8 @@ import SwiftUI
 #Preview {
     HomeViewController.preview {
         let vc = HomeViewController()
-        vc.viewModel = .init(state: .init(nickname: "Temp한글"))
+        vc.viewModel = .init(state: .init(nickname: "Temp한글", 
+                                          accessToken: .init(nil)))
         vc.viewModel.state.records.send([.soju, .beer, .wine])
         return vc
     }

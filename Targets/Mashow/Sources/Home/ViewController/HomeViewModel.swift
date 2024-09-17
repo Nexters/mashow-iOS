@@ -15,6 +15,8 @@ class HomeViewModel {
     struct State {
         let nickname: String
         let records: CurrentValueSubject<Set<DrinkType>, Never> = .init([])
+        let accessToken: CurrentValueSubject<String?, Never>
+        
         let error: PassthroughSubject<Error?, Never> = .init()
     }
     
