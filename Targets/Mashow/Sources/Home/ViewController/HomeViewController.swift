@@ -173,6 +173,11 @@ class HomeViewController: UIViewController {
         }
     }
     
+    private func showNotDeterminedView() {
+        drinkCardView.isHidden = true
+        listTypeRecordViewController.view.isHidden = true
+    }
+    
     private func showEmptyStateView() {
         drinkCardView.isHidden = false
         listTypeRecordViewController.view.isHidden = true
@@ -191,6 +196,11 @@ class HomeViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] records in
                 guard let self else { return }
+                
+                guard let records else {
+                    showNotDeterminedView()
+                    return
+                }
                 
                 if records.isEmpty {
                     showEmptyStateView()

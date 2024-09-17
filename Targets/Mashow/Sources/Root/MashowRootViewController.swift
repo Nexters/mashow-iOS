@@ -16,10 +16,22 @@ class MashowRootViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         
         bind()
+        setupViews()
+        setupConstraints()
     }
+    
+    // MARK: - Properties
+    
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .homeBackgroundDefault)
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
+    // MARK: - setup
     
     private func bind() {
         viewModel.state.accessToken
@@ -31,6 +43,18 @@ class MashowRootViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
+    
+    private func setupViews() {
+        view.addSubview(backgroundImageView)
+    }
+    
+    private func setupConstraints() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    // MARK: - Utils
     
     @MainActor private func checkLoginStatus(with accessToken: String?) {
         Task {

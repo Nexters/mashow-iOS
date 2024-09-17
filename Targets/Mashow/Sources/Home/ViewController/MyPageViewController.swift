@@ -79,10 +79,10 @@ class MyPageViewController: UIViewController {
 
     // My Page 섹션과 항목 데이터
     let myPageSections: [MyPageSection] = [
+//        MyPageSection(header: "계정", items: [
+//            MyPageItem(title: "닉네임 변경", action: .changeNickname)
+//        ]),
         MyPageSection(header: "계정", items: [
-            MyPageItem(title: "닉네임 변경", action: .changeNickname)
-        ]),
-        MyPageSection(header: "기타", items: [
             MyPageItem(title: "로그아웃", action: .logout),
             MyPageItem(title: "계정 삭제", action: .deleteAccount)
         ])
