@@ -185,7 +185,7 @@ class HomeViewController: UIViewController {
     
     private func showMiniCardListView(with drinkTypeList: [DrinkType]) {
         drinkCardView.isHidden = true
-        listTypeRecordViewController.availableDrinkTypes = drinkTypeList
+        listTypeRecordViewController.configure(nickname: viewModel.state.nickname, availableDrinkTypes: drinkTypeList)
         listTypeRecordViewController.view.isHidden = false
     }
     

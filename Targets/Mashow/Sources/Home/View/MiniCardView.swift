@@ -10,6 +10,8 @@ import UIKit
 import SnapKit
 
 class MiniCardView: UIView {
+    private(set) var drinkType: DrinkType?
+    
     // MARK: - UI Elements
 
     private lazy var backgroundImageView: UIImageView = {
@@ -57,6 +59,7 @@ class MiniCardView: UIView {
 // MARK: - Configuration
 extension MiniCardView {
     func configure(with image: UIImage?, drinkType: DrinkType, isSelected: Bool = false) {
+        self.drinkType = drinkType
         backgroundImageView.image = image
         update(isSelected: isSelected)
     }

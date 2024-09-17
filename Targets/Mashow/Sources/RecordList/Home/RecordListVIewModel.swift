@@ -13,9 +13,16 @@ class RecordListViewModel {
     typealias Record = RecordListViewController.Record
     
     struct State {
-        let isLoading: CurrentValueSubject<Bool, Never>
+        let nickname: String
         let currentDrinkType: CurrentValueSubject<DrinkType, Never>
-        let records: CurrentValueSubject<[Record], Never>
+        
+        let isLoading: CurrentValueSubject<Bool, Never> = .init(false)
+        let records: CurrentValueSubject<[Record], Never> = .init([])
+        
+        init(nickname: String, drinkTypeToBeShown drinkType: DrinkType) {
+            self.nickname = nickname
+            self.currentDrinkType = .init(drinkType)
+        }
     }
     
     let state: State
@@ -25,12 +32,8 @@ class RecordListViewModel {
         state.currentDrinkType.value
     }
     
-    init() {
-        self.state = State(
-            isLoading: .init(false),
-            currentDrinkType: .init(.soju),
-            records: .init([])
-        )
+    init(state: State) {
+        self.state = state
     }
     
     func updateCurrentDrinkType(with drinkType: DrinkType) {

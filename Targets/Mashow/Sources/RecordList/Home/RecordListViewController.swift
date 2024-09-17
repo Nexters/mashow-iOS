@@ -11,6 +11,22 @@ import SnapKit
 import Combine
 
 class RecordListViewController: UIViewController {
+    // MARK: - Properties
+    
+    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
+    
+    private var collectionView: UICollectionView!
+    private var dataSource: DataSourceType!
+    private var viewModel: RecordListViewModel
+    
+    init(viewModel: RecordListViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Elements
     lazy var refreshControl: UIRefreshControl = {
@@ -64,7 +80,7 @@ class RecordListViewController: UIViewController {
 
         // Create a menu with options
         let menuItems = DrinkType.allCases.map { type in
-            UIAction(title: type.rawValue) { [weak self] _ in
+            UIAction(title: type.korean) { [weak self] _ in
                 guard let self else { return }
                 self.viewModel.updateRecords(with: type)
                 self.viewModel.updateCurrentDrinkType(with: type)
@@ -94,23 +110,6 @@ class RecordListViewController: UIViewController {
         return loadingView
     }()
     
-    // MARK: - Properties
-    
-    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
-    
-    private var collectionView: UICollectionView!
-    private var dataSource: DataSourceType!
-    private var viewModel: RecordListViewModel
-    
-    init(viewModel: RecordListViewModel = .init()) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -123,8 +122,10 @@ class RecordListViewController: UIViewController {
         setupNavigationBar()
         
         bind()
-        viewModel.updateCurrentDrinkType(with: .soju)
-        viewModel.updateRecords(with: .soju)
+        
+        let drinkTypeToBeShown = viewModel.currentDrinkType
+        viewModel.updateCurrentDrinkType(with: drinkTypeToBeShown)
+        viewModel.updateRecords(with: drinkTypeToBeShown)
     }
     
     // MARK: - Bind
@@ -151,15 +152,15 @@ class RecordListViewController: UIViewController {
         viewModel.state.currentDrinkType
             .receive(on: DispatchQueue.main)
             .sink { [weak self] drinkType in
-                guard let self = self else { return }
-                self.titleButton.setTitle(drinkType.rawValue, for: .normal)
+                guard let self else { return }
+                self.titleButton.setTitle(drinkType.korean, for: .normal)
             }
             .store(in: &cancellables)
         
         viewModel.state.records
             .receive(on: DispatchQueue.main)
             .sink { [weak self] records in
-                guard let self = self else { return }
+                guard let self else { return }
                 // Prepare fade in
                 self.collectionView.alpha = 0.0
 
@@ -284,7 +285,7 @@ extension RecordListViewController {
                     return nil
                 }
                 headerCell.configure(
-                    title: "MYUNG님의 이번달",
+                    title: "\(viewModel.state.nickname)님의 이번달",
                     drinkType: "\(self.viewModel.currentDrinkType.rawValue)",
                     percentage: "41%",
                     buttons: [("처음처럼", 4), ("참이슬", 2), ("진로", 1), ("진로", 1), ("진로", 1), ("진로", 1)]
