@@ -55,6 +55,7 @@ class MashowRootViewController: UIViewController {
     }
     
     private func showLoginViewController() {
+        navigationController?.popToRootViewController(animated: false)
         removeCurrentChildViewController()
 
         let loginViewController = LoginViewController()
@@ -69,6 +70,7 @@ class MashowRootViewController: UIViewController {
     }
     
     private func showMainViewController(with nickname: String) {
+        navigationController?.popToRootViewController(animated: false)
         removeCurrentChildViewController()
 
         let homeViewController = HomeViewController()

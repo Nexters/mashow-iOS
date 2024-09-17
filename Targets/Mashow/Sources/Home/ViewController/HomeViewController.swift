@@ -229,7 +229,10 @@ extension HomeViewController {
     }
     
     @objc private func didTapMyPageButton() {
-        let vc = MyPageViewController()
+        let vc = MyPageViewController(
+            viewModel: MyPageViewModel(
+                state: .init(accessTokenSubject: viewModel.state.accessToken)))
+        
         show(vc, sender: nil)
     }
 }

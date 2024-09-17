@@ -9,8 +9,64 @@
 import UIKit
 import SnapKit
 
+import Combine
+class MyPageViewModel {
+    private let networkManager: NetworkManager<API>
+    let state: State
+    
+    struct State {
+        let accessTokenSubject: CurrentValueSubject<String?, Never>
+        
+        // UX Related
+        let isLoading: CurrentValueSubject<Bool, Never> = .init(false)
+    }
+    
+    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
+        self.state = state
+        self.networkManager = networkManager
+    }
+    
+    func logout() {
+        state.accessTokenSubject.send(nil)
+    }
+    
+    func deleteAccount() async throws {
+        state.isLoading.send(true)
+        defer { self.state.isLoading.send(false) }
+        
+        if let accessToken = state.accessTokenSubject.value {
+            try await networkManager.request(
+                .user(.withdraw(accessToken: accessToken)))
+            state.accessTokenSubject.send(nil)
+        }
+    }
+}
+
 class MyPageViewController: UIViewController {
+    
+    let viewModel: MyPageViewModel
+    
+    init(viewModel: MyPageViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - UI Elements
+    
+    lazy var loadingView: UIActivityIndicatorView = {
+        let loadingView = UIActivityIndicatorView()
+        loadingView.style = .medium
+        loadingView.color = .white
+        
+        loadingView.startAnimating()
+        return loadingView
+    }()
 
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -48,10 +104,17 @@ class MyPageViewController: UIViewController {
 
     private func setupViews() {
         view.backgroundColor = .systemGroupedBackground
+        
         view.addSubview(tableView)
+        view.addSubview(loadingView)
     }
 
     private func setupConstraints() {
+        loadingView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        hideLoadingView()
+        
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -60,6 +123,33 @@ class MyPageViewController: UIViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
         navigationItem.title = "마이페이지"
+    }
+    
+    private func bind() {
+        viewModel.state.isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                guard let self else { return }
+                
+                if isLoading {
+                    self.showLoadingView()
+                } else {
+                    self.hideLoadingView()
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: - Methods
+
+extension MyPageViewController {
+    func showLoadingView() {
+        loadingView.isHidden = false
+    }
+    
+    func hideLoadingView() {
+        loadingView.isHidden = true
     }
 }
 
@@ -140,40 +230,63 @@ extension MyPageViewController {
     }
 
     private func changeNickname(to newNickname: String) {
-        // 닉네임 변경 로직 구현
-        // 예를 들어, 서버에 요청을 보내거나 로컬 저장소에 저장
-        print("닉네임이 '\(newNickname)'(으)로 변경되었습니다.")
-        // 닉네임 변경 후 필요한 업데이트 수행
-        // 예: UI 업데이트, 사용자 정보 저장 등
-        // 여기서는 간단히 알림을 표시합니다.
-        let successAlert = UIAlertController(title: "완료", message: "닉네임이 변경되었습니다.", preferredStyle: .alert)
+        let successAlert = UIAlertController(
+            title: "완료",
+            message: "닉네임이 변경되었습니다.",
+            preferredStyle: .alert)
+        
         successAlert.addAction(UIAlertAction(title: "확인", style: .default, handler: nil))
         present(successAlert, animated: true, completion: nil)
     }
 
     private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "오류",
+            message: message,
+            preferredStyle: .alert)
+        
         alert.addAction(UIAlertAction(title: "확인", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
     }
 
     private func showLogoutConfirmation() {
-        let alert = UIAlertController(title: "로그아웃", message: "정말로 로그아웃 하시겠습니까?", preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "로그아웃",
+            message: "정말로 로그아웃 하시겠습니까?",
+            preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive, handler: { _ in
-            // 로그아웃 액션 수행
-            print("로그아웃 완료")
-        }))
+        alert.addAction(UIAlertAction(
+            title: "로그아웃",
+            style: .destructive,
+            handler: { [weak self] _ in
+                self?.viewModel.logout()
+            }))
+        
         present(alert, animated: true, completion: nil)
     }
-
+    
     private func showDeleteAccountConfirmation() {
-        let alert = UIAlertController(title: "계정 삭제", message: "정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
-        alert.addAction(UIAlertAction(title: "삭제", style: .destructive, handler: { _ in
-            // 계정 삭제 액션 수행
-            print("계정 삭제 완료")
-        }))
+        let alert = UIAlertController(
+            title: "계정 삭제",
+            message: "정말로 계정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(
+            title: "취소",
+            style: .cancel,
+            handler: nil))
+        alert.addAction(UIAlertAction(
+            title: "삭제",
+            style: .destructive,
+            handler: { [weak self] _ in
+                Task {
+                    do {
+                        try await self?.viewModel.deleteAccount()
+                    } catch {
+                        self?.showErrorAlert()
+                    }
+                }
+            }))
+        
         present(alert, animated: true, completion: nil)
     }
 }
@@ -214,5 +327,5 @@ class ProfileViewController: UIViewController {
 
 import SwiftUI
 #Preview {
-    MyPageViewController()
+    MyPageViewController.preview()
 }
