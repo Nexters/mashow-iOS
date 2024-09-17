@@ -47,9 +47,7 @@ class DrinkSelectionViewModel {
     
     func removeType(_ type: DrinkType) {
         var current = state.addedTypes.value
-        guard current.contains(type) else { return }
-        guard let targetIndex = current.firstIndex(of: type) else { return }
-        current.remove(at: targetIndex)
+        current.removeAll(where: { $0 == type })
         state.addedTypes.send(current)
     }
 
