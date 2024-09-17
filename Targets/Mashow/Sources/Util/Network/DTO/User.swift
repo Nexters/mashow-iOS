@@ -15,6 +15,7 @@ struct UserResponse: Decodable {
 }
 
 struct User: Codable {
+    let userId: Int
     let nickname: String
     let accessToken: String
 }
@@ -32,5 +33,16 @@ extension User {
 }
 """
         return try! JSONEncoder().encode(rawString)
+    }
+}
+
+struct UserFetchResponse: Decodable {
+    let code: Int
+    let message: String
+    let value: FetchedUser
+    
+    struct FetchedUser: Codable {
+        let userId: Int
+        let nickname: String
     }
 }

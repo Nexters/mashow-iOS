@@ -33,10 +33,12 @@ class MashowRootViewModel {
         )
     }
     
-    func validateUser(with accessToken: String) async -> User? {
-        // FIXME: Connect API when it's done
-//        networkManager.request(.user, of: UserResponse.self)
-        return User(nickname: "Temp", accessToken: accessToken)
+    func validateUser(with accessToken: String) async throws -> User {
+        let response = try await networkManager.request(
+            .user(.fetch(accessToken: accessToken)), of: UserFetchResponse.self)
+        
+        let fetchedUser = response.value
+        return User(userId: fetchedUser.userId, nickname: fetchedUser.nickname, accessToken: accessToken)
     }
     
     func saveTokenToStorage(accessToken: String?) {

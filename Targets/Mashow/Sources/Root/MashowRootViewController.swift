@@ -35,12 +35,16 @@ class MashowRootViewController: UIViewController {
     @MainActor private func checkLoginStatus(with accessToken: String?) {
         Task {
             // 로그인이 되어 있다면 accessToken이 존재한다
-            if
-                let accessToken,
-                let user = await viewModel.validateUser(with: accessToken)
-            {
+            guard let accessToken else {
+                showLoginViewController()
+                return
+            }
+            
+            do {
+                let user = try await self.viewModel.validateUser(with: accessToken)
                 showMainViewController(with: user.nickname)
-            } else {
+            } catch {
+                showErrorAlert(message: "로그인 중 에러가 발생했습니다.\n다시 로그인해주세요.")
                 showLoginViewController()
             }
         }
