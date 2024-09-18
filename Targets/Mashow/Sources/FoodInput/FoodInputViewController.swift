@@ -65,7 +65,8 @@ class FoodInputViewController: UIViewController {
         // Enable automatic dimension for cell height
         tableView.estimatedRowHeight = 60
         tableView.rowHeight = UITableView.automaticDimension
-        
+        tableView.keyboardDismissMode = .onDrag
+
         return tableView
     }()
     
@@ -107,6 +108,8 @@ class FoodInputViewController: UIViewController {
         setupViews()
         setupConstraints()
         setupTableFooter()
+        
+        hideKeyboardWhenTappedAround()
     }
 }
 
