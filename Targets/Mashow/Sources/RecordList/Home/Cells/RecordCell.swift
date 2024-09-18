@@ -13,6 +13,9 @@ class RecordCell: UICollectionViewCell {
     
     static let reuseIdentifier = "RecordCell"
     
+    // Closure to handle the tap action
+    var onTap: (() -> Void)?
+    
     // Date label that remains at the top of the cell
     private lazy var dateLabel: UILabel = {
         let label = UILabel()
@@ -24,6 +27,7 @@ class RecordCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        setupTapGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -49,10 +53,24 @@ class RecordCell: UICollectionViewCell {
         }
     }
     
-    func configure(with records: [RecordListViewController.RecordCellInformation]) {
+    private func setupTapGesture() {
+        // Add tap gesture recognizer to the cell
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        self.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleTap() {
+        // Trigger the onTap closure when the cell is tapped
+        onTap?()
+    }
+    
+    func configure(with records: [RecordListViewController.RecordCellInformation], onTap: @escaping () -> Void) {
         // Set the date for the first record, assuming the date is the same for all records in the cell
         if let firstRecord = records.first {
             dateLabel.text = firstRecord.date
         }
+        
+        // Set the closure for handling the tap action
+        self.onTap = onTap
     }
 }

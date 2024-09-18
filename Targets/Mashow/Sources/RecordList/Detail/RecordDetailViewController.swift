@@ -9,7 +9,41 @@
 import UIKit
 import SnapKit
 
+import Combine
+class RecordDetailViewModel {
+    let state: State
+    
+    struct State {
+        let drinkInfo = CurrentValueSubject<DrinkInfo?, Never>(nil)
+    }
+    
+    init() {
+        state = State()
+    }
+    
+    func fetchDrinkInfo() async throws {
+        state.drinkInfo.send(
+            DrinkInfo(
+                drinkType: .highball,
+                memo: "Seed \(Int.random(in: 0...10)): 오늘은 알중단 사람들과 맛있는 술을 마셨당. 좋사좋시~ 다음에도 같이 술 마시고 싶다!!",
+                rating: Int.random(in: 1...5),
+                sideDishes: ["Seed \(Int.random(in: 0...10)): 소주_진로 막걸리_복순도가 하이볼_레몬 하이볼"])
+        )
+    }
+}
+
+extension RecordDetailViewModel {
+    struct DrinkInfo {
+        let drinkType: DrinkType
+        let memo: String?
+        let rating: Int?
+        let sideDishes: [String]
+    }
+}
+
 class RecordDetailViewController: UIViewController {
+    private let viewModel = RecordDetailViewModel()
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Elements
     
@@ -32,9 +66,7 @@ class RecordDetailViewController: UIViewController {
     }()
     
     private let cardView: CardStackView = {
-        let images = [UIImage(resource: .sojuCard), UIImage(resource: .beerCard), UIImage(resource: .cocktailCard)].compactMap({ $0 })
-        let imageView = CardStackView(cardImages: images)
-        return imageView
+        CardStackView(cardImages: [])
     }()
     
     private let commentaryLabel: UILabel = {
@@ -42,7 +74,7 @@ class RecordDetailViewController: UIViewController {
         label.font = .pretendard(size: 18, weight: .medium)
         label.textColor = .white.withAlphaComponent(0.8)
         label.numberOfLines = 0
-        label.text = "오늘은 알중단 사람들과 맛있는 술을 마셨당. 좋사좋시~ 다음에도 같이 술 마시고 싶다!!"
+        label.text = "" // Set dynamically based on view model data
         return label
     }()
     
@@ -61,6 +93,12 @@ class RecordDetailViewController: UIViewController {
         setupView()
         setupConstraints()
         setupNavigationBar()
+        
+        // Bind the view model to the UI
+        bind()
+        
+        // Fetch the drink info from the view model
+        Task { try await viewModel.fetchDrinkInfo() }
     }
     
     // MARK: - Setup Methods
@@ -70,6 +108,37 @@ class RecordDetailViewController: UIViewController {
         view.addSubview(cardView)
         view.addSubview(descriptionWrapperContainerView)
     }
+    
+    private func bind() {
+        viewModel.state.drinkInfo
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] drinkInfo in
+                guard let self = self, let drinkInfo = drinkInfo else {
+                    return
+                }
+                
+                // Update the UI with the fetched data
+                self.commentaryLabel.text = drinkInfo.memo
+                self.updateDetailHStacks(with: drinkInfo)
+            }
+            .store(in: &cancellables)
+    }
+    
+    // Update detail HStacks with fetched data
+    private func updateDetailHStacks(with drinkInfo: RecordDetailViewModel.DrinkInfo) {
+        cardView.setupCards(with: getCardImagesWithRandomStack(drinkType: drinkInfo.drinkType))
+        
+        // Remove and recreate the stack view based on the new drinkInfo
+        descriptionWrapperView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        descriptionWrapperView.addArrangedSubview(commentaryLabel)
+        descriptionWrapperView.addArrangedSubview(DividerView(color: .white.withAlphaComponent(0.1)))
+        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "주종", detail: drinkInfo.drinkType.rawValue))
+        descriptionWrapperView.addArrangedSubview(createRatingHStack(category: "평점", rating: drinkInfo.rating ?? 0))
+        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "먹은 음식", detail: drinkInfo.sideDishes.joined(separator: ", ")))
+    }
+    
+    // MARK: - Properties
     
     private lazy var descriptionWrapperContainerView: UIView = {
         let containerView = UIView()
@@ -98,9 +167,9 @@ class RecordDetailViewController: UIViewController {
         let stackView = UIStackView(arrangedSubviews: [
             commentaryLabel,
             DividerView(color: .white.withAlphaComponent(0.1)),
-            createDetailHStack(category: "주종", detail: "소주_진로 막걸리_복순도가 하이볼_레몬 하이볼"),
-            createRatingHStack(category: "평점", rating: 5),
-            createDetailHStack(category: "먹은 음식", detail: "오징어 순대 해물 파전 방어회")
+            createDetailHStack(category: "주종", detail: ""),
+            createRatingHStack(category: "평점", rating: 0),
+            createDetailHStack(category: "먹은 음식", detail: "")
         ])
         
         stackView.axis = .vertical
@@ -154,6 +223,48 @@ private extension RecordDetailViewController {
 }
 
 private extension RecordDetailViewController {
+    func getCardImagesWithRandomStack(drinkType: DrinkType) -> [UIImage] {
+        let allCards: [UIImage] = [
+            UIImage(resource: .sojuCard),
+            UIImage(resource: .liquorCard),
+            UIImage(resource: .makgeolliCard),
+            UIImage(resource: .sakeCard),
+            UIImage(resource: .beerCard),
+            UIImage(resource: .wineCard),
+            UIImage(resource: .cocktailCard),
+            UIImage(resource: .highballCard)
+        ]
+        
+        let topmostCard = switch drinkType {
+        case .soju:
+            UIImage(resource: .sojuCard)
+        case .liquor:
+            UIImage(resource: .liquorCard)
+        case .makgeolli:
+            UIImage(resource: .makgeolliCard)
+        case .sake:
+            UIImage(resource: .sakeCard)
+        case .beer:
+            UIImage(resource: .beerCard)
+        case .wine:
+            UIImage(resource: .wineCard)
+        case .cocktail:
+            UIImage(resource: .cocktailCard)
+        case .highball:
+            UIImage(resource: .highballCard)
+        }
+        
+        
+        // Remove the topmost card from the list of all cards to prevent duplication
+        let remainingCards = allCards.filter { $0 != topmostCard }
+        
+        // Randomly select two background cards from the remaining cards
+        let randomCards = remainingCards.shuffled().prefix(2)
+        
+        // Return the topmost card with the two randomly selected background cards
+        return [topmostCard] + randomCards
+    }
+    
     func createDetailHStack(category: String, detail: String) -> UIStackView {
         let categoryLabel: UILabel = {
             let label = UILabel()

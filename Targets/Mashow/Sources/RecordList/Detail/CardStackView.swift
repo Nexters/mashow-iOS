@@ -23,8 +23,7 @@ class CardStackView: UIView {
     }
     
     // MARK: - Setup Methods
-    
-    private func setupCards(with images: [UIImage]) {
+    func setupCards(with images: [UIImage]) {
         images.enumerated().reversed().forEach { index, image in
             let cardView = UIImageView()
             cardView.image = image

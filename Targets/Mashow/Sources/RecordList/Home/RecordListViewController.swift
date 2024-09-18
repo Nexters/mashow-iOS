@@ -319,7 +319,11 @@ extension RecordListViewController {
                 else {
                     return nil
                 }
-                cell.configure(with: [record])
+                
+                cell.configure(with: [record], onTap: {
+                    let vc = RecordDetailViewController()                    
+                    self.show(vc, sender: nil)
+                })
                 return cell
             }
         }
