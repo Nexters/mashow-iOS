@@ -88,6 +88,7 @@ class MemoViewController: DrinkSelectionSubViewController {
         }
         
         environmentViewModel.saveMemo(DrinkDetail.Memo(description: text))
+        
         Task {
             do {
                 try await environmentViewModel.submit()
@@ -97,6 +98,16 @@ class MemoViewController: DrinkSelectionSubViewController {
                 showErrorAlert(title: "네트워크 에러")
             }
         }
+    }
+    
+    @objc override func didTapSaveButton() {
+        guard let text = memoTextView.text, validateMemo(text: text) else {
+            return
+        }
+        
+        environmentViewModel.saveMemo(DrinkDetail.Memo(description: text))
+        
+        super.didTapSaveButton()
     }
 }
 
@@ -234,7 +245,7 @@ private extension MemoViewController {
 
 private extension MemoViewController {
     func validateMemo(text: String?) -> Bool {
-        guard let text, !text.isEmpty, text.count <= 100 else {
+        guard let text, text.count <= 100 else {
             return false
         }
         

@@ -459,8 +459,8 @@ extension RecordListViewController {
     @objc private func didPullToRefresh() {
         Task {
             do {
-                try await viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
                 refreshControl.beginRefreshing()
+                try await viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
             } catch {
                 showErrorAlert()
             }

@@ -88,7 +88,7 @@ extension DrinkSelectionViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
                 guard let self else { return }
-                
+
                 guard addedTypes.isEmpty == false else {
                     bottomNextButton.alpha = 0.5
                     bottomNextButton.isEnabled = false
@@ -215,7 +215,14 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapSaveButton() {
-        navigationController?.popViewController(animated: true)
+        Task {
+            do {
+                try await viewModel.submit()
+                navigationController?.popViewController(animated: true)
+            } catch {
+                showErrorAlert()
+            }
+        }
     }
 }
 

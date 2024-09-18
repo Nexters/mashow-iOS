@@ -211,35 +211,34 @@ class RatingViewController: DrinkSelectionSubViewController {
         // Update the score based on the snapped position
         updateScore(for: closestPosition)
         
+        // 첨에 잘못 만들어서 역순으로 가벌임; 시간 나면 고칠게용
         switch currentScore {
-            case 1: rulerView.triggerEvent(at: .one)
-            case 2: rulerView.triggerEvent(at: .two)
+            case 5: rulerView.triggerEvent(at: .one)
+            case 4: rulerView.triggerEvent(at: .two)
             case 3: rulerView.triggerEvent(at: .three)
-            case 4: rulerView.triggerEvent(at: .four)
-            case 5: rulerView.triggerEvent(at: .five)
+            case 2: rulerView.triggerEvent(at: .four)
+            case 1: rulerView.triggerEvent(at: .five)
             default: break
         }
         
         // Give haptic effect
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
-
+    
     // MARK: - Scoring Logic
 
     private func calculateScorePositions() {
-        // Calculate the Y positions corresponding to each score
         scorePositions = [
-            minY,                                // 1st score position
-            minY + (maxY - minY) * 0.25,         // 2nd score position
-            minY + (maxY - minY) * 0.5,          // 3rd score position (midpoint)
-            minY + (maxY - minY) * 0.75,         // 4th score position
-            maxY                                 // 5th score position
+            minY,                                // 5th score position (score 5)
+            minY + (maxY - minY) * 0.25,         // 4th score position (score 4)
+            minY + (maxY - minY) * 0.5,          // 3rd score position (score 3)
+            minY + (maxY - minY) * 0.75,         // 2nd score position (score 2)
+            maxY                                 // 1st score position (score 1)
         ]
     }
     
     private func updateScore(for waveY: CGFloat) {
-        // Calculate the current score based on the Y position of the waveView
-        let normalizedPosition = (waveY - minY) / (maxY - minY)
+        let normalizedPosition = 1 - (waveY - minY) / (maxY - minY)
         currentScore = Int(round(normalizedPosition * 4)) + 1
     }
     
@@ -296,6 +295,13 @@ class RatingViewController: DrinkSelectionSubViewController {
         let vc = FoodInputHomeViewController()
         vc.environmentViewModel = self.environmentViewModel
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc override func didTapSaveButton() {
+        viewModel.updateScore(currentScore)
+        environmentViewModel.saveRating(currentScore)
+        
+        super.didTapSaveButton()
     }
 }
 

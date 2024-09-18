@@ -42,12 +42,16 @@ class DrinkSelectionViewModel {
         var current = state.addedTypes.value
         guard state.addedTypes.value.count < 3, !current.contains(type) else { return }
         current.append(type)
+        
+        state.selectionResult.liquors.append(.init(liquorType: type.forAPIParameter, names: []))
         state.addedTypes.send(current)
     }
     
     func removeType(_ type: DrinkType) {
         var current = state.addedTypes.value
         current.removeAll(where: { $0 == type })
+        
+        state.selectionResult.liquors.removeAll(where: { $0.liquorType == type.forAPIParameter })
         state.addedTypes.send(current)
     }
 
@@ -101,7 +105,6 @@ class DrinkSelectionViewModel {
             .history(.postLiquorHistory(drinkDetail: state.selectionResult)))
         
         try await action.onSubmitted()
-        
         state.drinkSelectionResult.send(state.selectionResult)
     }
 }

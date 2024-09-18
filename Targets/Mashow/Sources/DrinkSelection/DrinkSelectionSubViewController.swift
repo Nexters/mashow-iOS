@@ -90,7 +90,7 @@ class DrinkSelectionSubViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
     
-    @objc private func didTapSaveButton() {
+    @objc func didTapSaveButton() {
         Task {
             do {
                 try await environmentViewModel.submit()
