@@ -123,7 +123,10 @@ class ListTypeRecordViewController: UIViewController {
         }
         
         let vc = RecordListViewController(
-            viewModel: .init(state: .init(nickname: self.nickname ?? "", drinkTypeToBeShown: drinkType)))
+            viewModel: .init(state: .init(
+                nickname: self.nickname ?? "",
+                fetchableDrinkTypes: availableDrinkTypes,
+                drinkTypeToBeShown: drinkType)))
         show(vc, sender: nil)
     }
 }
