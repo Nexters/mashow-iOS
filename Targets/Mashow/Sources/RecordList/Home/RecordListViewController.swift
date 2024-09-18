@@ -107,6 +107,7 @@ class RecordListViewController: UIViewController {
     lazy var recordButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("기록하기", for: .normal)
+        button.addTarget(self, action: #selector(didTapRecordButton), for: .touchUpInside)
         return button
     }()
     
@@ -464,6 +465,20 @@ extension RecordListViewController {
                 showErrorAlert()
             }
         }
+    }
+    
+    @objc private func didTapRecordButton() {
+        let vc = DrinkSelectionViewController(
+            viewModel: .init(
+                state: .init(),
+                action: .init(
+                    onSubmitted: { [weak self] in
+                        guard let self else { return }
+                        try await self.viewModel.action.refreshHomeWhenSubmitted()
+                    }))
+        )
+        
+        show(vc, sender: nil)
     }
 }
 

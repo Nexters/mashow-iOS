@@ -185,7 +185,14 @@ class HomeViewController: UIViewController {
     
     private func showMiniCardListView(with drinkTypeList: [DrinkType]) {
         drinkCardView.isHidden = true
-        listTypeRecordViewController.configure(nickname: viewModel.state.nickname, availableDrinkTypes: drinkTypeList)
+        listTypeRecordViewController.configure(
+            nickname: viewModel.state.nickname,
+            availableDrinkTypes: drinkTypeList,
+            refreshHomeWhenSubmitted: { [weak self] in
+                guard let self else { return }
+                try await self.viewModel.refresh()
+            }
+        )
         listTypeRecordViewController.view.isHidden = false
     }
     
@@ -229,7 +236,7 @@ extension HomeViewController {
             viewModel: .init(
                 state: .init(),
                 action: .init(
-                    refreshHome: { [weak self] in
+                    onSubmitted: { [weak self] in
                         guard let self else { return }
                         try await self.viewModel.refresh()
                     }))

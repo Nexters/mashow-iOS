@@ -12,6 +12,10 @@ import Combine
 class RecordListViewModel {
     typealias RecordCellInformation = RecordListViewController.RecordCellInformation
     
+    let state: State
+    let action: Action
+    private let networkManager: NetworkManager<API>
+    
     struct State {
         let nickname: String
         let fetchableDrinkTypes: [DrinkType]
@@ -28,17 +32,19 @@ class RecordListViewModel {
         }
     }
     
-    let state: State
-    private let networkManager: NetworkManager<API>
+    struct Action {
+        let refreshHomeWhenSubmitted: @Sendable () async throws -> Void
+    }
+    
+    init(state: State, action: Action, networkManager: NetworkManager<API> = Environment.network) {
+        self.state = state
+        self.action = action
+        self.networkManager = networkManager
+    }
     
     // MARK: - Convenience
     var currentDrinkType: DrinkType {
         state.currentDrinkType.value
-    }
-    
-    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
-        self.state = state
-        self.networkManager = networkManager
     }
     
     func updateCurrentDrinkType(with drinkType: DrinkType) {

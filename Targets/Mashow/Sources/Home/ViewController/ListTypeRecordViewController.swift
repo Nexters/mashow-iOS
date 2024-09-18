@@ -14,10 +14,16 @@ class ListTypeRecordViewController: UIViewController {
     // MARK: - Properties
     private var nickname: String?
     private var availableDrinkTypes: [DrinkType] = []
+    private var refreshHomeWhenSubmitted: @Sendable () async throws -> Void = {}
     
-    func configure(nickname: String, availableDrinkTypes: [DrinkType]) {
+    func configure(
+        nickname: String,
+        availableDrinkTypes: [DrinkType],
+        refreshHomeWhenSubmitted: @Sendable @escaping () async throws -> Void
+    ) {
         self.nickname = nickname
         self.availableDrinkTypes = availableDrinkTypes
+        self.refreshHomeWhenSubmitted = refreshHomeWhenSubmitted
         
         updateCardViews()
     }
@@ -123,10 +129,16 @@ class ListTypeRecordViewController: UIViewController {
         }
         
         let vc = RecordListViewController(
-            viewModel: .init(state: .init(
-                nickname: self.nickname ?? "",
-                fetchableDrinkTypes: availableDrinkTypes,
-                drinkTypeToBeShown: drinkType)))
+            viewModel: .init(
+                state: .init(
+                    nickname: self.nickname ?? "",
+                    fetchableDrinkTypes: availableDrinkTypes,
+                    drinkTypeToBeShown: drinkType),
+                action: .init(refreshHomeWhenSubmitted: { [weak self] in
+                    guard let self else { return }
+                    try await self.refreshHomeWhenSubmitted()
+                })
+            ))
         show(vc, sender: nil)
     }
 }

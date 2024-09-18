@@ -22,7 +22,7 @@ class DrinkSelectionViewModel {
     }
     
     struct Action {
-        let refreshHome: @Sendable () async throws -> Void
+        let onSubmitted: @Sendable () async throws -> Void
     }
     
     var state: State
@@ -100,7 +100,7 @@ class DrinkSelectionViewModel {
         _ = try await networkManager.request(
             .history(.postLiquorHistory(drinkDetail: state.selectionResult)))
         
-        try await action.refreshHome()
+        try await action.onSubmitted()
         
         state.drinkSelectionResult.send(state.selectionResult)
     }
