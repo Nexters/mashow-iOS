@@ -53,6 +53,31 @@ enum DrinkType: String, CaseIterable {
         }
     }
     
+    var tag: Int {
+        switch self {
+        case .soju:
+            0
+        case .liquor:
+            1
+        case .makgeolli:
+            2
+        case .sake:
+            3
+        case .beer:
+            4
+        case .wine:
+            5
+        case .cocktail:
+            6
+        case .highball:
+            7
+        }
+    }
+}
+
+// MARK: - Network related
+
+extension DrinkType {
     var forAPIParameter: String {
         switch self {
         case .soju:
@@ -74,24 +99,26 @@ enum DrinkType: String, CaseIterable {
         }
     }
     
-    var tag: Int {
-        switch self {
-        case .soju:
-            0
-        case .liquor:
-            1
-        case .makgeolli:
-            2
-        case .sake:
-            3
-        case .beer:
-            4
-        case .wine:
-            5
-        case .cocktail:
-            6
-        case .highball:
-            7
+    static func fromAPIResoponse(_ text: String) -> Self {
+        switch text {
+        case "SOJU":
+            return .soju
+        case "LIQUOR":
+            return .liquor
+        case "MAKGEOLLI":
+            return .makgeolli
+        case "SAKE":
+            return .sake
+        case "BEER":
+            return .beer
+        case "WINE":
+            return .wine
+        case "COCKTAIL":
+            return .cocktail
+        case "HIGHBALL":
+            return .highball
+        default:
+            return .liquor
         }
     }
 }

@@ -110,7 +110,7 @@ class OverviewCell: UICollectionViewCell {
 // MARK: - Configuration
 
 extension OverviewCell {
-    func configure(title: String, drinkType: String, percentage: String, buttons: [(title: String, count: Int)]) {
+    func configure(title: String, drinkType: String, percentage: String, buttons: [RecordStat.Name]) {
         titleLabel.text = title
         percentageLabel.text = percentage
         
@@ -120,7 +120,7 @@ extension OverviewCell {
         buttonStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         // Add the buttons to the buttonStack
         for buttonInfo in buttons {
-            let button = createButton(title: buttonInfo.title, count: buttonInfo.count)
+            let button = createButton(title: buttonInfo.name, count: buttonInfo.count)
             buttonStack.addArrangedSubview(button)
         }
         

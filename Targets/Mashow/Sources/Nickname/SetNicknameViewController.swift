@@ -197,9 +197,10 @@ private extension SetNicknameViewController {
         Task {
             do {
                 let accessToken = try await viewModel.register(nickname: nickname)
-                navigationController?.popViewController(animated: false)
                 // Report to publisher
                 viewModel.state.accessToken.send(accessToken)
+
+                navigationController?.popViewController(animated: false)
             } catch {
                 // Show error alert
                 showErrorAlert()

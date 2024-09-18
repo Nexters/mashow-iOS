@@ -12,10 +12,20 @@ import SnapKit
 
 class ListTypeRecordViewController: UIViewController {
     // MARK: - Properties
-    var availableDrinkTypes: [DrinkType] = [] {
-        didSet {
-            updateCardViews()
-        }
+    private var nickname: String?
+    private var availableDrinkTypes: [DrinkType] = []
+    private var refreshHomeWhenSubmitted: @Sendable () async throws -> Void = {}
+    
+    func configure(
+        nickname: String,
+        availableDrinkTypes: [DrinkType],
+        refreshHomeWhenSubmitted: @Sendable @escaping () async throws -> Void
+    ) {
+        self.nickname = nickname
+        self.availableDrinkTypes = availableDrinkTypes
+        self.refreshHomeWhenSubmitted = refreshHomeWhenSubmitted
+        
+        updateCardViews()
     }
     
     // MARK: - UI Elements
@@ -82,6 +92,14 @@ class ListTypeRecordViewController: UIViewController {
             } else {
                 cardView.configure(with: image, drinkType: drinkType, isSelected: false)
             }
+            
+            // Enable tap gesture when the card view is selected
+            if cardView.isSelected {
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cardViewTapped(_:)))
+                cardView.addGestureRecognizer(tapGesture)
+                cardView.isUserInteractionEnabled = true
+            }
+            
             return cardView
         }
     }
@@ -102,8 +120,25 @@ class ListTypeRecordViewController: UIViewController {
     }
     
     // MARK: - Action Handling
-
-    private func handleCardTap(for selectedCardView: MiniCardView) {
-        selectedCardView.update(isSelected: !selectedCardView.isSelected)
+    
+    @objc private func cardViewTapped(_ sender: UITapGestureRecognizer) {
+        guard let tappedCardView = sender.view as? MiniCardView,
+              let drinkType = tappedCardView.drinkType
+        else {
+            return
+        }
+        
+        let vc = RecordListViewController(
+            viewModel: .init(
+                state: .init(
+                    nickname: self.nickname ?? "",
+                    fetchableDrinkTypes: availableDrinkTypes,
+                    drinkTypeToBeShown: drinkType),
+                action: .init(refreshHomeWhenSubmitted: { [weak self] in
+                    guard let self else { return }
+                    try await self.refreshHomeWhenSubmitted()
+                })
+            ))
+        show(vc, sender: nil)
     }
 }

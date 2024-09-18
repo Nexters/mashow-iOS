@@ -11,6 +11,22 @@ import SnapKit
 import Combine
 
 class RecordListViewController: UIViewController {
+    // MARK: - Properties
+    
+    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, RecordCellInformation>
+    
+    private var collectionView: UICollectionView!
+    private var dataSource: DataSourceType!
+    private var viewModel: RecordListViewModel
+    
+    init(viewModel: RecordListViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Elements
     lazy var refreshControl: UIRefreshControl = {
@@ -63,11 +79,18 @@ class RecordListViewController: UIViewController {
         titleButton.tintColor = .white
 
         // Create a menu with options
-        let menuItems = DrinkType.allCases.map { type in
-            UIAction(title: type.rawValue) { [weak self] _ in
+        let menuItems = viewModel.state.fetchableDrinkTypes.map { type in
+            UIAction(title: type.korean) { [weak self] _ in
                 guard let self else { return }
-                self.viewModel.updateRecords(with: type)
-                self.viewModel.updateCurrentDrinkType(with: type)
+                
+                Task {
+                    do {
+                        self.viewModel.updateCurrentDrinkType(with: type)
+                        try await self.viewModel.updateRecords(with: type)
+                    } catch {
+                        self.showErrorAlert()
+                    }
+                }
             }
         }
         
@@ -84,6 +107,7 @@ class RecordListViewController: UIViewController {
     lazy var recordButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("기록하기", for: .normal)
+        button.addTarget(self, action: #selector(didTapRecordButton), for: .touchUpInside)
         return button
     }()
     
@@ -94,37 +118,28 @@ class RecordListViewController: UIViewController {
         return loadingView
     }()
     
-    // MARK: - Properties
-    
-    typealias DataSourceType = UICollectionViewDiffableDataSource<Category, Record>
-    
-    private var collectionView: UICollectionView!
-    private var dataSource: DataSourceType!
-    private var viewModel: RecordListViewModel
-    
-    init(viewModel: RecordListViewModel = .init()) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCollectionView()
         setupDataSource()
-        applySnapshot(records: [])
+        applySnapshot(recordStat: nil, records: [])
         setupViews()
         setupConstraints()
         setupNavigationBar()
         
         bind()
-        viewModel.updateCurrentDrinkType(with: .soju)
-        viewModel.updateRecords(with: .soju)
+        
+        let drinkTypeToBeShown = viewModel.currentDrinkType
+        viewModel.updateCurrentDrinkType(with: drinkTypeToBeShown)
+        Task {
+            do {
+                try await viewModel.updateRecords(with: drinkTypeToBeShown)
+            } catch {
+                showErrorAlert()
+            }
+        }
     }
     
     // MARK: - Bind
@@ -151,20 +166,20 @@ class RecordListViewController: UIViewController {
         viewModel.state.currentDrinkType
             .receive(on: DispatchQueue.main)
             .sink { [weak self] drinkType in
-                guard let self = self else { return }
-                self.titleButton.setTitle(drinkType.rawValue, for: .normal)
+                guard let self else { return }
+                self.titleButton.setTitle(drinkType.korean, for: .normal)
             }
             .store(in: &cancellables)
         
-        viewModel.state.records
+        viewModel.state.records.zip(viewModel.state.recordStat)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] records in
-                guard let self = self else { return }
+            .sink { [weak self] records, recordStat in
+                guard let self else { return }
                 // Prepare fade in
                 self.collectionView.alpha = 0.0
 
-                self.applySnapshot(records: []) // To reset all scroll positions
-                self.applySnapshot(records: records)
+                self.applySnapshot(recordStat: nil, records: []) // To reset all scroll positions
+                self.applySnapshot(recordStat: recordStat, records: records)
 
                 // Fade in
                 UIView.animate(withDuration: 0.15) {
@@ -212,17 +227,22 @@ class RecordListViewController: UIViewController {
 }
 
 extension RecordListViewController {
-    struct Record: Hashable {
-        enum RecordType {
-            case overview
+    struct RecordCellInformation: Hashable, Equatable {
+        enum RecordType: Hashable {
+            case overview(RecordStat)
             case record
         }
 
         let id: UUID
         let date: String?
-        let type: String?
+        let name: String?
         let recordType: RecordType
+        
+        static func == (lhs: RecordCellInformation, rhs: RecordCellInformation) -> Bool {
+            lhs.id == rhs.id
+        }
     }
+    
     struct Category: Hashable {
         let year: Int
         let month: Int
@@ -275,7 +295,7 @@ extension RecordListViewController {
             guard let self else { return nil }
             
             switch record.recordType {
-            case .overview:
+            case .overview(let recordStat):
                 guard let headerCell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: OverviewCell.reuseIdentifier,
                     for: indexPath
@@ -284,11 +304,11 @@ extension RecordListViewController {
                     return nil
                 }
                 headerCell.configure(
-                    title: "MYUNG님의 이번달",
-                    drinkType: "\(self.viewModel.currentDrinkType.rawValue)",
-                    percentage: "41%",
-                    buttons: [("처음처럼", 4), ("참이슬", 2), ("진로", 1), ("진로", 1), ("진로", 1), ("진로", 1)]
-                )
+                    title: "\(self.viewModel.state.nickname)님의 이번달",
+                    drinkType: "\(self.viewModel.currentDrinkType.korean)",
+                    percentage: "\(recordStat.frequencyPercentage)%",
+                    buttons: recordStat.names)
+                
                 return headerCell
                 
             case .record:
@@ -320,13 +340,15 @@ extension RecordListViewController {
         }
     }
     
-    private func applySnapshot(records: [Record]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Category, Record>()
+    private func applySnapshot(recordStat: RecordStat?, records: [RecordCellInformation]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Category, RecordCellInformation>()
         
-        if let firstRecord = records.first, firstRecord.recordType == .overview {
+        if let recordStat {
             let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
+            let item = RecordCellInformation(id: UUID(), date: nil, name: nil, recordType: .overview(recordStat))
+            
             snapshot.appendSections([overviewSection])
-            snapshot.appendItems([firstRecord], toSection: overviewSection)
+            snapshot.appendItems([item], toSection: overviewSection)
         }
         
         let groupedRecords = groupRecordsByMonth(records: records)
@@ -351,8 +373,8 @@ extension RecordListViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
-    private func groupRecordsByMonth(records: [Record]) -> [Category: [Record]] {
-        var groupedRecords = [Category: [Record]]()
+    private func groupRecordsByMonth(records: [RecordCellInformation]) -> [Category: [RecordCellInformation]] {
+        var groupedRecords = [Category: [RecordCellInformation]]()
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy.MM.dd"
         
@@ -435,8 +457,28 @@ extension RecordListViewController {
 
 extension RecordListViewController {
     @objc private func didPullToRefresh() {
-        viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
-        refreshControl.beginRefreshing()
+        Task {
+            do {
+                refreshControl.beginRefreshing()
+                try await viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
+            } catch {
+                showErrorAlert()
+            }
+        }
+    }
+    
+    @objc private func didTapRecordButton() {
+        let vc = DrinkSelectionViewController(
+            viewModel: .init(
+                state: .init(),
+                action: .init(
+                    onSubmitted: { [weak self] in
+                        guard let self else { return }
+                        try await self.viewModel.action.refreshHomeWhenSubmitted()
+                    }))
+        )
+        
+        show(vc, sender: nil)
     }
 }
 

@@ -71,8 +71,7 @@ class HomeViewController: UIViewController {
             for: .normal)
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
-        button.layer.masksToBounds = true
-        button.layer.cornerRadius = button.frame.width / 2
+        button.addTarget(self, action: #selector(didTapMyPageButton), for: .touchUpInside)
 
         return button
     }()
@@ -87,6 +86,10 @@ class HomeViewController: UIViewController {
         setupConstraints()
         setupSubViewAction()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -170,6 +173,11 @@ class HomeViewController: UIViewController {
         }
     }
     
+    private func showNotDeterminedView() {
+        drinkCardView.isHidden = true
+        listTypeRecordViewController.view.isHidden = true
+    }
+    
     private func showEmptyStateView() {
         drinkCardView.isHidden = false
         listTypeRecordViewController.view.isHidden = true
@@ -177,7 +185,14 @@ class HomeViewController: UIViewController {
     
     private func showMiniCardListView(with drinkTypeList: [DrinkType]) {
         drinkCardView.isHidden = true
-        listTypeRecordViewController.availableDrinkTypes = drinkTypeList
+        listTypeRecordViewController.configure(
+            nickname: viewModel.state.nickname,
+            availableDrinkTypes: drinkTypeList,
+            refreshHomeWhenSubmitted: { [weak self] in
+                guard let self else { return }
+                try await self.viewModel.refresh()
+            }
+        )
         listTypeRecordViewController.view.isHidden = false
     }
     
@@ -187,13 +202,27 @@ class HomeViewController: UIViewController {
         viewModel.state.records
             .receive(on: DispatchQueue.main)
             .sink { [weak self] records in
-                guard let self = self else { return }
+                guard let self else { return }
+                
+                guard let records else {
+                    showNotDeterminedView()
+                    return
+                }
                 
                 if records.isEmpty {
                     showEmptyStateView()
                 } else {
                     showMiniCardListView(with: Array(records))
                 }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.state.error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let self else { return }
+                
+                self.showErrorAlert()
             }
             .store(in: &cancellables)
     }
@@ -203,12 +232,25 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController {
     @objc private func didTapRecordButton() {
-        let vc = DrinkSelectionViewController(viewModel: .init(state: .init()))
-        navigationController?.pushViewController(vc, animated: true)
+        let vc = DrinkSelectionViewController(
+            viewModel: .init(
+                state: .init(),
+                action: .init(
+                    onSubmitted: { [weak self] in
+                        guard let self else { return }
+                        try await self.viewModel.refresh()
+                    }))
+        )
+        
+        show(vc, sender: nil)
     }
     
     @objc private func didTapMyPageButton() {
-        // TODO: implement
+        let vc = MyPageViewController(
+            viewModel: MyPageViewModel(
+                state: .init(accessTokenSubject: viewModel.state.accessToken)))
+        
+        show(vc, sender: nil)
     }
 }
 
@@ -216,7 +258,8 @@ import SwiftUI
 #Preview {
     HomeViewController.preview {
         let vc = HomeViewController()
-        vc.viewModel = .init(state: .init(nickname: "Temp한글"))
+        vc.viewModel = .init(state: .init(nickname: "Temp한글", 
+                                          accessToken: .init(nil)))
         vc.viewModel.state.records.send([.soju, .beer, .wine])
         return vc
     }

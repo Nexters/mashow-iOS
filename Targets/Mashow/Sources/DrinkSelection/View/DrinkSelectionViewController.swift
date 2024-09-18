@@ -11,7 +11,6 @@ import Combine
 import SnapKit
 
 final class DrinkSelectionViewController: UIViewController {
-    
     init(viewModel: DrinkSelectionViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -76,25 +75,20 @@ final class DrinkSelectionViewController: UIViewController {
         setupNavigationBar()
         setupLayouts()
         setupHandlers()
+        
+        pageViewController.delegate = self
+        pageViewController.dataSource = self
     }
 }
 
 extension DrinkSelectionViewController {
     
     private func bind() {
-        viewModel.state.currentType
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] currentType in
-                guard let self = self else { return }
-                setupBackground(currentType.rawValue)
-            }
-            .store(in: &cancellables)
-        
         viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
                 guard let self else { return }
-                
+
                 guard addedTypes.isEmpty == false else {
                     bottomNextButton.alpha = 0.5
                     bottomNextButton.isEnabled = false
@@ -104,62 +98,23 @@ extension DrinkSelectionViewController {
                 bottomNextButton.alpha = 1
                 bottomNextButton.isEnabled = true
                 
-                if let tag = self.removedButtonTag {
-                    // If type removed
-//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
-                        self.addedDrinkTypeButtons[tag]!.removeFromSuperview()
-                        self.addedDrinkTypeButtons[tag] = nil
-                        self.removedButtonTag = nil
-//                    }
-                } else {
-                    guard !addedTypes.isEmpty else { return }
-                    // If type added
-                    let newButton = self.makeAddedTypeButton(for: viewModel.state.currentType.value)
-                    newButton.addTarget(self, action: #selector(didTapToRemoveType), for: .touchUpInside)
-                    self.addedDrinkTypeButtons[viewModel.state.currentType.value.tag] = newButton
-//                    UIView.transition(with: addedTypesStackView, duration: 0.5, options: .transitionCrossDissolve) {
-                        self.addedTypesStackView.addArrangedSubview(newButton)
-//                    }
+                self.addedTypesStackView.subviews.forEach { $0.removeFromSuperview() }
+                addedTypes.forEach { type in
+                    let newButton = AddedTypeButton(type: type)
+                    newButton.addTarget(self, action: #selector(self.onTapAddedTypeButton), for: .touchUpInside)
+                    self.addedTypesStackView.addArrangedSubview(newButton)
                 }
             }
             .store(in: &cancellables)
     }
     
-    @objc private func didTapToRemoveType(_ sender: UIButton) {
-        removedButtonTag = sender.tag
-        guard let index = drinkTypeList.firstIndex(where: { $0.tag == removedButtonTag }) else { return }
-        viewModel.removeType(drinkTypeList[index])
-    }
-    
-    private func makeAddedTypeButton(for type: DrinkType) -> UIButton {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 5
-        stackView.isUserInteractionEnabled = false
-        
-        let label = UILabel()
-        label.text = type.korean
-        label.font = .pretendard(size: 16, weight: .semibold)
-        label.textColor = .white
-        
-        let icon = UIImageView(image: UIImage(systemName: "xmark"))
-        icon.tintColor = .white
-        icon.contentMode = .scaleAspectFit
-        icon.frame = CGRect(x: 0, y: 0, width: 12, height: 12)
-        
-        stackView.addArrangedSubview(label)
-        stackView.addArrangedSubview(icon)
-        let button = CapsuleShapeButton(title: "", 
-                                        backgroundColor: .hex("151515").withAlphaComponent(0.5))
-        button.addSubview(stackView)
-        stackView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(17)
-            make.trailing.equalToSuperview().offset(-17)
-            make.top.equalToSuperview().offset(9)
-            make.bottom.equalToSuperview().offset(-9)
+    @objc private func onTapAddedTypeButton(_ sender: UIButton) {
+        guard let sender = sender as? AddedTypeButton else {
+            return
         }
-        button.tag = type.tag
-        return button
+        
+        let typeToBeRemoved = sender.drinkType
+        viewModel.removeType(typeToBeRemoved)
     }
     
     private func setupNavigationBar() {        
@@ -169,21 +124,21 @@ extension DrinkSelectionViewController {
         navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
     }
     
-    private func setupBackground(_ currentType: String) {
+    private func setupBackground(to type: DrinkType) {
         UIView.transition(with: backgroundView, duration: 0.5, options: .transitionCrossDissolve) {
-            self.backgroundView.image = UIImage(named: "\(currentType)_background")
+            self.backgroundView.image = UIImage(named: "\(type.rawValue)_background")
         }
     }
     
     private func setupLayouts() {
-        backgroundView.contentMode = .scaleAspectFill
         view.addSubview(backgroundView)
+        backgroundView.contentMode = .scaleAspectFill
         backgroundView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
+        setupBackground(to: .soju) // Default first value is Soju
         
-        pageViewController.dataSource = self
         pageViewController.setViewControllers(
             [DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList.first!)],
             direction: .forward,
@@ -230,10 +185,18 @@ extension DrinkSelectionViewController {
 extension DrinkSelectionViewController {
     @objc private func didTapLeftArrow() {
         pageViewController.moveToPrevPage()
+        
+        if let shownVC = pageViewController.viewControllers?.first as? DrinkTypeViewController {
+            setupBackground(to: shownVC.drinkType)
+        }
     }
     
     @objc private func didTapRightArrow() {
         pageViewController.moveToNextPage()
+        
+        if let shownVC = pageViewController.viewControllers?.first as? DrinkTypeViewController {
+            setupBackground(to: shownVC.drinkType)
+        }
     }
     
     @objc private func didTapNextButton() {
@@ -252,23 +215,59 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapSaveButton() {
-        navigationController?.popViewController(animated: true)
+        Task {
+            do {
+                try await viewModel.submit()
+                navigationController?.popViewController(animated: true)
+            } catch {
+                showErrorAlert()
+            }
+        }
     }
 }
 
-extension DrinkSelectionViewController: UIPageViewControllerDataSource {
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let viewController = viewController as? DrinkTypeViewController else { return nil }
-        guard var prevIndex = drinkTypeList.firstIndex(of: viewController.drinkType) else { return nil }
-        prevIndex = prevIndex == 0 ? drinkTypeList.count - 1 : prevIndex - 1
-        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList[prevIndex])
+extension DrinkSelectionViewController: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+    func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
+        let viewControllers = pendingViewControllers.compactMap({ $0 as? DrinkTypeViewController })
+        guard let currentType = viewControllers.first?.drinkType else {
+            return
+        }
+        
+        setupBackground(to: currentType)
     }
     
+    // Goto previous page
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard
+            let viewController = viewController as? DrinkTypeViewController,
+            let currentIndex = drinkTypeList.firstIndex(of: viewController.drinkType)
+        else {
+            return nil
+        }
+        
+        let indexToGo = currentIndex == 0 ? drinkTypeList.endIndex - 1 : currentIndex - 1
+        let drinkTypeToGo = drinkTypeList[indexToGo]
+        
+        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeToGo)
+    }
+
+    // Goto next page
     func pageViewController(_: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let viewController = viewController as? DrinkTypeViewController else { return nil }
-        guard var nextIndex = drinkTypeList.firstIndex(of: viewController.drinkType) else { return nil }
-        nextIndex = nextIndex == drinkTypeList.count - 1 ? 0 : nextIndex + 1
-        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList[nextIndex])
+        guard
+            let viewController = viewController as? DrinkTypeViewController,
+            let currentIndex = drinkTypeList.firstIndex(of: viewController.drinkType)
+        else {
+            return nil
+        }
+        
+        // Skip if the received vc is not current vc
+        
+        let indexToGo = currentIndex == drinkTypeList.endIndex - 1 ? 0 : currentIndex + 1
+        let drinkTypeToGo = drinkTypeList[indexToGo]
+        
+        print(indexToGo, drinkTypeToGo)
+        
+        return DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeToGo)
     }
 }
 

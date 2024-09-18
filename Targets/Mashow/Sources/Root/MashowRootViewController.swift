@@ -16,10 +16,22 @@ class MashowRootViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         
         bind()
+        setupViews()
+        setupConstraints()
     }
+    
+    // MARK: - Properties
+    
+    lazy var backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .homeBackgroundDefault)
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
+    // MARK: - setup
     
     private func bind() {
         viewModel.state.accessToken
@@ -32,15 +44,31 @@ class MashowRootViewController: UIViewController {
             .store(in: &cancellables)
     }
     
+    private func setupViews() {
+        view.addSubview(backgroundImageView)
+    }
+    
+    private func setupConstraints() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    // MARK: - Utils
+    
     @MainActor private func checkLoginStatus(with accessToken: String?) {
         Task {
             // 로그인이 되어 있다면 accessToken이 존재한다
-            if
-                let accessToken,
-                let user = await viewModel.validateUser(with: accessToken)
-            {
+            guard let accessToken else {
+                showLoginViewController()
+                return
+            }
+            
+            do {
+                let user = try await self.viewModel.validateUser(with: accessToken)
                 showMainViewController(with: user.nickname)
-            } else {
+            } catch {
+                showErrorAlert(message: "로그인 중 에러가 발생했습니다.\n다시 로그인해주세요.")
                 showLoginViewController()
             }
         }
@@ -55,6 +83,7 @@ class MashowRootViewController: UIViewController {
     }
     
     private func showLoginViewController() {
+        navigationController?.popToRootViewController(animated: false)
         removeCurrentChildViewController()
 
         let loginViewController = LoginViewController()
@@ -69,10 +98,13 @@ class MashowRootViewController: UIViewController {
     }
     
     private func showMainViewController(with nickname: String) {
+        navigationController?.popToRootViewController(animated: false)
         removeCurrentChildViewController()
 
         let homeViewController = HomeViewController()
-        homeViewController.viewModel = HomeViewModel(state: .init(nickname: nickname))
+        homeViewController.viewModel = HomeViewModel(
+            state: .init(nickname: nickname,
+                         accessToken: viewModel.state.accessToken))
         
         addChild(homeViewController)
         view.addSubview(homeViewController.view)

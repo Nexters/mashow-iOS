@@ -16,14 +16,25 @@ class DrinkSelectionViewModel {
         let currentType = CurrentValueSubject<DrinkType, Never>(DrinkType.soju)
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
+        let isLoading = CurrentValueSubject<Bool, Never>(false)
         
         var selectionResult = DrinkDetail()
     }
     
-    var state: State
+    struct Action {
+        let onSubmitted: @Sendable () async throws -> Void
+    }
     
-    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
+    var state: State
+    var action: Action
+    
+    init(
+        state: State,
+        action: Action,
+        networkManager: NetworkManager<API> = Environment.network
+    ) {
         self.state = state
+        self.action = action
         self.networkManager = networkManager
     }
     
@@ -31,14 +42,16 @@ class DrinkSelectionViewModel {
         var current = state.addedTypes.value
         guard state.addedTypes.value.count < 3, !current.contains(type) else { return }
         current.append(type)
+        
+        state.selectionResult.liquors.append(.init(liquorType: type.forAPIParameter, names: []))
         state.addedTypes.send(current)
     }
     
     func removeType(_ type: DrinkType) {
         var current = state.addedTypes.value
-        guard current.contains(type) else { return }
-        guard let targetIndex = current.firstIndex(of: type) else { return }
-        current.remove(at: targetIndex)
+        current.removeAll(where: { $0 == type })
+        
+        state.selectionResult.liquors.removeAll(where: { $0.liquorType == type.forAPIParameter })
         state.addedTypes.send(current)
     }
 
@@ -85,9 +98,13 @@ class DrinkSelectionViewModel {
     
     /// Submit saved record to server
     func submit() async throws {
+        state.isLoading.send(true)
+        defer { state.isLoading.send(false) }
+        
         _ = try await networkManager.request(
             .history(.postLiquorHistory(drinkDetail: state.selectionResult)))
         
+        try await action.onSubmitted()
         state.drinkSelectionResult.send(state.selectionResult)
     }
 }

@@ -90,6 +90,20 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapNextButton() {
+        saveLiquors()
+        
+        let vc = RatingViewController()
+        vc.environmentViewModel = environmentViewModel
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc override func didTapSaveButton() {
+        saveLiquors()
+        
+        super.didTapSaveButton()
+    }
+    
+    private func saveLiquors() {
         let drinkDetails = environmentViewModel.state.addedTypes.value
             .reduce([DrinkType: [String]]()) { partialResult, type in
                 var result = partialResult
@@ -98,10 +112,6 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
             }
         
         environmentViewModel.saveLiquors(drinkDetails.toLiquorArray())
-        
-        let vc = RatingViewController()
-        vc.environmentViewModel = environmentViewModel
-        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

@@ -87,9 +87,17 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapNextButton() {
+        environmentViewModel.saveSideDishes(viewModel.state.foodItems.value)
+        
         let vc = MemoViewController()
         vc.environmentViewModel = environmentViewModel
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc override func didTapSaveButton() {
+        environmentViewModel.saveSideDishes(viewModel.state.foodItems.value)
+        
+        super.didTapSaveButton()
     }
 }
 
@@ -230,7 +238,7 @@ import SwiftUI
 #Preview {
     FoodInputHomeViewController.preview {
         let vc = FoodInputHomeViewController()
-        vc.updateFoodItemsStackView(with: [ "아메리카노", "카페라떼", "콜드브루" ])
+        vc.updateFoodItemsStackView(with: ["아메리카노", "카페라떼", "콜드브루"])
         return vc
     }
 }

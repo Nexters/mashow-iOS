@@ -49,7 +49,7 @@ class RecordCell: UICollectionViewCell {
         }
     }
     
-    func configure(with records: [RecordListViewController.Record]) {
+    func configure(with records: [RecordListViewController.RecordCellInformation]) {
         // Set the date for the first record, assuming the date is the same for all records in the cell
         if let firstRecord = records.first {
             dateLabel.text = firstRecord.date
