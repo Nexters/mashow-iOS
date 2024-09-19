@@ -182,12 +182,16 @@ private extension FoodInputViewController {
     }
     
     @objc func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         let chosenFoods = foodItems.filter { !$0.isEmpty }
         viewModel.submitResult(chosenFoods: chosenFoods)
         dismiss(animated: true)
     }
     
     @objc func didTapDismissButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         dismiss(animated: true)
     }
 }

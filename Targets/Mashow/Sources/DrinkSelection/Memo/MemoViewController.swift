@@ -78,11 +78,15 @@ class MemoViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.clearMemo()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         guard let text = memoTextView.text, validateMemo(text: text) else {
             return
         }

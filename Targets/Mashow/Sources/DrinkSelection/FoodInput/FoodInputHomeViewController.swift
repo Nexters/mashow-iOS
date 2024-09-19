@@ -82,11 +82,15 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.clearSideDishes()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.saveSideDishes(viewModel.state.foodItems.value)
         
         let vc = MemoViewController()

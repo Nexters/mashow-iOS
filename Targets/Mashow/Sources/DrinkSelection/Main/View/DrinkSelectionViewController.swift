@@ -200,6 +200,8 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        
         guard viewModel.state.addedTypes.value.isEmpty == false else {
             return
         }

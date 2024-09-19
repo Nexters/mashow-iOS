@@ -86,11 +86,15 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.flush()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         saveLiquors()
         
         let vc = RatingViewController()
