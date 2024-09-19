@@ -39,7 +39,7 @@ extension Project {
                                 .external(name: "Lottie"),
                                 .external(name: "KakaoSDKAuth"),
                                 .external(name: "KakaoSDKUser"),
-                                .external(name: "Willow"),
+                                .external(name: "Willow")
                              ])
         
         let tests = Target(name: "\(name)Tests",
@@ -119,7 +119,7 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
-            entitlements: .relativeToRoot("./Mashow.entitlements"), 
+            entitlements: .file(path: "./Mashow.entitlements"),
             dependencies: dependencies,
             settings: .settings(configurations: [
                debugConfiguration,
