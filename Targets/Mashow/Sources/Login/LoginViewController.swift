@@ -21,23 +21,23 @@ class LoginViewController: UIViewController {
         return imageView
     }()
     
-    lazy var titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "MA SHOW"
-        label.textColor = .white
-        label.font = UIFont.boldSystemFont(ofSize: 48)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    lazy var subtitleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "술, 끊지 말고 잘 마시자"
-        label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.numberOfLines = 0
-        label.textAlignment = .center
-        return label
+    lazy var logoImageView: UIStackView = {
+        let stackView = UIStackView()
+        var spacer: UIView { UIView() }
+        
+        let image = UIImage(resource: .logoBig)
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        
+        stackView.addArrangedSubview(spacer)
+        stackView.addArrangedSubview(imageView)
+        stackView.addArrangedSubview(spacer)
+        
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 16
+        
+        return stackView
     }()
     
     lazy var kakaoLoginButton: UIButton = {
@@ -93,8 +93,7 @@ class LoginViewController: UIViewController {
 private extension LoginViewController {
     func setupViews() {
         view.addSubview(backgroundImageView)
-        view.addSubview(titleLabel)
-        view.addSubview(subtitleLabel)
+        view.addSubview(logoImageView)
         view.addSubview(kakaoLoginButton)
         view.addSubview(appleLoginButton)
     }
@@ -104,14 +103,10 @@ private extension LoginViewController {
             make.edges.equalTo(view)
         }
         
-        titleLabel.snp.makeConstraints { make in
+        logoImageView.snp.makeConstraints { make in
             make.centerX.equalTo(view)
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(50)
-        }
-        
-        subtitleLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
-            make.top.equalTo(titleLabel.snp.bottom).offset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.equalTo(kakaoLoginButton.snp.top)
         }
         
         appleLoginButton.snp.makeConstraints { make in
