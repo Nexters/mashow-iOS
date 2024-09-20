@@ -12,7 +12,7 @@ import Combine
 class RecordListViewModel {
     typealias RecordCellInformation = RecordListViewController.RecordCellInformation
     
-    let state: State
+    private(set) var state: State
     let action: Action
     private let networkManager: NetworkManager<API>
     
@@ -25,6 +25,9 @@ class RecordListViewModel {
         let isLoading: CurrentValueSubject<Bool, Never> = .init(false)
         let records: CurrentValueSubject<[RecordCellInformation], Never> = .init([])
         let recordStat: CurrentValueSubject<RecordStat?, Never> = .init(nil)
+        var currentPage: Int = 1 // Current page being loaded
+        var totalPage: Int = 1 // Total pages from the API
+        var isFetchingNextPage: Bool = false // Flag to prevent multiple simultaneous page loads
         
         init(nickname: String, userId: Int, fetchableDrinkTypes: [DrinkType], drinkTypeToBeShown drinkType: DrinkType) {
             self.nickname = nickname
@@ -53,11 +56,12 @@ class RecordListViewModel {
         state.currentDrinkType.send(drinkType)
     }
     
-    func updateRecords(with drinkType: DrinkType) async throws {
+    // Pagination-aware function to update records
+    func updateRecords(with drinkType: DrinkType, page: Int = 1, append: Bool = false) async throws {
         state.isLoading.send(true)
         
         let recordList = try await networkManager.request(
-            .history(.getRecord(filters: [drinkType], userId: state.userId, page: 1, size: 5)),
+            .history(.getRecord(filters: [drinkType], userId: state.userId, page: page, size: 5)), // Size's fixed to max value(5)
             of: RecordListResponse.self).value
         
         let recordStat = try await networkManager.request(
@@ -65,53 +69,54 @@ class RecordListViewModel {
             of: RecordStatResponse.self).value
         
         let baseRecordSet = recordList.contents.flatMap {
-            $0.histories.flatMap { $0.toRecordCellInformation() }
+            $0.histories.map { $0.toRecordCellInformation() }
+        }
+        
+        // Update the current and total page information
+        state.currentPage = recordList.currentPageIndex
+        state.totalPage = recordList.totalPageNumber
+        
+        // If append is true, add the new data to the existing records
+        if append {
+            let existingRecords = state.records.value
+            state.records.send(existingRecords + baseRecordSet)
+        } else {
+            state.records.send(baseRecordSet)
         }
         
         self.state.recordStat.send(recordStat)
-        self.state.records.send(baseRecordSet)
         self.state.isLoading.send(false)
+    }
+    
+    // Function to fetch the next page of data
+    func fetchNextPage() async throws {
+        guard !state.isFetchingNextPage, state.currentPage < state.totalPage else {
+            return
+        }
+        
+        state.isFetchingNextPage = true
+        let nextPage = state.currentPage + 1
+        try await updateRecords(with: state.currentDrinkType.value, page: nextPage, append: true)
+        state.isFetchingNextPage = false
     }
 }
 
-struct SharedDateFormatter {
-    static let serverDateFormatter: DateFormatter = {
-        let serverDateFormatter = DateFormatter()
-        serverDateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensures consistent formatting
-        serverDateFormatter.timeZone = TimeZone(secondsFromGMT: 0) // Use UTC time zone
-        serverDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS" // Format for microseconds
-        
-        return serverDateFormatter
-    }()
-    
-    static let shortDateFormmater: DateFormatter = {
-        let shortDateFormmater = DateFormatter()
-        shortDateFormmater.dateFormat = "yyyy.MM.dd"
-        
-        return shortDateFormmater
-    }()
-}
-
 extension RecordListResponse.Value.Content.History {
-    func toRecordCellInformation() -> [RecordListViewController.RecordCellInformation] {
+    func toRecordCellInformation() -> RecordListViewController.RecordCellInformation {
         if liquorDetailNames.isEmpty {
-            [
-                RecordListViewController.RecordCellInformation(
-                    id: UUID(),
-                    date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
-                    name: "",
-                    recordType: .record
-                )
-            ]
+            RecordListViewController.RecordCellInformation(
+                id: UUID(),
+                date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                names: [],
+                recordType: .record
+            )
         } else {
-            liquorDetailNames.map { history in
-                RecordListViewController.RecordCellInformation(
-                    id: UUID(),
-                    date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
-                    name: history,
-                    recordType: .record
-                )
-            }
+            RecordListViewController.RecordCellInformation(
+                id: UUID(),
+                date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                names: liquorDetailNames,
+                recordType: .record
+            )
         }
     }
 }

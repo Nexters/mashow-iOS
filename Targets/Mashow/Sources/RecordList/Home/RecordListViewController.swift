@@ -235,7 +235,7 @@ extension RecordListViewController {
 
         let id: UUID
         let date: Date?
-        let name: String?
+        let names: [String]?
         let recordType: RecordType
         
         static func == (lhs: RecordCellInformation, rhs: RecordCellInformation) -> Bool {
@@ -261,8 +261,21 @@ extension RecordListViewController {
 // MARK: - UICollectionViewDelegate
 
 extension RecordListViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // Handle cell selection if needed
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let height = scrollView.frame.size.height
+
+        // Trigger pagination when the user scrolls near the bottom
+        if offsetY > contentHeight - height - 100 {
+            Task {
+                do {
+                    try await viewModel.fetchNextPage()
+                } catch {
+                    showErrorAlert()
+                }
+            }
+        }
     }
 }
 
@@ -369,7 +382,9 @@ extension RecordListViewController {
         for category in sortedCategories {
             if var recordsForMonth = groupedRecords[category] {
                 recordsForMonth.sort { $0.date ?? Date() > $1.date ?? Date() }
-                snapshot.appendSections([category])
+                if !snapshot.sectionIdentifiers.contains(category) {
+                    snapshot.appendSections([category])
+                }
                 snapshot.appendItems(recordsForMonth, toSection: category)
             }
         }
@@ -379,11 +394,6 @@ extension RecordListViewController {
     
     private func groupRecordsByMonth(records: [RecordCellInformation]) -> [Category: [RecordCellInformation]] {
         var groupedRecords = [Category: [RecordCellInformation]]()
-        
-        let serverDateFormatter = DateFormatter()
-        serverDateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensures consistent formatting
-        serverDateFormatter.timeZone = TimeZone(secondsFromGMT: 0) // Use UTC time zone
-        serverDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS" // Format for microseconds
         
         for record in records {
             guard let date = record.date else {
