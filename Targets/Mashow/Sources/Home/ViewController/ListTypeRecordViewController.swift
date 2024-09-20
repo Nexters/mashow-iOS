@@ -131,7 +131,8 @@ class ListTypeRecordViewController: UIViewController {
         let vc = RecordListViewController(
             viewModel: .init(
                 state: .init(
-                    nickname: self.nickname ?? "",
+                    nickname: self.nickname ?? "", 
+                    userId: 29,
                     fetchableDrinkTypes: availableDrinkTypes,
                     drinkTypeToBeShown: drinkType),
                 action: .init(refreshHomeWhenSubmitted: { [weak self] in

@@ -10,7 +10,6 @@ import UIKit
 import SnapKit
 
 class RecordCell: UICollectionViewCell {
-    
     static let reuseIdentifier = "RecordCell"
     
     // Closure to handle the tap action
@@ -66,8 +65,10 @@ class RecordCell: UICollectionViewCell {
     
     func configure(with records: [RecordListViewController.RecordCellInformation], onTap: @escaping () -> Void) {
         // Set the date for the first record, assuming the date is the same for all records in the cell
-        if let firstRecord = records.first {
-            dateLabel.text = firstRecord.date
+        if let firstRecord = records.first, let date = firstRecord.date {
+            let formattedDateString = SharedDateFormatter.shortDateFormmater.string(from: date)
+
+            dateLabel.text = formattedDateString
         }
         
         // Set the closure for handling the tap action

@@ -18,6 +18,7 @@ class RecordListViewModel {
     
     struct State {
         let nickname: String
+        let userId: Int
         let fetchableDrinkTypes: [DrinkType]
         let currentDrinkType: CurrentValueSubject<DrinkType, Never>
         
@@ -25,8 +26,9 @@ class RecordListViewModel {
         let records: CurrentValueSubject<[RecordCellInformation], Never> = .init([])
         let recordStat: CurrentValueSubject<RecordStat?, Never> = .init(nil)
         
-        init(nickname: String, fetchableDrinkTypes: [DrinkType], drinkTypeToBeShown drinkType: DrinkType) {
+        init(nickname: String, userId: Int, fetchableDrinkTypes: [DrinkType], drinkTypeToBeShown drinkType: DrinkType) {
             self.nickname = nickname
+            self.userId = userId
             self.fetchableDrinkTypes = fetchableDrinkTypes
             self.currentDrinkType = .init(drinkType)
         }
@@ -52,56 +54,64 @@ class RecordListViewModel {
     }
     
     func updateRecords(with drinkType: DrinkType) async throws {
-        // FIXME: Connect API later
-        let testDateSet = [
-            "2024.07.22", "2024.07.24", "2024.07.31", "2024.06.10", "2024.06.30", "2024.05.30", "2023.06.30", "2023.06.10"
-        ]
-        
         state.isLoading.send(true)
         
+        let recordList = try await networkManager.request(
+            .history(.getRecord(filters: [drinkType], userId: state.userId, page: 1, size: 5)),
+            of: RecordListResponse.self).value
+        
         let recordStat = try await networkManager.request(
-            .history(.getStatistics(filters: [drinkType.forAPIParameter])),
+            .history(.getStatistics(filters: [drinkType])),
             of: RecordStatResponse.self).value
         
-        var baseRecordSet = [RecordCellInformation]()
-        
-        switch drinkType {
-        case .soju:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "처음처럼", recordType: .record)
-            }
-        case .liquor:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "짐빔", recordType: .record)
-            }
-        case .makgeolli:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "느린마을", recordType: .record)
-            }
-        case .sake:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "가토", recordType: .record)
-            }
-        case .beer:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "버드와이저", recordType: .record)
-            }
-        case .wine:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "메를로", recordType: .record)
-            }
-        case .cocktail:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "블러드메리", recordType: .record)
-            }
-        case .highball:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "얼그레이하이볼", recordType: .record)
-            }
+        let baseRecordSet = recordList.contents.flatMap {
+            $0.histories.flatMap { $0.toRecordCellInformation() }
         }
         
         self.state.recordStat.send(recordStat)
         self.state.records.send(baseRecordSet)
         self.state.isLoading.send(false)
+    }
+}
+
+struct SharedDateFormatter {
+    static let serverDateFormatter: DateFormatter = {
+        let serverDateFormatter = DateFormatter()
+        serverDateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensures consistent formatting
+        serverDateFormatter.timeZone = TimeZone(secondsFromGMT: 0) // Use UTC time zone
+        serverDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS" // Format for microseconds
+        
+        return serverDateFormatter
+    }()
+    
+    static let shortDateFormmater: DateFormatter = {
+        let shortDateFormmater = DateFormatter()
+        shortDateFormmater.dateFormat = "yyyy.MM.dd"
+        
+        return shortDateFormmater
+    }()
+}
+
+extension RecordListResponse.Value.Content.History {
+    func toRecordCellInformation() -> [RecordListViewController.RecordCellInformation] {
+        if liquorDetailNames.isEmpty {
+            [
+                RecordListViewController.RecordCellInformation(
+                    id: UUID(),
+                    date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                    name: "",
+                    recordType: .record
+                )
+            ]
+        } else {
+            liquorDetailNames.map { history in
+                RecordListViewController.RecordCellInformation(
+                    id: UUID(),
+                    date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                    name: history,
+                    recordType: .record
+                )
+            }
+        }
     }
 }

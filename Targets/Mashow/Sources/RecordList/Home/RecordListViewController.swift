@@ -234,7 +234,7 @@ extension RecordListViewController {
         }
 
         let id: UUID
-        let date: String?
+        let date: Date?
         let name: String?
         let recordType: RecordType
         
@@ -368,7 +368,7 @@ extension RecordListViewController {
         
         for category in sortedCategories {
             if var recordsForMonth = groupedRecords[category] {
-                recordsForMonth.sort { $0.date ?? "" > $1.date ?? "" }
+                recordsForMonth.sort { $0.date ?? Date() > $1.date ?? Date() }
                 snapshot.appendSections([category])
                 snapshot.appendItems(recordsForMonth, toSection: category)
             }
@@ -379,11 +379,14 @@ extension RecordListViewController {
     
     private func groupRecordsByMonth(records: [RecordCellInformation]) -> [Category: [RecordCellInformation]] {
         var groupedRecords = [Category: [RecordCellInformation]]()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy.MM.dd"
+        
+        let serverDateFormatter = DateFormatter()
+        serverDateFormatter.locale = Locale(identifier: "en_US_POSIX") // Ensures consistent formatting
+        serverDateFormatter.timeZone = TimeZone(secondsFromGMT: 0) // Use UTC time zone
+        serverDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS" // Format for microseconds
         
         for record in records {
-            guard let dateString = record.date, let date = dateFormatter.date(from: dateString) else {
+            guard let date = record.date else {
                 continue
             }
             

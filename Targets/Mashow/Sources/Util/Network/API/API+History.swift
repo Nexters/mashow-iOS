@@ -10,7 +10,8 @@ import Foundation
 
 enum HistoryAPI {
     case postLiquorHistory(drinkDetail: DrinkDetail)
-    case getStatistics(filters: [String])
+    case getRecord(filters: [DrinkType], userId: Int, page: Int, size: Int) /// But method is `post`. Why?
+    case getStatistics(filters: [DrinkType])
     case getLiquorHistoryDetail(historyId: Int)
     case getLiquorTypes
 }
@@ -20,6 +21,8 @@ extension HistoryAPI: SubTargetType {
         switch self {
         case .postLiquorHistory:
             return "/history/liquor"
+        case .getRecord:
+            return "/history/monthly"
         case .getStatistics:
             return "/history/statistic"
         case let .getLiquorHistoryDetail(historyId):
@@ -31,7 +34,7 @@ extension HistoryAPI: SubTargetType {
     
     var method: Moya.Method {
         switch self {
-        case .postLiquorHistory:
+        case .postLiquorHistory, .getRecord:
             return .post
         case .getStatistics, .getLiquorHistoryDetail, .getLiquorTypes:
             return .get
@@ -47,9 +50,19 @@ extension HistoryAPI: SubTargetType {
             } catch {
                 return .requestPlain // Fallback in case of encoding failure
             }
+        case let .getRecord(filters, userId, page, size):
+            // JSON body에 데이터를 보내기 위한 예시
+            return .requestParameters(
+                parameters: [
+                    "filters": filters.map(\.forAPIParameter),
+                    "userId": userId,
+                    "paginationRequest": ["page": page, "size": size]
+                ],
+                encoding: JSONEncoding.default
+            )
         case let .getStatistics(filters):
             return .requestParameters(
-                parameters: ["filters": filters],
+                parameters: ["filters": filters.map(\.forAPIParameter)],
                 encoding: URLEncoding.queryString
             )
         case .getLiquorHistoryDetail, .getLiquorTypes:
@@ -81,6 +94,34 @@ extension HistoryAPI: SubTargetType {
                 ],
                 "sideDishes": [
                   { "names": "오뎅탕 / 치킨..." }
+                ]
+              }
+            }
+            """.utf8)
+        case .getRecord:
+            return Data("""
+            {
+              "code": 0,
+              "message": "string",
+              "value": {
+                "totalPageNumber": 1,
+                "currentPageIndex": 1,
+                "pageSize": 1,
+                "isLastPage": true,
+                "totalElementNumber": 1,
+                "contents": [
+                  {
+                    "year": 2021,
+                    "month": 8,
+                    "histories": [
+                      {
+                        "drankAt": "2024-09-20T01:03:01.428Z",
+                        "liquorDetailNames": [
+                          "string"
+                        ]
+                      }
+                    ]
+                  }
                 ]
               }
             }
