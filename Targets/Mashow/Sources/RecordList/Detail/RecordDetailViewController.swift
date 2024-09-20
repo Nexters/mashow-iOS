@@ -8,42 +8,20 @@
 
 import UIKit
 import SnapKit
-
 import Combine
-class RecordDetailViewModel {
-    let state: State
-    
-    struct State {
-        let drinkInfo = CurrentValueSubject<DrinkInfo?, Never>(nil)
-    }
-    
-    init() {
-        state = State()
-    }
-    
-    func fetchDrinkInfo() async throws {
-        state.drinkInfo.send(
-            DrinkInfo(
-                drinkType: .highball,
-                memo: "Seed \(Int.random(in: 0...10)): 오늘은 알중단 사람들과 맛있는 술을 마셨당. 좋사좋시~ 다음에도 같이 술 마시고 싶다!!",
-                rating: Int.random(in: 1...5),
-                sideDishes: ["Seed \(Int.random(in: 0...10)): 소주_진로 막걸리_복순도가 하이볼_레몬 하이볼"])
-        )
-    }
-}
-
-extension RecordDetailViewModel {
-    struct DrinkInfo {
-        let drinkType: DrinkType
-        let memo: String?
-        let rating: Int?
-        let sideDishes: [String]
-    }
-}
 
 class RecordDetailViewController: UIViewController {
-    private let viewModel = RecordDetailViewModel()
+    private let viewModel: RecordDetailViewModel
     private var cancellables = Set<AnyCancellable>()
+    
+    init(viewModel: RecordDetailViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Elements
     
@@ -133,9 +111,9 @@ class RecordDetailViewController: UIViewController {
         
         descriptionWrapperView.addArrangedSubview(commentaryLabel)
         descriptionWrapperView.addArrangedSubview(DividerView(color: .white.withAlphaComponent(0.1)))
-        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "주종", detail: drinkInfo.drinkType.rawValue))
-        descriptionWrapperView.addArrangedSubview(createRatingHStack(category: "평점", rating: drinkInfo.rating ?? 0))
-        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "먹은 음식", detail: drinkInfo.sideDishes.joined(separator: ", ")))
+        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "주종", detail: drinkInfo.drinkType.korean))
+//        descriptionWrapperView.addArrangedSubview(createRatingHStack(category: "평점", rating: drinkInfo.rating ?? 0))
+//        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "먹은 음식", detail: drinkInfo.sideDishes.joined(separator: ", ")))
     }
     
     // MARK: - Properties
@@ -205,7 +183,7 @@ class RecordDetailViewController: UIViewController {
                                                            style: .plain,
                                                            target: self,
                                                            action: #selector(didTapBackButton))
-        navigationItem.rightBarButtonItem = deleteRecordButton
+//        navigationItem.rightBarButtonItem = deleteRecordButton
     }
 }
 

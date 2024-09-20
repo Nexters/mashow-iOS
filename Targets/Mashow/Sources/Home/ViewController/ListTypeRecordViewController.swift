@@ -13,15 +13,18 @@ import SnapKit
 class ListTypeRecordViewController: UIViewController {
     // MARK: - Properties
     private var nickname: String?
+    private var userId: Int?
     private var availableDrinkTypes: [DrinkType] = []
     private var refreshHomeWhenSubmitted: @Sendable () async throws -> Void = {}
     
     func configure(
         nickname: String,
+        userId: Int,
         availableDrinkTypes: [DrinkType],
         refreshHomeWhenSubmitted: @Sendable @escaping () async throws -> Void
     ) {
         self.nickname = nickname
+        self.userId = userId
         self.availableDrinkTypes = availableDrinkTypes
         self.refreshHomeWhenSubmitted = refreshHomeWhenSubmitted
         
@@ -123,7 +126,8 @@ class ListTypeRecordViewController: UIViewController {
     
     @objc private func cardViewTapped(_ sender: UITapGestureRecognizer) {
         guard let tappedCardView = sender.view as? MiniCardView,
-              let drinkType = tappedCardView.drinkType
+              let drinkType = tappedCardView.drinkType,
+              let nickname, let userId
         else {
             return
         }
@@ -131,8 +135,8 @@ class ListTypeRecordViewController: UIViewController {
         let vc = RecordListViewController(
             viewModel: .init(
                 state: .init(
-                    nickname: self.nickname ?? "", 
-                    userId: 29,
+                    nickname: nickname, 
+                    userId: userId,
                     fetchableDrinkTypes: availableDrinkTypes,
                     drinkTypeToBeShown: drinkType),
                 action: .init(refreshHomeWhenSubmitted: { [weak self] in

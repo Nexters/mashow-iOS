@@ -186,6 +186,7 @@ class HomeViewController: UIViewController {
         drinkCardView.isHidden = true
         listTypeRecordViewController.configure(
             nickname: viewModel.state.nickname,
+            userId: viewModel.state.userId,
             availableDrinkTypes: drinkTypeList,
             refreshHomeWhenSubmitted: { [weak self] in
                 guard let self else { return }
@@ -258,6 +259,7 @@ import SwiftUI
     HomeViewController.preview {
         let vc = HomeViewController()
         vc.viewModel = .init(state: .init(nickname: "Temp한글", 
+                                          userId: 1,
                                           accessToken: .init(nil)))
         vc.viewModel.state.records.send([.soju, .beer, .wine])
         return vc

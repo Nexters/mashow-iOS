@@ -334,7 +334,8 @@ extension RecordListViewController {
                 }
                 
                 cell.configure(with: [record], onTap: {
-                    let vc = RecordDetailViewController()                    
+                    let vc = RecordDetailViewController(
+                        viewModel: .init(state: .init(drinkType: self.viewModel.currentDrinkType, liquorNames: record.names ?? [])))
                     self.show(vc, sender: nil)
                 })
                 return cell
@@ -362,7 +363,7 @@ extension RecordListViewController {
         
         if let recordStat {
             let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
-            let item = RecordCellInformation(id: UUID(), date: nil, name: nil, recordType: .overview(recordStat))
+            let item = RecordCellInformation(id: UUID(), date: nil, names: nil, recordType: .overview(recordStat))
             
             snapshot.appendSections([overviewSection])
             snapshot.appendItems([item], toSection: overviewSection)
