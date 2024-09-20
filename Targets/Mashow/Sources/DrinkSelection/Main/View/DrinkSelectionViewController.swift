@@ -11,8 +11,10 @@ import Combine
 import SnapKit
 
 final class DrinkSelectionViewController: UIViewController {
+    // Default initial type is Soju
     init(viewModel: DrinkSelectionViewModel) {
         self.viewModel = viewModel
+        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -137,10 +139,10 @@ extension DrinkSelectionViewController {
             make.horizontalEdges.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
-        setupBackground(to: .soju) // Default first value is Soju
+        setupBackground(to: viewModel.state.initialDrinkType)
         
         pageViewController.setViewControllers(
-            [DrinkTypeViewController(viewModel: viewModel, drinkType: drinkTypeList.first!)],
+            [DrinkTypeViewController(viewModel: viewModel, drinkType: viewModel.state.initialDrinkType)],
             direction: .forward,
             animated: false
         )

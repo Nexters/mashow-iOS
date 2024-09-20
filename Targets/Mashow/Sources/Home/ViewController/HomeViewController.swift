@@ -234,7 +234,8 @@ extension HomeViewController {
     @objc private func didTapRecordButton() {
         let vc = DrinkSelectionViewController(
             viewModel: .init(
-                state: .init(),
+                state: .init(
+                    initialDrinkType: .soju),
                 action: .init(
                     onSubmitted: { [weak self] in
                         guard let self else { return }

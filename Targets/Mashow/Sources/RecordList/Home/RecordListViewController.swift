@@ -478,7 +478,7 @@ extension RecordListViewController {
         Task {
             do {
                 refreshControl.beginRefreshing()
-                try await viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
+                try await viewModel.updateRecords(with: viewModel.currentDrinkType)
             } catch {
                 showErrorAlert()
             }
@@ -488,7 +488,8 @@ extension RecordListViewController {
     @objc private func didTapRecordButton() {
         let vc = DrinkSelectionViewController(
             viewModel: .init(
-                state: .init(),
+                state: .init(
+                    initialDrinkType: viewModel.currentDrinkType),
                 action: .init(
                     onSubmitted: { [weak self] in
                         guard let self else { return }
