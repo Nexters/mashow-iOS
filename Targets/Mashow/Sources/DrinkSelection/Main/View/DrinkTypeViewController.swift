@@ -14,7 +14,7 @@ final class DrinkTypeViewController: UIViewController {
     
     let viewModel: DrinkSelectionViewModel
     var drinkType: DrinkType
-    var cancellables = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: DrinkSelectionViewModel, drinkType: DrinkType) {
         self.viewModel = viewModel
@@ -110,6 +110,12 @@ final class DrinkTypeViewController: UIViewController {
         let image = UIImage(named: drinkType.rawValue + "Bottle")
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFill
+        
+        // Trigger drink addition when image tapped
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(addDrinkType))
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(tapGestureRecognizer)
+        
         return imageView
     }()
     
@@ -118,7 +124,7 @@ final class DrinkTypeViewController: UIViewController {
         bind()
         setupLayouts()
         setupHandlers()
-        viewModel.state.currentType.send(drinkType) // FIXME: - 드래그 조금만 해도 호출돼서 버그있음
+        viewModel.state.currentType.send(drinkType)
     }
 }
 
