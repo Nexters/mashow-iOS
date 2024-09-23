@@ -222,6 +222,7 @@ class RecordListViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
+        navigationController?.navigationBar.topItem?.title = " "
         navigationItem.titleView = titleButton
     }
 }
@@ -498,6 +499,10 @@ extension RecordListViewController {
         )
         
         show(vc, sender: nil)
+    }
+    
+    @objc private func didTapBackButton() {
+        navigationController?.popViewController(animated: true)
     }
 }
 

@@ -98,7 +98,7 @@ class HomeViewController: UIViewController {
         view.addSubview(backgroundImageView)
         view.addSubview(nicknameLabel)
         view.addSubview(showLabel)
-        view.addSubview(viewToggleStackView)
+//        view.addSubview(viewToggleStackView)
         view.addSubview(drinkCardView)
         view.addSubview(recordButton)
         view.addSubview(myPageButton)
@@ -131,22 +131,24 @@ class HomeViewController: UIViewController {
             .hex("47525A")
         ])
 
-        viewToggleStackView.snp.makeConstraints { make in
-            make.top.equalTo(showLabel.snp.bottom).offset(16)
-            make.centerX.equalToSuperview()
-            make.width.equalTo(194)
-            make.height.equalTo(34)
-        }
+//        viewToggleStackView.snp.makeConstraints { make in
+//            make.top.equalTo(showLabel.snp.bottom).offset(16)
+//            make.centerX.equalToSuperview()
+//            make.width.equalTo(194)
+//            make.height.equalTo(34)
+//        }
         
         drinkCardView.snp.makeConstraints { make in
-            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+            make.top.equalTo(showLabel.snp.bottom).offset(26)
             make.leading.equalTo(view).offset(30)
             make.trailing.equalTo(view).inset(30)
             make.bottom.equalTo(recordButton.snp.top).offset(-20)
         }
         
         listTypeRecordViewController.view.snp.makeConstraints { make in
-            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+//            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
+            make.top.equalTo(showLabel .snp.bottom).offset(26)
             make.leading.equalTo(view).offset(24)
             make.trailing.equalTo(view).inset(24)
             make.bottom.equalTo(recordButton.snp.top).offset(-25)
