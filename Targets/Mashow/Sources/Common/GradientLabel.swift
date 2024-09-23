@@ -31,9 +31,12 @@ class GradientLabel: UIStackView {
     
     private func setupView() {
         axis = .vertical
-        alignment = .center
+        alignment = .top
+        distribution = .equalCentering
         
         addArrangedSubview(label)
+        let spacer = UIView()
+        addArrangedSubview(spacer)
     }
 
     override func layoutSubviews() {

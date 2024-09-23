@@ -140,7 +140,7 @@ class HomeViewController: UIViewController {
         
         drinkCardView.snp.makeConstraints { make in
 //            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-            make.top.equalTo(showLabel.snp.bottom).offset(26)
+            make.top.lessThanOrEqualTo(showLabel.snp.bottom).offset(26)
             make.leading.equalTo(view).offset(30)
             make.trailing.equalTo(view).inset(30)
             make.bottom.equalTo(recordButton.snp.top).offset(-20)
@@ -148,7 +148,7 @@ class HomeViewController: UIViewController {
         
         listTypeRecordViewController.view.snp.makeConstraints { make in
 //            make.top.equalTo(viewToggleStackView.snp.bottom).offset(26)
-            make.top.equalTo(showLabel .snp.bottom).offset(26)
+            make.top.equalTo(showLabel.snp.bottom).offset(26)
             make.leading.equalTo(view).offset(24)
             make.trailing.equalTo(view).inset(24)
             make.bottom.equalTo(recordButton.snp.top).offset(-25)
