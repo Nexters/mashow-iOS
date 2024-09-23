@@ -35,13 +35,14 @@ class RecordCell: UICollectionViewCell {
     
     private func setupView() {
         // Give linear gradient to background
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        gradientLayer.frame = bounds
-        layer.insertSublayer(gradientLayer, at: 0)
-        
+//        let gradientLayer = CAGradientLayer()
+//        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
+//        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+//        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+//        gradientLayer.frame = bounds
+//        layer.insertSublayer(gradientLayer, at: 0)
+        backgroundColor = .hex("FCFCFC").withAlphaComponent(0.05)
+
         layer.cornerRadius = 10
         layer.masksToBounds = true
         
@@ -63,12 +64,13 @@ class RecordCell: UICollectionViewCell {
         onTap?()
     }
     
-    func configure(with records: [RecordListViewController.RecordCellInformation], onTap: @escaping () -> Void) {
+    func configure(with record: RecordListViewController.RecordCellInformation, onTap: @escaping () -> Void) {
         // Set the date for the first record, assuming the date is the same for all records in the cell
-        if let firstRecord = records.first, let date = firstRecord.date {
+        if let date = record.date, let drinkType = record.drinkType {
             let formattedDateString = SharedDateFormatter.shortDateFormmater.string(from: date)
 
             dateLabel.text = formattedDateString
+            dateLabel.textColor = drinkType.themeColor
         }
         
         // Set the closure for handling the tap action

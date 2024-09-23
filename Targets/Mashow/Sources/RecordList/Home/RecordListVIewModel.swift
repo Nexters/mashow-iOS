@@ -69,7 +69,7 @@ class RecordListViewModel {
             of: RecordStatResponse.self).value
         
         let baseRecordSet = recordList.contents.flatMap {
-            $0.histories.map { $0.toRecordCellInformation() }
+            $0.histories.map { $0.toRecordCellInformation(with: drinkType) }
         }
         
         // Update the current and total page information
@@ -102,11 +102,12 @@ class RecordListViewModel {
 }
 
 extension RecordListResponse.Value.Content.History {
-    func toRecordCellInformation() -> RecordListViewController.RecordCellInformation {
+    func toRecordCellInformation(with drinkType: DrinkType) -> RecordListViewController.RecordCellInformation {
         if liquorDetailNames.isEmpty {
             RecordListViewController.RecordCellInformation(
                 id: UUID(),
                 date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                drinkType: drinkType,
                 names: [],
                 recordType: .record
             )
@@ -114,6 +115,7 @@ extension RecordListResponse.Value.Content.History {
             RecordListViewController.RecordCellInformation(
                 id: UUID(),
                 date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                drinkType: drinkType,
                 names: liquorDetailNames,
                 recordType: .record
             )

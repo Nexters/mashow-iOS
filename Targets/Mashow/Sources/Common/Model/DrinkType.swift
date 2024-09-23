@@ -7,11 +7,33 @@
 //
 
 import Foundation
+import UIKit
 
 enum DrinkType: String, CaseIterable {
     case soju, liquor, makgeolli, sake, beer, wine, cocktail, highball
     
-    var colorHexValues: [String] {
+    var themeColor: UIColor {
+        switch self {
+        case .soju:
+                .hex("63FFD0")
+        case .liquor:
+                .hex("FF4531")
+        case .makgeolli:
+                .hex("BDFF00")
+        case .sake:
+                .hex("FF8EED")
+        case .beer:
+                .hex("3099FF")
+        case .wine:
+                .hex("EB00FF")
+        case .cocktail:
+                .hex("79FF96")
+        case .highball:
+                .hex("EBFF00")
+        }
+    }
+    
+    var addedButtonColorHexValues: [String] {
         switch self {
         case .soju:
             ["8EFFA7", "CCFFD1"]

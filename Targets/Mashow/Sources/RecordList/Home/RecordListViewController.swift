@@ -40,16 +40,6 @@ class RecordListViewController: UIViewController {
         imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
-        // Add a dimming effect
-        let dimmingView = UIView()
-        dimmingView.backgroundColor = .black
-        dimmingView.alpha = 0.5
-        
-        imageView.addSubview(dimmingView)
-        dimmingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
         return imageView
     }()
     
@@ -236,6 +226,7 @@ extension RecordListViewController {
 
         let id: UUID
         let date: Date?
+        let drinkType: DrinkType?
         let names: [String]?
         let recordType: RecordType
         
@@ -319,7 +310,7 @@ extension RecordListViewController {
                 }
                 headerCell.configure(
                     title: "\(self.viewModel.state.nickname)님의 이번달",
-                    drinkType: "\(self.viewModel.currentDrinkType.korean)",
+                    drinkType: self.viewModel.currentDrinkType,
                     percentage: "\(recordStat.frequencyPercentage)%",
                     buttons: recordStat.names)
                 
@@ -334,11 +325,14 @@ extension RecordListViewController {
                     return nil
                 }
                 
-                cell.configure(with: [record], onTap: {
-                    let vc = RecordDetailViewController(
-                        viewModel: .init(state: .init(drinkType: self.viewModel.currentDrinkType, liquorNames: record.names ?? [])))
-                    self.show(vc, sender: nil)
-                })
+                cell.configure(
+                    with: record,
+                    onTap: {
+                        let vc = RecordDetailViewController(
+                            viewModel: .init(state: .init(drinkType: self.viewModel.currentDrinkType, liquorNames: record.names ?? [])))
+                        self.show(vc, sender: nil)
+                    })
+                
                 return cell
             }
         }
@@ -364,7 +358,7 @@ extension RecordListViewController {
         
         if let recordStat {
             let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
-            let item = RecordCellInformation(id: UUID(), date: nil, names: nil, recordType: .overview(recordStat))
+            let item = RecordCellInformation(id: UUID(), date: nil, drinkType: nil, names: nil, recordType: .overview(recordStat))
             
             snapshot.appendSections([overviewSection])
             snapshot.appendItems([item], toSection: overviewSection)

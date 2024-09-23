@@ -89,8 +89,8 @@ final class DrinkTypeViewController: UIViewController {
         let gradient = CAGradientLayer()
         gradient.frame = button.bounds
         gradient.colors = [
-            UIColor.hex(drinkType.colorHexValues[0]).cgColor,
-            UIColor.hex(drinkType.colorHexValues[1]).cgColor
+            UIColor.hex(drinkType.addedButtonColorHexValues[0]).cgColor,
+            UIColor.hex(drinkType.addedButtonColorHexValues[1]).cgColor
         ]
         gradient.startPoint = CGPoint(x: 0.0, y: 0.0)
         gradient.endPoint = CGPoint(x: 1.0, y: 0.0)

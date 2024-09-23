@@ -110,7 +110,7 @@ class OverviewCell: UICollectionViewCell {
 // MARK: - Configuration
 
 extension OverviewCell {
-    func configure(title: String, drinkType: String, percentage: String, buttons: [RecordStat.Name]) {
+    func configure(title: String, drinkType: DrinkType, percentage: String, buttons: [RecordStat.Name]) {
         titleLabel.text = title
         percentageLabel.text = percentage
         
@@ -120,7 +120,7 @@ extension OverviewCell {
         buttonStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         // Add the buttons to the buttonStack
         for buttonInfo in buttons {
-            let button = createButton(title: buttonInfo.name, count: buttonInfo.count)
+            let button = createButton(title: buttonInfo.name, textColor: drinkType.themeColor, count: buttonInfo.count)
             buttonStack.addArrangedSubview(button)
         }
         
@@ -128,25 +128,25 @@ extension OverviewCell {
         buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2, height: buttonScrollView.frame.height)
     }
     
-    private func configureConcentrationLabel(_ drinkType: String) {
+    private func configureConcentrationLabel(_ drinkType: DrinkType) {
         // Create an attributed string for concentrationLabel
         let attributedText = NSMutableAttributedString(
-            string: "혈중 " + drinkType + " 농도",
+            string: "혈중 " + drinkType.korean + " 농도",
             attributes: [.foregroundColor: UIColor.white]
         )
         
         // Apply different color to the second word
-        let secondWordRange = (attributedText.string as NSString).range(of: drinkType)
-        attributedText.addAttribute(.foregroundColor, value: UIColor.hex("63FFD0"), range: secondWordRange)
+        let secondWordRange = (attributedText.string as NSString).range(of: drinkType.korean)
+        attributedText.addAttribute(.foregroundColor, value: drinkType.themeColor, range: secondWordRange)
         concentrationLabel.attributedText = attributedText
     }
     
-    private func createButton(title: String, count: Int) -> UIButton {
+    private func createButton(title: String, textColor: UIColor, count: Int) -> UIButton {
         let button = UIButton(type: .system)
         
         // Create a horizontal stack to hold the title and the custom count label
         let hStack = UIStackView(arrangedSubviews: [
-            createTitleLabel(with: title), createCountLabel(with: count)
+            createTitleLabel(with: title), createCountLabel(with: count, textColor: textColor)
         ])
         hStack.axis = .horizontal
         hStack.alignment = .center
@@ -183,11 +183,11 @@ extension OverviewCell {
         return label
     }
     
-    private func createCountLabel(with count: Int) -> UILabel {
+    private func createCountLabel(with count: Int, textColor: UIColor) -> UILabel {
         let label = UILabel()
         label.text = "\(count)"
         label.font = .pretendard(size: 16, weight: .bold)
-        label.textColor = .hex("63FFD0")
+        label.textColor = textColor
         return label
     }
 }
