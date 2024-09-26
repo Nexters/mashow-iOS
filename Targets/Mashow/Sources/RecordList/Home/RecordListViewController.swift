@@ -212,7 +212,7 @@ class RecordListViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
-        navigationController?.navigationBar.topItem?.title = " "
+        navigationController?.navigationBar.topItem?.title = ""
         navigationItem.titleView = titleButton
     }
 }

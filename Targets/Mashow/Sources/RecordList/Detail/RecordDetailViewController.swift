@@ -179,7 +179,7 @@ class RecordDetailViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
         
         navigationItem.title = "기록"
-        navigationController?.navigationBar.topItem?.title = " "
+        navigationController?.navigationBar.topItem?.title = ""
 //        navigationItem.rightBarButtonItem = deleteRecordButton
     }
 }
