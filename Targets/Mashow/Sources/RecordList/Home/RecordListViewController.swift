@@ -224,7 +224,7 @@ extension RecordListViewController {
             case record
         }
 
-        let id: UUID
+        let id: Int
         let date: Date?
         let drinkType: DrinkType?
         let names: [String]?
@@ -328,8 +328,15 @@ extension RecordListViewController {
                 cell.configure(
                     with: record,
                     onTap: {
+                        guard let date = record.date else {
+                            return
+                        }
+                        
+                        let dateString = SharedDateFormatter.shortDateFormmater.string(from: date)
                         let vc = RecordDetailViewController(
-                            viewModel: .init(state: .init(drinkType: self.viewModel.currentDrinkType, liquorNames: record.names ?? [])))
+                            viewModel: .init(state: .init(
+                                historyId: record.id,
+                                dateString: dateString)))
                         self.show(vc, sender: nil)
                     })
                 
@@ -358,7 +365,7 @@ extension RecordListViewController {
         
         if let recordStat {
             let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
-            let item = RecordCellInformation(id: UUID(), date: nil, drinkType: nil, names: nil, recordType: .overview(recordStat))
+            let item = RecordCellInformation(id: -1, date: nil, drinkType: nil, names: nil, recordType: .overview(recordStat))
             
             snapshot.appendSections([overviewSection])
             snapshot.appendItems([item], toSection: overviewSection)

@@ -27,6 +27,7 @@ struct RecordListResponse: Codable {
             let histories: [History]
             
             struct History: Codable {
+                let historyId: Int
                 let drankAt: String
                 let liquorDetailNames: [String]
             }

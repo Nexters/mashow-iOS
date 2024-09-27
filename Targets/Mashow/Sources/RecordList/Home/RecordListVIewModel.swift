@@ -105,7 +105,7 @@ extension RecordListResponse.Value.Content.History {
     func toRecordCellInformation(with drinkType: DrinkType) -> RecordListViewController.RecordCellInformation {
         if liquorDetailNames.isEmpty {
             RecordListViewController.RecordCellInformation(
-                id: UUID(),
+                id: historyId,
                 date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
                 drinkType: drinkType,
                 names: [],
@@ -113,7 +113,7 @@ extension RecordListResponse.Value.Content.History {
             )
         } else {
             RecordListViewController.RecordCellInformation(
-                id: UUID(),
+                id: historyId,
                 date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
                 drinkType: drinkType,
                 names: liquorDetailNames,

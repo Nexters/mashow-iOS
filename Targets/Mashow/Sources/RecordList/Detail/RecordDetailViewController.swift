@@ -91,19 +91,22 @@ class RecordDetailViewController: UIViewController {
         viewModel.state.drinkInfo
             .receive(on: DispatchQueue.main)
             .sink { [weak self] drinkInfo in
-                guard let self = self, let drinkInfo = drinkInfo else {
+                guard let self = self, let drinkInfo else {
                     return
                 }
                 
                 // Update the UI with the fetched data
-                self.commentaryLabel.text = drinkInfo.memo
+                if let memo = drinkInfo.memo {
+                    self.commentaryLabel.text = memo
+                }
+                
                 self.updateDetailHStacks(with: drinkInfo)
             }
             .store(in: &cancellables)
     }
     
     // Update detail HStacks with fetched data
-    private func updateDetailHStacks(with drinkInfo: RecordDetailViewModel.DrinkInfo) {
+    private func updateDetailHStacks(with drinkInfo: RecordDetailViewModel.DrinkRecordInfo) {
         cardView.setupCards(with: getCardImagesWithRandomStack(drinkType: drinkInfo.drinkType))
         
         // Remove and recreate the stack view based on the new drinkInfo
@@ -111,9 +114,9 @@ class RecordDetailViewController: UIViewController {
         
         descriptionWrapperView.addArrangedSubview(commentaryLabel)
         descriptionWrapperView.addArrangedSubview(DividerView(color: .white.withAlphaComponent(0.1)))
-        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "주종", detail: drinkInfo.drinkType.korean))
-//        descriptionWrapperView.addArrangedSubview(createRatingHStack(category: "평점", rating: drinkInfo.rating ?? 0))
-//        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "먹은 음식", detail: drinkInfo.sideDishes.joined(separator: ", ")))
+        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "이름", detail: drinkInfo.drinkName))
+        descriptionWrapperView.addArrangedSubview(createRatingHStack(category: "평점", rating: drinkInfo.rating ?? 0))
+        descriptionWrapperView.addArrangedSubview(createDetailHStack(category: "먹은 음식", detail: drinkInfo.sideDishes.joined(separator: ", ")))
     }
     
     // MARK: - Properties
@@ -178,9 +181,9 @@ class RecordDetailViewController: UIViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
         
-        navigationItem.title = "기록"
+        navigationItem.title = viewModel.state.dateString
         navigationController?.navigationBar.topItem?.title = ""
-//        navigationItem.rightBarButtonItem = deleteRecordButton
+        navigationItem.rightBarButtonItem = deleteRecordButton
     }
 }
 
@@ -235,9 +238,12 @@ private extension RecordDetailViewController {
         
         // Randomly select two background cards from the remaining cards
         let randomCards = remainingCards.shuffled().prefix(2)
-        
+
         // Return the topmost card with the two randomly selected background cards
-        return [topmostCard] + randomCards
+        //        return [topmostCard] + randomCards
+
+        // 다중선택 해제로 일단 하나만
+        return [topmostCard]
     }
     
     func createDetailHStack(category: String, detail: String) -> UIStackView {
