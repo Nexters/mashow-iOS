@@ -237,7 +237,7 @@ extension HomeViewController {
         let vc = DrinkSelectionViewController(
             viewModel: .init(
                 state: .init(
-                    initialDrinkType: .soju),
+                    initialDrinkType: nil),
                 action: .init(
                     onSubmitted: { [weak self] in
                         guard let self else { return }

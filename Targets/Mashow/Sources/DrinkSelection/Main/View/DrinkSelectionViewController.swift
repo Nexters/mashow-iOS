@@ -138,13 +138,23 @@ extension DrinkSelectionViewController {
             make.horizontalEdges.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
-        setupBackground(to: viewModel.state.initialDrinkType)
+        if let initialType = viewModel.state.initialDrinkType {
+            setupBackground(to: initialType)
+            pageViewController.setViewControllers(
+                [DrinkTypeViewController(viewModel: viewModel, drinkType: initialType)],
+                direction: .forward,
+                animated: false
+            )
+        } else {
+            let defaultType = DrinkType.soju
+            setupBackground(to: defaultType)
+            pageViewController.setViewControllers(
+                [DrinkTypeViewController(viewModel: viewModel, drinkType: defaultType)],
+                direction: .forward,
+                animated: false
+            )
+        }
         
-        pageViewController.setViewControllers(
-            [DrinkTypeViewController(viewModel: viewModel, drinkType: viewModel.state.initialDrinkType)],
-            direction: .forward,
-            animated: false
-        )
         addChild(pageViewController)
         view.addSubview(pageViewController.view)
         pageViewController.didMove(toParent: self)

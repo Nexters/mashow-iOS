@@ -14,7 +14,7 @@ class DrinkSelectionViewModel {
     private let networkManager: NetworkManager<API>
         
     struct State {
-        let initialDrinkType: DrinkType
+        let initialDrinkType: DrinkType?
         let currentType: CurrentValueSubject<DrinkType, Never>
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
@@ -22,9 +22,16 @@ class DrinkSelectionViewModel {
         
         var selectionResult = DrinkDetail()
         
-        init(initialDrinkType: DrinkType) {
-            self.initialDrinkType = initialDrinkType
-            self.currentType = CurrentValueSubject(initialDrinkType)
+        init(initialDrinkType: DrinkType?) {
+            if let initialDrinkType {
+                self.initialDrinkType = initialDrinkType
+                self.currentType = CurrentValueSubject(initialDrinkType)
+                self.addedTypes.send([initialDrinkType]) // 만약에 먼가가 여기로 들어왔다면 선택된 채로 보여주기
+            } else {
+                let defaultType = DrinkType.soju
+                self.initialDrinkType = defaultType
+                self.currentType = CurrentValueSubject(defaultType)
+            }
         }
     }
     

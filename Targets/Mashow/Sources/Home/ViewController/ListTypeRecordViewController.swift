@@ -91,17 +91,17 @@ class ListTypeRecordViewController: UIViewController {
         return zip(drinks, images).map { drinkType, image in
             let cardView = MiniCardView()
             if availableDrinkTypes.contains(drinkType) {
+                // 기록이 있을 경우
                 cardView.configure(with: image, drinkType: drinkType, isSelected: true)
             } else {
+                // 기록이 없을 경우
                 cardView.configure(with: image, drinkType: drinkType, isSelected: false)
             }
             
-            // Enable tap gesture when the card view is selected
-            if cardView.isSelected {
-                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cardViewTapped(_:)))
-                cardView.addGestureRecognizer(tapGesture)
-                cardView.isUserInteractionEnabled = true
-            }
+            // Set tap gesture
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cardViewTapped(_:)))
+            cardView.addGestureRecognizer(tapGesture)
+            cardView.isUserInteractionEnabled = true
             
             return cardView
         }
@@ -132,18 +132,29 @@ class ListTypeRecordViewController: UIViewController {
             return
         }
         
-        let vc = RecordListViewController(
-            viewModel: .init(
-                state: .init(
-                    nickname: nickname, 
-                    userId: userId,
-                    fetchableDrinkTypes: availableDrinkTypes,
-                    drinkTypeToBeShown: drinkType),
-                action: .init(refreshHomeWhenSubmitted: { [weak self] in
-                    guard let self else { return }
-                    try await self.refreshHomeWhenSubmitted()
-                })
-            ))
-        show(vc, sender: nil)
+        let vcToBeShown: UIViewController = if tappedCardView.isSelected {
+            RecordListViewController(
+                viewModel: .init(
+                    state: .init(
+                        nickname: nickname,
+                        userId: userId,
+                        fetchableDrinkTypes: availableDrinkTypes,
+                        drinkTypeToBeShown: drinkType),
+                    action: .init(refreshHomeWhenSubmitted: { [weak self] in
+                        guard let self else { return }
+                        try await self.refreshHomeWhenSubmitted()
+                    })
+                ))
+        } else {
+            DrinkSelectionViewController(
+                viewModel: .init(
+                    state: .init(initialDrinkType: drinkType),
+                    action: .init(onSubmitted: { [weak self] in
+                        guard let self else { return }
+                        try await self.refreshHomeWhenSubmitted()
+                    })))
+        }
+        
+        show(vcToBeShown, sender: nil)
     }
 }
