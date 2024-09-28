@@ -91,20 +91,19 @@ extension DrinkSelectionViewController {
             .sink { [weak self] addedTypes in
                 guard let self else { return }
 
-                guard addedTypes.isEmpty == false else {
-                    bottomNextButton.alpha = 0.5
-                    bottomNextButton.isEnabled = false
-                    return
-                }
-                
-                bottomNextButton.alpha = 1
-                bottomNextButton.isEnabled = true
-                
                 self.addedTypesStackView.subviews.forEach { $0.removeFromSuperview() }
                 addedTypes.forEach { type in
                     let newButton = AddedTypeButton(type: type)
                     newButton.addTarget(self, action: #selector(self.onTapAddedTypeButton), for: .touchUpInside)
                     self.addedTypesStackView.addArrangedSubview(newButton)
+                }
+                
+                if addedTypes.isEmpty == true {
+                    bottomNextButton.alpha = 0.5
+                    bottomNextButton.isEnabled = false
+                } else {
+                    bottomNextButton.alpha = 1
+                    bottomNextButton.isEnabled = true
                 }
             }
             .store(in: &cancellables)

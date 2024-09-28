@@ -10,8 +10,9 @@ import UIKit
 import Combine
 
 class DrinkSelectionViewModel {
+    let selectionLimit = 1
     private let networkManager: NetworkManager<API>
-    
+        
     struct State {
         let initialDrinkType: DrinkType
         let currentType: CurrentValueSubject<DrinkType, Never>
@@ -44,9 +45,11 @@ class DrinkSelectionViewModel {
         self.networkManager = networkManager
     }
     
-    func addType(_ type: DrinkType) {
+    func addType(_ type: DrinkType) throws {
         var current = state.addedTypes.value
-        guard state.addedTypes.value.count < 3, !current.contains(type) else { return }
+        guard state.addedTypes.value.count < selectionLimit, !current.contains(type) else {
+            throw InternalError.limitExceeded
+        }
         current.append(type)
         
         state.selectionResult.liquors.append(.init(liquorType: type.forAPIParameter, names: []))
@@ -112,5 +115,11 @@ class DrinkSelectionViewModel {
         
         try await action.onSubmitted()
         state.drinkSelectionResult.send(state.selectionResult)
+    }
+}
+
+extension DrinkSelectionViewModel {
+    enum InternalError: Error {
+        case limitExceeded
     }
 }
