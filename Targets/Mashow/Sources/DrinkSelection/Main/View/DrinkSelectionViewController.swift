@@ -62,7 +62,7 @@ final class DrinkSelectionViewController: UIViewController {
     private lazy var bottomNextButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
         button.tintColor = .white
         button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button

@@ -132,7 +132,7 @@ private extension DrinkDetailViewController {
         let headerContainer = UIView()
         headerContainer.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(16) // Add padding around titleLabel
+            make.leading.equalToSuperview()
         }
         
         let headerHeight: CGFloat = 100 // Adjust this height based on your titleLabel's content

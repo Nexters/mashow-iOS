@@ -66,6 +66,6 @@ extension MiniCardView {
     
     func update(isSelected: Bool) {
         self.isSelected = isSelected
-        setOpacity(to: isSelected ? 1.0 : 0.3)
+        setOpacity(to: isSelected ? 1.0 : 0.2)
     }
 }

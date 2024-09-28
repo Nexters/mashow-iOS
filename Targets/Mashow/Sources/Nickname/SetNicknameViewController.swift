@@ -49,7 +49,7 @@ class SetNicknameViewController: UIViewController {
         let label = UILabel()
         label.text = "0/\(maxNicknameCount)"
         label.textColor = .hex("F3F3F3").withAlphaComponent(0.3)
-        label.font = .pretendard(size: 18, weight: .regular)
+        label.font = .pretendard(size: 14, weight: .regular)
         return label
     }()
     

@@ -67,7 +67,7 @@ class HomeViewController: UIViewController {
         button.setImage(
             UIImage(
                 systemName: "person.fill",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)),
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)),
             for: .normal)
         button.tintColor = .white
         button.backgroundColor = .hex("F2F2F2").withAlphaComponent(0.3)
