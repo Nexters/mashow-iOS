@@ -147,7 +147,7 @@ private extension FoodInputViewController {
         nextButton.snp.makeConstraints { make in
             make.leading.trailing.equalTo(view).inset(20)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            make.height.equalTo(50)
+            make.height.equalTo(60)
         }
     }
     
