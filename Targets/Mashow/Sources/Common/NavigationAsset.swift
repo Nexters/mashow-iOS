@@ -28,7 +28,7 @@ struct NavigationAsset {
         return button
     }
     
-    static func makeSaveButton(target: Any, _ didTapSaveButton: Selector) -> UIBarButtonItem {
+    static func makeSaveButton(target: Any, isEnabled: Bool = true, _ didTapSaveButton: Selector) -> UIBarButtonItem {
         let button = UIBarButtonItem(
             title: "저장",
             style: .done,
@@ -38,9 +38,10 @@ struct NavigationAsset {
         
         // Give alpha to text
         button.setTitleTextAttributes([
-            .foregroundColor: UIColor.white
+            .foregroundColor: UIColor.white.withAlphaComponent(isEnabled ? 1.0 : 0.5)
         ], for: .normal)
         
+        button.isEnabled = isEnabled
         return button
     }
     

@@ -101,9 +101,11 @@ extension DrinkSelectionViewController {
                 if addedTypes.isEmpty == true {
                     bottomNextButton.alpha = 0.5
                     bottomNextButton.isEnabled = false
+                    setupNavigationBar()
                 } else {
                     bottomNextButton.alpha = 1
                     bottomNextButton.isEnabled = true
+                    setupNavigationBar()
                 }
             }
             .store(in: &cancellables)
@@ -122,7 +124,9 @@ extension DrinkSelectionViewController {
         navigationController?.navigationBar.isHidden = false
         navigationItem.title = Date.todayStringWrittenInKorean()
         navigationItem.leftBarButtonItem = NavigationAsset.makeCancelButton(target: self, #selector(didTapCancelButton))
-        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
+        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, 
+                                                                           isEnabled: currentlySubmittable,
+                                                                           #selector(didTapSaveButton))
     }
     
     private func setupBackground(to type: DrinkType) {
@@ -213,7 +217,7 @@ extension DrinkSelectionViewController {
     @objc private func didTapNextButton() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
-        guard viewModel.state.addedTypes.value.isEmpty == false else {
+        guard currentlySubmittable else {
             return
         }
         
@@ -230,12 +234,22 @@ extension DrinkSelectionViewController {
     @objc private func didTapSaveButton() {
         Task {
             do {
-                try await viewModel.submit()
-                navigationController?.popViewController(animated: true)
+                if currentlySubmittable {
+                    try await viewModel.submit()
+                    navigationController?.popViewController(animated: true)
+                }
             } catch {
                 showErrorAlert()
             }
         }
+    }
+    
+    private var currentlySubmittable: Bool {
+        guard viewModel.state.addedTypes.value.isEmpty == false else {
+            return false
+        }
+        
+        return true
     }
 }
 

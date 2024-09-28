@@ -26,7 +26,10 @@ class DrinkSelectionViewModel {
             if let initialDrinkType {
                 self.initialDrinkType = initialDrinkType
                 self.currentType = CurrentValueSubject(initialDrinkType)
-                self.addedTypes.send([initialDrinkType]) // 만약에 먼가가 여기로 들어왔다면 선택된 채로 보여주기
+                
+                // 만약에 먼가가 여기로 들어왔다면 선택된 채로 보여주기
+                self.addedTypes.send([initialDrinkType])
+                self.selectionResult.liquors = [.init(liquorType: initialDrinkType.forAPIParameter, names: [])]
             } else {
                 let defaultType = DrinkType.soju
                 self.initialDrinkType = defaultType
@@ -59,7 +62,7 @@ class DrinkSelectionViewModel {
         }
         current.append(type)
         
-        state.selectionResult.liquors.append(.init(liquorType: type.forAPIParameter, names: []))
+        saveLiquors(current.map({ .init(liquorType: $0.forAPIParameter, names: []) }))
         state.addedTypes.send(current)
     }
     
@@ -67,7 +70,7 @@ class DrinkSelectionViewModel {
         var current = state.addedTypes.value
         current.removeAll(where: { $0 == type })
         
-        state.selectionResult.liquors.removeAll(where: { $0.liquorType == type.forAPIParameter })
+        saveLiquors(current.map({ .init(liquorType: $0.forAPIParameter, names: []) }))
         state.addedTypes.send(current)
     }
 
