@@ -77,6 +77,7 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
         super.viewDidLoad()
         
         setupLayouts()
+        hideKeyboardWhenTappedAround()
         
         // 기본 셀 잡아줌
         environmentViewModel.state.addedTypes.value.forEach { type in
@@ -85,11 +86,15 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.flush()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         saveLiquors()
         
         let vc = RatingViewController()
@@ -133,7 +138,8 @@ private extension DrinkDetailViewController {
         
         // Set tableHeaderView
         tableView.tableHeaderView = headerContainer
-        
+        tableView.keyboardDismissMode = .onDrag
+
         view.addSubview(super.buttonStackView)
         buttonStackView.snp.makeConstraints { make in
             make.leading.trailing.equalTo(view).inset(16)

@@ -10,8 +10,10 @@ import UIKit
 import SnapKit
 
 class RecordCell: UICollectionViewCell {
-    
     static let reuseIdentifier = "RecordCell"
+    
+    // Closure to handle the tap action
+    var onTap: (() -> Void)?
     
     // Date label that remains at the top of the cell
     private lazy var dateLabel: UILabel = {
@@ -24,6 +26,7 @@ class RecordCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        setupTapGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -32,13 +35,14 @@ class RecordCell: UICollectionViewCell {
     
     private func setupView() {
         // Give linear gradient to background
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        gradientLayer.frame = bounds
-        layer.insertSublayer(gradientLayer, at: 0)
-        
+//        let gradientLayer = CAGradientLayer()
+//        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
+//        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+//        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+//        gradientLayer.frame = bounds
+//        layer.insertSublayer(gradientLayer, at: 0)
+        backgroundColor = .hex("FCFCFC").withAlphaComponent(0.05)
+
         layer.cornerRadius = 10
         layer.masksToBounds = true
         
@@ -49,10 +53,27 @@ class RecordCell: UICollectionViewCell {
         }
     }
     
-    func configure(with records: [RecordListViewController.RecordCellInformation]) {
+    private func setupTapGesture() {
+        // Add tap gesture recognizer to the cell
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        self.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleTap() {
+        // Trigger the onTap closure when the cell is tapped
+        onTap?()
+    }
+    
+    func configure(with record: RecordListViewController.RecordCellInformation, onTap: @escaping () -> Void) {
         // Set the date for the first record, assuming the date is the same for all records in the cell
-        if let firstRecord = records.first {
-            dateLabel.text = firstRecord.date
+        if let date = record.date, let drinkType = record.drinkType {
+            let formattedDateString = SharedDateFormatter.shortDateFormmater.string(from: date)
+
+            dateLabel.text = formattedDateString
+            dateLabel.textColor = drinkType.themeColor
         }
+        
+        // Set the closure for handling the tap action
+        self.onTap = onTap
     }
 }

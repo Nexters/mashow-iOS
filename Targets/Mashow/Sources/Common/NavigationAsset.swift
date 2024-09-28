@@ -43,4 +43,20 @@ struct NavigationAsset {
         
         return button
     }
+    
+    static func makeBackButton(target: Any, _ didTapBackButton: Selector) -> UIBarButtonItem {
+        let button = UIBarButtonItem(
+            image: Self.backButtonImage,
+            style: .done,
+            target: target,
+            action: didTapBackButton
+        )
+        
+        // Give alpha to text
+        button.setTitleTextAttributes([
+            .foregroundColor: UIColor.white
+        ], for: .normal)
+        
+        return button
+    }
 }

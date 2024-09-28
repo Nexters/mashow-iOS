@@ -40,16 +40,6 @@ class RecordListViewController: UIViewController {
         imageView.image = UIImage(resource: .backgroundDefault)
         imageView.contentMode = .scaleAspectFill
         
-        // Add a dimming effect
-        let dimmingView = UIView()
-        dimmingView.backgroundColor = .black
-        dimmingView.alpha = 0.5
-        
-        imageView.addSubview(dimmingView)
-        dimmingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
         return imageView
     }()
     
@@ -222,6 +212,7 @@ class RecordListViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.isHidden = false
+        navigationController?.navigationBar.topItem?.title = ""
         navigationItem.titleView = titleButton
     }
 }
@@ -233,9 +224,10 @@ extension RecordListViewController {
             case record
         }
 
-        let id: UUID
-        let date: String?
-        let name: String?
+        let id: Int
+        let date: Date?
+        let drinkType: DrinkType?
+        let names: [String]?
         let recordType: RecordType
         
         static func == (lhs: RecordCellInformation, rhs: RecordCellInformation) -> Bool {
@@ -261,8 +253,21 @@ extension RecordListViewController {
 // MARK: - UICollectionViewDelegate
 
 extension RecordListViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // Handle cell selection if needed
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let height = scrollView.frame.size.height
+
+        // Trigger pagination when the user scrolls near the bottom
+        if offsetY > contentHeight - height - 100 {
+            Task {
+                do {
+                    try await viewModel.fetchNextPage()
+                } catch {
+                    showErrorAlert()
+                }
+            }
+        }
     }
 }
 
@@ -305,7 +310,7 @@ extension RecordListViewController {
                 }
                 headerCell.configure(
                     title: "\(self.viewModel.state.nickname)님의 이번달",
-                    drinkType: "\(self.viewModel.currentDrinkType.korean)",
+                    drinkType: self.viewModel.currentDrinkType,
                     percentage: "\(recordStat.frequencyPercentage)%",
                     buttons: recordStat.names)
                 
@@ -319,7 +324,22 @@ extension RecordListViewController {
                 else {
                     return nil
                 }
-                cell.configure(with: [record])
+                
+                cell.configure(
+                    with: record,
+                    onTap: {
+                        guard let date = record.date else {
+                            return
+                        }
+                        
+                        let dateString = SharedDateFormatter.shortDateFormmater.string(from: date)
+                        let vc = RecordDetailViewController(
+                            viewModel: .init(state: .init(
+                                historyId: record.id,
+                                dateString: dateString)))
+                        self.show(vc, sender: nil)
+                    })
+                
                 return cell
             }
         }
@@ -345,7 +365,7 @@ extension RecordListViewController {
         
         if let recordStat {
             let overviewSection = Category(year: -1, month: -1, totalRecordCount: -1)
-            let item = RecordCellInformation(id: UUID(), date: nil, name: nil, recordType: .overview(recordStat))
+            let item = RecordCellInformation(id: -1, date: nil, drinkType: nil, names: nil, recordType: .overview(recordStat))
             
             snapshot.appendSections([overviewSection])
             snapshot.appendItems([item], toSection: overviewSection)
@@ -364,8 +384,10 @@ extension RecordListViewController {
         
         for category in sortedCategories {
             if var recordsForMonth = groupedRecords[category] {
-                recordsForMonth.sort { $0.date ?? "" > $1.date ?? "" }
-                snapshot.appendSections([category])
+                recordsForMonth.sort { $0.date ?? Date() > $1.date ?? Date() }
+                if !snapshot.sectionIdentifiers.contains(category) {
+                    snapshot.appendSections([category])
+                }
                 snapshot.appendItems(recordsForMonth, toSection: category)
             }
         }
@@ -375,11 +397,9 @@ extension RecordListViewController {
     
     private func groupRecordsByMonth(records: [RecordCellInformation]) -> [Category: [RecordCellInformation]] {
         var groupedRecords = [Category: [RecordCellInformation]]()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy.MM.dd"
         
         for record in records {
-            guard let dateString = record.date, let date = dateFormatter.date(from: dateString) else {
+            guard let date = record.date else {
                 continue
             }
             
@@ -460,7 +480,7 @@ extension RecordListViewController {
         Task {
             do {
                 refreshControl.beginRefreshing()
-                try await viewModel.updateRecords(with: viewModel.state.currentDrinkType.value)
+                try await viewModel.updateRecords(with: viewModel.currentDrinkType)
             } catch {
                 showErrorAlert()
             }
@@ -470,7 +490,8 @@ extension RecordListViewController {
     @objc private func didTapRecordButton() {
         let vc = DrinkSelectionViewController(
             viewModel: .init(
-                state: .init(),
+                state: .init(
+                    initialDrinkType: viewModel.currentDrinkType),
                 action: .init(
                     onSubmitted: { [weak self] in
                         guard let self else { return }
@@ -479,6 +500,10 @@ extension RecordListViewController {
         )
         
         show(vc, sender: nil)
+    }
+    
+    @objc private func didTapBackButton() {
+        navigationController?.popViewController(animated: true)
     }
 }
 

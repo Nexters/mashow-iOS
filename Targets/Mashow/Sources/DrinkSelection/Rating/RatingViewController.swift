@@ -284,11 +284,15 @@ class RatingViewController: DrinkSelectionSubViewController {
     // MARK: - Actions
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.clearRating()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         viewModel.updateScore(currentScore)
         environmentViewModel.saveRating(currentScore)
         

@@ -58,6 +58,8 @@ class DecoratedTextField: UITextField {
         // Add target for editing events
         self.addTarget(self, action: #selector(editingBegan), for: .editingDidBegin)
         self.addTarget(self, action: #selector(editingEnded), for: .editingDidEnd)
+        
+        self.returnKeyType = .done
     }
     
     func reset() {
@@ -150,5 +152,23 @@ extension UITextField {
     private func clear(sender: AnyObject) {
         self.text = ""
         sendActions(for: .editingChanged)
+    }
+}
+
+private extension UITextField {
+    func addDoneButtonOnKeyboard() {
+        let doneToolbar: UIToolbar = UIToolbar()
+        doneToolbar.barStyle = .default
+        doneToolbar.items = [
+            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+            UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(dismissKeyboard))
+        ]
+        doneToolbar.sizeToFit()
+        
+        self.inputAccessoryView = doneToolbar
+    }
+    
+    @objc private func dismissKeyboard() {
+        self.resignFirstResponder()
     }
 }

@@ -82,11 +82,15 @@ class FoodInputHomeViewController: DrinkSelectionSubViewController {
     }
     
     @objc override func didTapBackButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.clearSideDishes()
         navigationController?.popViewController(animated: true)
     }
     
     @objc override func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         environmentViewModel.saveSideDishes(viewModel.state.foodItems.value)
         
         let vc = MemoViewController()
@@ -183,7 +187,7 @@ private extension FoodInputHomeViewController {
             foodItemsStackView.addArrangedSubview(arrangedView)
         }
         
-        // Add actual food items to the stack view
+        // Add actual food items to the stack view with animation
         for (index, item) in items.enumerated() {
             let button = GradientButton()
             button.gradientColors = GradientButton.nextButtonColorSet
@@ -209,7 +213,17 @@ private extension FoodInputHomeViewController {
                 arrangedView = UIStackView(arrangedSubviews: [button, paddingView])
             }
             
+            // Set initial position above the visible area
+            arrangedView.alpha = 0
+            arrangedView.transform = CGAffineTransform(translationX: 0, y: -50)
             foodItemsStackView.addArrangedSubview(arrangedView)
+            
+            // Animate with a delay for each item
+            let delay = 0.5 * Double(items.count - index - 1) + 0.1
+            UIView.animate(withDuration: 0.5, delay: delay, options: .curveEaseInOut, animations: {
+                arrangedView.alpha = 1
+                arrangedView.transform = .identity  // Reset transform to original position
+            }, completion: nil)
         }
     }
 }

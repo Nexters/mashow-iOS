@@ -66,7 +66,7 @@ class MashowRootViewController: UIViewController {
             
             do {
                 let user = try await self.viewModel.validateUser(with: accessToken)
-                showMainViewController(with: user.nickname)
+                showMainViewController(nickname: user.nickname, userId: user.userId)
             } catch {
                 showErrorAlert(message: "로그인 중 에러가 발생했습니다.\n다시 로그인해주세요.")
                 showLoginViewController()
@@ -97,13 +97,14 @@ class MashowRootViewController: UIViewController {
         loginViewController.didMove(toParent: self)
     }
     
-    private func showMainViewController(with nickname: String) {
+    private func showMainViewController(nickname: String, userId: Int) {
         navigationController?.popToRootViewController(animated: false)
         removeCurrentChildViewController()
 
         let homeViewController = HomeViewController()
         homeViewController.viewModel = HomeViewModel(
             state: .init(nickname: nickname,
+                         userId: userId,
                          accessToken: viewModel.state.accessToken))
         
         addChild(homeViewController)

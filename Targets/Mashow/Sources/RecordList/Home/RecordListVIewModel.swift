@@ -12,21 +12,26 @@ import Combine
 class RecordListViewModel {
     typealias RecordCellInformation = RecordListViewController.RecordCellInformation
     
-    let state: State
+    private(set) var state: State
     let action: Action
     private let networkManager: NetworkManager<API>
     
     struct State {
         let nickname: String
+        let userId: Int
         let fetchableDrinkTypes: [DrinkType]
         let currentDrinkType: CurrentValueSubject<DrinkType, Never>
         
         let isLoading: CurrentValueSubject<Bool, Never> = .init(false)
         let records: CurrentValueSubject<[RecordCellInformation], Never> = .init([])
         let recordStat: CurrentValueSubject<RecordStat?, Never> = .init(nil)
+        var currentPage: Int = 1 // Current page being loaded
+        var totalPage: Int = 1 // Total pages from the API
+        var isFetchingNextPage: Bool = false // Flag to prevent multiple simultaneous page loads
         
-        init(nickname: String, fetchableDrinkTypes: [DrinkType], drinkTypeToBeShown drinkType: DrinkType) {
+        init(nickname: String, userId: Int, fetchableDrinkTypes: [DrinkType], drinkTypeToBeShown drinkType: DrinkType) {
             self.nickname = nickname
+            self.userId = userId
             self.fetchableDrinkTypes = fetchableDrinkTypes
             self.currentDrinkType = .init(drinkType)
         }
@@ -51,57 +56,69 @@ class RecordListViewModel {
         state.currentDrinkType.send(drinkType)
     }
     
-    func updateRecords(with drinkType: DrinkType) async throws {
-        // FIXME: Connect API later
-        let testDateSet = [
-            "2024.07.22", "2024.07.24", "2024.07.31", "2024.06.10", "2024.06.30", "2024.05.30", "2023.06.30", "2023.06.10"
-        ]
-        
+    // Pagination-aware function to update records
+    func updateRecords(with drinkType: DrinkType, page: Int = 1, append: Bool = false) async throws {
         state.isLoading.send(true)
         
+        let recordList = try await networkManager.request(
+            .history(.getRecord(filters: [drinkType], userId: state.userId, page: page, size: 5)), // Size's fixed to max value(5)
+            of: RecordListResponse.self).value
+        
         let recordStat = try await networkManager.request(
-            .history(.getStatistics(filters: [drinkType.forAPIParameter])),
+            .history(.getStatistics(filters: [drinkType])),
             of: RecordStatResponse.self).value
         
-        var baseRecordSet = [RecordCellInformation]()
+        let baseRecordSet = recordList.contents.flatMap {
+            $0.histories.map { $0.toRecordCellInformation(with: drinkType) }
+        }
         
-        switch drinkType {
-        case .soju:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "처음처럼", recordType: .record)
-            }
-        case .liquor:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "짐빔", recordType: .record)
-            }
-        case .makgeolli:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "느린마을", recordType: .record)
-            }
-        case .sake:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "가토", recordType: .record)
-            }
-        case .beer:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "버드와이저", recordType: .record)
-            }
-        case .wine:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "메를로", recordType: .record)
-            }
-        case .cocktail:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "블러드메리", recordType: .record)
-            }
-        case .highball:
-            baseRecordSet += testDateSet.map {
-                RecordCellInformation(id: UUID(), date: $0, name: "얼그레이하이볼", recordType: .record)
-            }
+        // Update the current and total page information
+        state.currentPage = recordList.currentPageIndex
+        state.totalPage = recordList.totalPageNumber
+        
+        // If append is true, add the new data to the existing records
+        if append {
+            let existingRecords = state.records.value
+            state.records.send(existingRecords + baseRecordSet)
+        } else {
+            state.records.send(baseRecordSet)
         }
         
         self.state.recordStat.send(recordStat)
-        self.state.records.send(baseRecordSet)
         self.state.isLoading.send(false)
+    }
+    
+    // Function to fetch the next page of data
+    func fetchNextPage() async throws {
+        guard !state.isFetchingNextPage, state.currentPage < state.totalPage else {
+            return
+        }
+        
+        state.isFetchingNextPage = true
+        let nextPage = state.currentPage + 1
+        try await updateRecords(with: state.currentDrinkType.value, page: nextPage, append: true)
+        state.isFetchingNextPage = false
+    }
+}
+
+extension RecordListResponse.Value.Content.History {
+    func toRecordCellInformation(with drinkType: DrinkType) -> RecordListViewController.RecordCellInformation {
+        if liquorDetailNames.isEmpty {
+            RecordListViewController.RecordCellInformation(
+                id: historyId,
+                date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                drinkType: drinkType,
+                names: [],
+                recordType: .record
+            )
+        } else {
+            RecordListViewController.RecordCellInformation(
+                id: historyId,
+                date: SharedDateFormatter.serverDateFormatter.date(from:drankAt),
+                drinkType: drinkType,
+                names: liquorDetailNames,
+                recordType: .record
+            )
+        }
     }
 }

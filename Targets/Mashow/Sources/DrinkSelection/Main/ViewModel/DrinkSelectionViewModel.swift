@@ -13,12 +13,18 @@ class DrinkSelectionViewModel {
     private let networkManager: NetworkManager<API>
     
     struct State {
-        let currentType = CurrentValueSubject<DrinkType, Never>(DrinkType.soju)
+        let initialDrinkType: DrinkType
+        let currentType: CurrentValueSubject<DrinkType, Never>
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
         let isLoading = CurrentValueSubject<Bool, Never>(false)
         
         var selectionResult = DrinkDetail()
+        
+        init(initialDrinkType: DrinkType) {
+            self.initialDrinkType = initialDrinkType
+            self.currentType = CurrentValueSubject(initialDrinkType)
+        }
     }
     
     struct Action {

@@ -65,7 +65,8 @@ class FoodInputViewController: UIViewController {
         // Enable automatic dimension for cell height
         tableView.estimatedRowHeight = 60
         tableView.rowHeight = UITableView.automaticDimension
-        
+        tableView.keyboardDismissMode = .onDrag
+
         return tableView
     }()
     
@@ -107,6 +108,8 @@ class FoodInputViewController: UIViewController {
         setupViews()
         setupConstraints()
         setupTableFooter()
+        
+        hideKeyboardWhenTappedAround()
     }
 }
 
@@ -179,12 +182,16 @@ private extension FoodInputViewController {
     }
     
     @objc func didTapNextButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         let chosenFoods = foodItems.filter { !$0.isEmpty }
         viewModel.submitResult(chosenFoods: chosenFoods)
         dismiss(animated: true)
     }
     
     @objc func didTapDismissButton() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
         dismiss(animated: true)
     }
 }
