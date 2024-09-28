@@ -433,37 +433,49 @@ extension RecordListViewController {
             
             if sectionIndex == 0 {
                 // Layout for the first cell (overview cell)
-                itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                  heightDimension: .fractionalHeight(1.0))
+                itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(140)
+                )
                 item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .estimated(140))
+                groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(140)
+                )
                 group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
                 
                 section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .none
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 35, trailing: 0)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0)
             } else {
                 // Layout for regular records
-                itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5),
-                                                  heightDimension: .fractionalHeight(1.0))
+                itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(0.5),
+                    heightDimension: .fractionalHeight(1.0)
+                )
                 item = NSCollectionLayoutItem(layoutSize: itemSize)
                 item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 11)
                 
-                groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.25),
-                                                   heightDimension: .estimated(100))
+                groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.25),
+                    heightDimension: .estimated(100)
+                )
                 group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .continuous
                 
                 // Add a header for the section
-                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .absolute(50))
-                let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                         elementKind: UICollectionView.elementKindSectionHeader,
-                                                                         alignment: .top)
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(50)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
                 section.boundarySupplementaryItems = [header]
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20)
             }
