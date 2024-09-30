@@ -334,9 +334,13 @@ extension RecordListViewController {
                         
                         let dateString = SharedDateFormatter.shortDateFormmater.string(from: date)
                         let vc = RecordDetailViewController(
-                            viewModel: .init(state: .init(
-                                historyId: record.id,
-                                dateString: dateString)))
+                            viewModel: .init(
+                                state: .init(
+                                    historyId: record.id,
+                                    dateString: dateString),
+                                action: .init(
+                                    refreshHomeWhenSubmitted: self.viewModel.action.refreshHomeWhenSubmitted)
+                            ))
                         self.show(vc, sender: nil)
                     })
                 

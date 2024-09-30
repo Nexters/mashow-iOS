@@ -12,6 +12,7 @@ import Combine
 class RecordDetailViewModel {
     private let networkManager: NetworkManager<API>
     let state: State
+    let action: Action
     
     struct State {
         let historyId: Int
@@ -20,8 +21,17 @@ class RecordDetailViewModel {
         let error: PassthroughSubject<Error?, Never> = .init()
     }
     
-    init(state: State, networkManager: NetworkManager<API> = Environment.network) {
+    struct Action {
+        let refreshHomeWhenSubmitted: @Sendable () async throws -> Void
+    }
+    
+    init(
+        state: State,
+        action: Action,
+        networkManager: NetworkManager<API> = Environment.network
+    ) {
         self.state = state
+        self.action = action
         self.networkManager = networkManager
     }
     
@@ -38,8 +48,10 @@ class RecordDetailViewModel {
     }
     
     func deleteDrinkInfo() async throws {
-//        _ = try await networkManager.request(
-//            .history(.deleteLiquorHistory(historyId: state.historyId)))
+        try await networkManager.request(
+            .history(.deleteRecord(historyId: state.historyId)))
+        
+        try await action.refreshHomeWhenSubmitted()
     }
 }
 

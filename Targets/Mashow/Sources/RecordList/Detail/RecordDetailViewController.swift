@@ -56,12 +56,11 @@ class RecordDetailViewController: UIViewController {
         return label
     }()
     
-    private let deleteRecordButton: UIBarButtonItem = {
-        let button = UIBarButtonItem()
-        button.title = "삭제"
-        button.setTitleTextAttributes([.foregroundColor: UIColor.white.withAlphaComponent(0.5)], for: .normal)
-        button.action = #selector(didTapDeleteRecordButton)
-        return button
+    private lazy var deleteRecordButton: UIBarButtonItem = {
+        UIBarButtonItem(title: "삭제",
+                        style: .plain,
+                        target: self,
+                        action: #selector(didTapDeleteRecordButton))
     }()
     
     // MARK: - View Lifecycle
@@ -192,7 +191,14 @@ class RecordDetailViewController: UIViewController {
 
 private extension RecordDetailViewController {
     @objc func didTapDeleteRecordButton() {
-        // TODO: implement
+        Task {
+            do {
+                try await viewModel.deleteDrinkInfo()
+                navigationController?.popToRootViewController(animated: true)
+            } catch {
+                showErrorAlert()
+            }
+        }
     }
     
     @objc private func didTapBackButton() {
