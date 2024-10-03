@@ -62,7 +62,7 @@ final class DrinkSelectionViewController: UIViewController {
     private lazy var bottomNextButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
         button.tintColor = .white
         button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
         return button
@@ -91,20 +91,21 @@ extension DrinkSelectionViewController {
             .sink { [weak self] addedTypes in
                 guard let self else { return }
 
-                guard addedTypes.isEmpty == false else {
-                    bottomNextButton.alpha = 0.5
-                    bottomNextButton.isEnabled = false
-                    return
-                }
-                
-                bottomNextButton.alpha = 1
-                bottomNextButton.isEnabled = true
-                
                 self.addedTypesStackView.subviews.forEach { $0.removeFromSuperview() }
                 addedTypes.forEach { type in
                     let newButton = AddedTypeButton(type: type)
                     newButton.addTarget(self, action: #selector(self.onTapAddedTypeButton), for: .touchUpInside)
                     self.addedTypesStackView.addArrangedSubview(newButton)
+                }
+                
+                if addedTypes.isEmpty == true {
+                    bottomNextButton.alpha = 0.5
+                    bottomNextButton.isEnabled = false
+                    setupNavigationBar()
+                } else {
+                    bottomNextButton.alpha = 1
+                    bottomNextButton.isEnabled = true
+                    setupNavigationBar()
                 }
             }
             .store(in: &cancellables)
@@ -123,7 +124,9 @@ extension DrinkSelectionViewController {
         navigationController?.navigationBar.isHidden = false
         navigationItem.title = Date.todayStringWrittenInKorean()
         navigationItem.leftBarButtonItem = NavigationAsset.makeCancelButton(target: self, #selector(didTapCancelButton))
-        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, #selector(didTapSaveButton))
+        navigationItem.rightBarButtonItem = NavigationAsset.makeSaveButton(target: self, 
+                                                                           isEnabled: currentlySubmittable,
+                                                                           #selector(didTapSaveButton))
     }
     
     private func setupBackground(to type: DrinkType) {
@@ -139,13 +142,23 @@ extension DrinkSelectionViewController {
             make.horizontalEdges.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
-        setupBackground(to: viewModel.state.initialDrinkType)
+        if let initialType = viewModel.state.initialDrinkType {
+            setupBackground(to: initialType)
+            pageViewController.setViewControllers(
+                [DrinkTypeViewController(viewModel: viewModel, drinkType: initialType)],
+                direction: .forward,
+                animated: false
+            )
+        } else {
+            let defaultType = DrinkType.soju
+            setupBackground(to: defaultType)
+            pageViewController.setViewControllers(
+                [DrinkTypeViewController(viewModel: viewModel, drinkType: defaultType)],
+                direction: .forward,
+                animated: false
+            )
+        }
         
-        pageViewController.setViewControllers(
-            [DrinkTypeViewController(viewModel: viewModel, drinkType: viewModel.state.initialDrinkType)],
-            direction: .forward,
-            animated: false
-        )
         addChild(pageViewController)
         view.addSubview(pageViewController.view)
         pageViewController.didMove(toParent: self)
@@ -204,7 +217,7 @@ extension DrinkSelectionViewController {
     @objc private func didTapNextButton() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
-        guard viewModel.state.addedTypes.value.isEmpty == false else {
+        guard currentlySubmittable else {
             return
         }
         
@@ -221,12 +234,22 @@ extension DrinkSelectionViewController {
     @objc private func didTapSaveButton() {
         Task {
             do {
-                try await viewModel.submit()
-                navigationController?.popViewController(animated: true)
+                if currentlySubmittable {
+                    try await viewModel.submit()
+                    navigationController?.popViewController(animated: true)
+                }
             } catch {
                 showErrorAlert()
             }
         }
+    }
+    
+    private var currentlySubmittable: Bool {
+        guard viewModel.state.addedTypes.value.isEmpty == false else {
+            return false
+        }
+        
+        return true
     }
 }
 

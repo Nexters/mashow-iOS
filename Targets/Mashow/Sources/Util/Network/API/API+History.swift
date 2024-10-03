@@ -14,6 +14,7 @@ enum HistoryAPI {
     case getStatistics(filters: [DrinkType])
     case getLiquorHistoryDetail(historyId: Int)
     case getLiquorTypes
+    case deleteRecord(historyId: Int)
 }
 
 extension HistoryAPI: SubTargetType {
@@ -29,6 +30,8 @@ extension HistoryAPI: SubTargetType {
             return "/history/liquor/\(historyId)"
         case .getLiquorTypes:
             return "/history/liquor-types"
+        case let .deleteRecord(historyId):
+            return  "history/liquor/\(historyId)"
         }
     }
     
@@ -38,6 +41,8 @@ extension HistoryAPI: SubTargetType {
             return .post
         case .getStatistics, .getLiquorHistoryDetail, .getLiquorTypes:
             return .get
+        case .deleteRecord:
+            return .delete
         }
     }
     
@@ -66,6 +71,8 @@ extension HistoryAPI: SubTargetType {
                 encoding: URLEncoding.queryString
             )
         case .getLiquorHistoryDetail, .getLiquorTypes:
+            return .requestPlain
+        case .deleteRecord(historyId: let historyId):
             return .requestPlain
         }
     }
@@ -171,6 +178,14 @@ extension HistoryAPI: SubTargetType {
               "value": {
                 "liquorHistoryTypes": ["SOJU"]
               }
+            }
+            """.utf8)
+        case .deleteRecord:
+            return Data("""
+            {
+              "code": 0,
+              "message": "string",
+              "value": {}
             }
             """.utf8)
         }

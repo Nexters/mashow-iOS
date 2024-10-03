@@ -161,7 +161,7 @@ private extension UITextField {
         doneToolbar.barStyle = .default
         doneToolbar.items = [
             UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(dismissKeyboard))
+            UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(dismissKeyboard))
         ]
         doneToolbar.sizeToFit()
         

@@ -50,6 +50,7 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
         // Enable automatic dimension for cell height
         tableView.estimatedRowHeight = 60
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.showsVerticalScrollIndicator = false
         
         return tableView
     }()
@@ -77,7 +78,8 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
         super.viewDidLoad()
         
         setupLayouts()
-        hideKeyboardWhenTappedAround()
+//        hideKeyboardWhenTappedAround()
+        registerForKeyboardNotifications()
         
         // 기본 셀 잡아줌
         environmentViewModel.state.addedTypes.value.forEach { type in
@@ -130,7 +132,7 @@ private extension DrinkDetailViewController {
         let headerContainer = UIView()
         headerContainer.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(16) // Add padding around titleLabel
+            make.leading.equalToSuperview()
         }
         
         let headerHeight: CGFloat = 100 // Adjust this height based on your titleLabel's content
@@ -154,6 +156,39 @@ private extension DrinkDetailViewController {
             make.trailing.equalToSuperview().offset(-16)
             make.bottom.equalTo(buttonStackView.snp.top)
         }
+    }
+}
+
+// - MARK: Keyboard
+private extension DrinkDetailViewController {
+    func registerForKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    @objc func keyboardWillShow(notification: Notification) {
+        if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            let keyboardHeight = keyboardFrame.cgRectValue.height
+            UIView.animate(withDuration: 0.3) {
+                self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+            }
+        }
+    }
+
+    @objc func keyboardWillHide(notification: Notification) {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        })
     }
 }
 
@@ -181,6 +216,7 @@ extension DrinkDetailViewController: UITableViewDelegate, UITableViewDataSource 
             cell.configure(with: detail, section: indexPath.section, row: indexPath.row)
         }
 
+        cell.textField.delegate = self
         cell.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         cell.onTapDelete { [weak self] in
             // Delete specific row
@@ -232,18 +268,39 @@ extension DrinkDetailViewController: UITableViewDelegate, UITableViewDataSource 
     }
 }
 
+extension DrinkDetailViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
 // MARK: - Actions
 
 extension DrinkDetailViewController {
     @objc private func didTapAddButton(_ sender: UIButton) {
         let section = sender.tag
         let drinkType = environmentViewModel.state.addedTypes.value[section]
+        
+        // 1. 현재 포커스된 텍스트 필드를 찾고, 그 상태를 저장
+        let currentFirstResponder = UIResponder.currentFirstResponder
+        
+        // 2. 데이터 모델 업데이트
         viewModel.drinkDetails[drinkType, default: []].append("")
         
-        print(viewModel.drinkDetails)
-        
+        // 3. 테이블 뷰 갱신
         UIView.performWithoutAnimation {
-            tableView.reloadSections([section], with: .none)
+            let newRowIndex = (viewModel.drinkDetails[drinkType]?.count ?? 1) - 1
+            let indexPath = IndexPath(row: newRowIndex, section: section)
+            tableView.insertRows(at: [indexPath], with: .none)
+            
+            // 4. 새로 추가된 셀에 포커스 설정
+            DispatchQueue.main.async {
+                currentFirstResponder?.becomeFirstResponder()
+                if let cell = self.tableView.cellForRow(at: indexPath) as? DrinkCell {
+                    cell.textField.becomeFirstResponder()
+                }
+            }
         }
     }
     
@@ -281,3 +338,4 @@ private extension [DrinkType:[String]] {
         }
     }
 }
+

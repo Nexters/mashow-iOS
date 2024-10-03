@@ -109,7 +109,7 @@ class FoodInputViewController: UIViewController {
         setupConstraints()
         setupTableFooter()
         
-        hideKeyboardWhenTappedAround()
+//        hideKeyboardWhenTappedAround()
     }
 }
 
@@ -147,7 +147,7 @@ private extension FoodInputViewController {
         nextButton.snp.makeConstraints { make in
             make.leading.trailing.equalTo(view).inset(20)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            make.height.equalTo(50)
+            make.height.equalTo(60)
         }
     }
     
@@ -173,12 +173,45 @@ private extension FoodInputViewController {
     }
 }
 
+extension FoodInputViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
+
 // MARK: - Actions
 private extension FoodInputViewController {
     @objc func didTapAddButton() {
+        // 1. 현재 포커스된 텍스트 필드를 찾고, 그 상태를 저장
+        let currentFirstResponder = UIResponder.currentFirstResponder
+
+        // 2. 데이터 모델 업데이트
         foodItems.append("")
-        tableView.reloadData()
+
+        // 3. 새로운 셀만 추가
+        let newRowIndex = foodItems.count - 1
+        let indexPath = IndexPath(row: newRowIndex, section: 0)
+
+        UIView.performWithoutAnimation {
+            tableView.insertRows(at: [indexPath], with: .none)
+            
+            // 4. 키보드를 유지하면서 새로 추가된 셀의 텍스트 필드에 포커스
+            DispatchQueue.main.async {
+                // 기존 포커스된 텍스트 필드가 있으면 다시 포커스 설정
+                currentFirstResponder?.becomeFirstResponder()
+                
+                // 새로 추가된 셀에 포커스
+                if let cell = self.tableView.cellForRow(at: indexPath) as? FoodCell {
+                    cell.textField.becomeFirstResponder()
+                }
+            }
+        }
+
+        // 5. 푸터 및 버튼 상태 업데이트
         updateFooterVisibility()
+        updateDoneButtonEnability()
     }
     
     @objc func didTapNextButton() {
@@ -206,6 +239,8 @@ extension FoodInputViewController: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: FoodCell.identifier, for: indexPath) as? FoodCell else {
             return UITableViewCell()
         }
+        
+        cell.textField.delegate = self
         cell.configure(with: foodItems[indexPath.row], tag: indexPath.row)
         cell.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         cell.onTapDelete { [weak self] in

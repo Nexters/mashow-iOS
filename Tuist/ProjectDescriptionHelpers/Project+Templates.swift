@@ -59,7 +59,6 @@ extension Project {
     private static func makeAppTargets(name: String, platform: Platform, dependencies: [TargetDependency]) -> [Target] {
         let platform: Platform = platform
         let infoPlist: [String: InfoPlist.Value] = [
-            "CFBundleVersion": "1",
             "UILaunchStoryboardName": "LaunchScreen",
             "UIApplicationSceneManifest": [
                 "UIApplicationSupportsMultipleScenes": false,
@@ -98,7 +97,9 @@ extension Project {
                 ]
             ],
             "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
-            "BASE_API_URL": "$(BASE_API_URL)"
+            "BASE_API_URL": "$(BASE_API_URL)",
+            "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+            "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)"
         ]
         
         let debugConfiguration = Configuration.debug(

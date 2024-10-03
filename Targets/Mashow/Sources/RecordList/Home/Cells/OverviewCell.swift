@@ -58,7 +58,10 @@ class OverviewCell: UICollectionViewCell {
     private lazy var buttonScrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.contentInset = UIEdgeInsets(top: 0, left: horizontalPadding, bottom: 0, right: horizontalPadding)
+        scrollView.contentInset = UIEdgeInsets(top: 0, 
+                                               left: horizontalPadding,
+                                               bottom: 0,
+                                               right: horizontalPadding)
         scrollView.addSubview(buttonStack)
         return scrollView
     }()
@@ -92,10 +95,9 @@ class OverviewCell: UICollectionViewCell {
         }
         
         contentView.addSubview(buttonScrollView)
-        buttonScrollView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-        buttonScrollView.setContentHuggingPriority(.defaultHigh, for: .vertical)
         buttonScrollView.snp.makeConstraints { make in
-            make.top.equalTo(labelVstackView.snp.bottom).offset(16)
+            make.height.equalTo(50)
+            make.top.equalTo(labelVstackView.snp.bottom).offset(5)
             make.leading.trailing.bottom.equalToSuperview()
         }
         
@@ -118,14 +120,29 @@ extension OverviewCell {
         
         // Remove existing buttons in the stack before adding new ones
         buttonStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
         // Add the buttons to the buttonStack
         for buttonInfo in buttons {
             let button = createButton(title: buttonInfo.name, textColor: drinkType.themeColor, count: buttonInfo.count)
             buttonStack.addArrangedSubview(button)
         }
         
-        // Update content size of the scroll view after adding buttons
-        buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2, height: buttonScrollView.frame.height)
+        if buttons.isEmpty {
+            // Hide buttonScrollView and set height to 0 when no buttons are present
+            buttonScrollView.isHidden = true
+            buttonScrollView.snp.updateConstraints { make in
+                make.height.equalTo(0)
+            }
+        } else {
+            buttonScrollView.isHidden = false
+            buttonScrollView.snp.updateConstraints { make in
+                make.height.equalTo(50)
+            }
+            
+            // Update content size of the scroll view after adding buttons
+            buttonScrollView.contentSize = CGSize(width: buttonStack.frame.width + horizontalPadding * 2,
+                                                  height: buttonScrollView.frame.height)
+        }
     }
     
     private func configureConcentrationLabel(_ drinkType: DrinkType) {

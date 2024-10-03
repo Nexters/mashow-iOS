@@ -26,7 +26,7 @@ class DrinkSelectionSubViewController: UIViewController {
     lazy var nextButton: UIButton = {
         let button = BlurredButton()
         button.setTitle("다음", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
         button.setTitleColor(.white, for: .normal)
         
         button.addTarget(self, action: #selector(didTapNextButton), for: .touchUpInside)
@@ -37,7 +37,7 @@ class DrinkSelectionSubViewController: UIViewController {
         let button = BlurredButton()
         button.blurEffect = UIBlurEffect(style: .light)
         button.setTitle("이전", for: .normal)
-        button.titleLabel?.font = .pretendard(size: 20, weight: .bold)
+        button.titleLabel?.font = .pretendard(size: 20, weight: .medium)
         button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
         return button

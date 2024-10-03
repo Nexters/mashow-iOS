@@ -59,10 +59,7 @@ final class DrinkTypeViewController: UIViewController {
         stackView.snp.makeConstraints { make in
             make.center.equalTo(button)
         }
-        if viewModel.state.addedTypes.value.count >= 3 {
-            button.isEnabled = false
-            button.layer.opacity = 0.3
-        }
+        
         return button
     }()
     
@@ -76,6 +73,7 @@ final class DrinkTypeViewController: UIViewController {
         stackView.spacing = 4
         stackView.alignment = .center
         stackView.bounds = button.bounds
+        stackView.isUserInteractionEnabled = false
         
         let label = UILabel()
         label.font = .pretendard(size: 16, weight: .bold)
@@ -102,7 +100,7 @@ final class DrinkTypeViewController: UIViewController {
         stackView.snp.makeConstraints { make in
             make.center.equalTo(button)
         }
-        button.isEnabled = false
+        
         return button
     }()
     
@@ -110,12 +108,6 @@ final class DrinkTypeViewController: UIViewController {
         let image = UIImage(named: drinkType.rawValue + "Bottle")
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFill
-        
-        // Trigger drink addition when image tapped
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(addDrinkType))
-        imageView.isUserInteractionEnabled = true
-        imageView.addGestureRecognizer(tapGestureRecognizer)
-        
         return imageView
     }()
     
@@ -134,14 +126,18 @@ private extension DrinkTypeViewController {
         viewModel.state.addedTypes
             .receive(on: DispatchQueue.main)
             .sink { [weak self] addedTypes in
-                guard let self = self else { return }
+                guard let self else {
+                    return
+                }
+                
                 let isTypeAdded = addedTypes.contains(self.drinkType)
                 self.addDrinkTypeButton.isHidden = isTypeAdded
                 self.addedDrinkTypeButton.isHidden = !isTypeAdded
                 
-                if !isTypeAdded, addedTypes.count < 3 {
-                    self.addDrinkTypeButton.isEnabled = true
-                    self.addDrinkTypeButton.layer.opacity = 1.0
+                if !isTypeAdded, addedTypes.count < viewModel.selectionLimit {
+                    self.addDrinkTypeButton.layer.opacity = 1
+                } else {
+                    self.addDrinkTypeButton.layer.opacity = 0.3
                 }
             }
             .store(in: &cancellables)
@@ -181,9 +177,18 @@ private extension DrinkTypeViewController {
     
     private func setupHandlers() {
         addDrinkTypeButton.addTarget(self, action: #selector(addDrinkType), for: .touchUpInside)
+        addedDrinkTypeButton.addTarget(self, action: #selector(removeDrinkType), for: .touchUpInside)
     }
     
     @objc private func addDrinkType() {
-        viewModel.addType(drinkType)
+        do {
+            try viewModel.addType(drinkType)
+        } catch {
+            showAlert(title: "주종은 최대 \(viewModel.selectionLimit)개까지 선택 가능합니다", message: "")
+        }
+    }
+    
+    @objc private func removeDrinkType() {
+        viewModel.removeType(drinkType)
     }
 }

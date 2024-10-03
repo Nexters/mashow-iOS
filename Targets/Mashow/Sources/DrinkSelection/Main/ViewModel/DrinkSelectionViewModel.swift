@@ -10,10 +10,11 @@ import UIKit
 import Combine
 
 class DrinkSelectionViewModel {
+    let selectionLimit = 1
     private let networkManager: NetworkManager<API>
-    
+        
     struct State {
-        let initialDrinkType: DrinkType
+        let initialDrinkType: DrinkType?
         let currentType: CurrentValueSubject<DrinkType, Never>
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
@@ -21,9 +22,19 @@ class DrinkSelectionViewModel {
         
         var selectionResult = DrinkDetail()
         
-        init(initialDrinkType: DrinkType) {
-            self.initialDrinkType = initialDrinkType
-            self.currentType = CurrentValueSubject(initialDrinkType)
+        init(initialDrinkType: DrinkType?) {
+            if let initialDrinkType {
+                self.initialDrinkType = initialDrinkType
+                self.currentType = CurrentValueSubject(initialDrinkType)
+                
+                // 만약에 먼가가 여기로 들어왔다면 선택된 채로 보여주기
+                self.addedTypes.send([initialDrinkType])
+                self.selectionResult.liquors = [.init(liquorType: initialDrinkType.forAPIParameter, names: [])]
+            } else {
+                let defaultType = DrinkType.soju
+                self.initialDrinkType = defaultType
+                self.currentType = CurrentValueSubject(defaultType)
+            }
         }
     }
     
@@ -44,12 +55,14 @@ class DrinkSelectionViewModel {
         self.networkManager = networkManager
     }
     
-    func addType(_ type: DrinkType) {
+    func addType(_ type: DrinkType) throws {
         var current = state.addedTypes.value
-        guard state.addedTypes.value.count < 3, !current.contains(type) else { return }
+        guard state.addedTypes.value.count < selectionLimit, !current.contains(type) else {
+            throw InternalError.limitExceeded
+        }
         current.append(type)
         
-        state.selectionResult.liquors.append(.init(liquorType: type.forAPIParameter, names: []))
+        saveLiquors(current.map({ .init(liquorType: $0.forAPIParameter, names: []) }))
         state.addedTypes.send(current)
     }
     
@@ -57,7 +70,7 @@ class DrinkSelectionViewModel {
         var current = state.addedTypes.value
         current.removeAll(where: { $0 == type })
         
-        state.selectionResult.liquors.removeAll(where: { $0.liquorType == type.forAPIParameter })
+        saveLiquors(current.map({ .init(liquorType: $0.forAPIParameter, names: []) }))
         state.addedTypes.send(current)
     }
 
@@ -112,5 +125,11 @@ class DrinkSelectionViewModel {
         
         try await action.onSubmitted()
         state.drinkSelectionResult.send(state.selectionResult)
+    }
+}
+
+extension DrinkSelectionViewModel {
+    enum InternalError: Error {
+        case limitExceeded
     }
 }
