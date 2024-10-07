@@ -26,7 +26,6 @@ class RecordCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
-        setupTapGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -34,13 +33,6 @@ class RecordCell: UICollectionViewCell {
     }
     
     private func setupView() {
-        // Give linear gradient to background
-//        let gradientLayer = CAGradientLayer()
-//        gradientLayer.colors = [UIColor.hex("151515"), UIColor.hex("162B11")].map(\.cgColor)
-//        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-//        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-//        gradientLayer.frame = bounds
-//        layer.insertSublayer(gradientLayer, at: 0)
         backgroundColor = .hex("FCFCFC").withAlphaComponent(0.05)
 
         layer.cornerRadius = 10
@@ -53,15 +45,30 @@ class RecordCell: UICollectionViewCell {
         }
     }
     
-    private func setupTapGesture() {
-        // Add tap gesture recognizer to the cell
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        self.addGestureRecognizer(tapGesture)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        
+        UIView.animate(withDuration: 0.1) {
+            self.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        }
     }
-    
-    @objc private func handleTap() {
-        // Trigger the onTap closure when the cell is tapped
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        
+        UIView.animate(withDuration: 0.1) {
+            self.transform = CGAffineTransform.identity
+        }
+        
         onTap?()
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        
+        UIView.animate(withDuration: 0.1) {
+            self.transform = CGAffineTransform.identity
+        }
     }
     
     func configure(with record: RecordListViewController.RecordCellInformation, onTap: @escaping () -> Void) {

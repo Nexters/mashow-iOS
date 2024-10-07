@@ -181,14 +181,18 @@ private extension DrinkTypeViewController {
     }
     
     @objc private func addDrinkType() {
+        
         do {
+            Haptic.buttonTap()
             try viewModel.addType(drinkType)
         } catch {
+            Haptic.notify(.warning)
             showAlert(title: "주종은 최대 \(viewModel.selectionLimit)개까지 선택 가능합니다", message: "")
         }
     }
     
     @objc private func removeDrinkType() {
+        Haptic.buttonTap()
         viewModel.removeType(drinkType)
     }
 }

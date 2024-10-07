@@ -222,7 +222,7 @@ class RatingViewController: DrinkSelectionSubViewController {
         }
         
         // Give haptic effect
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.notify(.success)
     }
     
     // MARK: - Scoring Logic

@@ -116,6 +116,7 @@ extension DrinkSelectionViewController {
             return
         }
         
+        Haptic.buttonTap()
         let typeToBeRemoved = sender.drinkType
         viewModel.removeType(typeToBeRemoved)
     }

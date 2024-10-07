@@ -191,14 +191,21 @@ class RecordDetailViewController: UIViewController {
 
 private extension RecordDetailViewController {
     @objc func didTapDeleteRecordButton() {
-        Task {
-            do {
-                try await viewModel.deleteDrinkInfo()
-                navigationController?.popToRootViewController(animated: true)
-            } catch {
-                showErrorAlert()
-            }
-        }
+        showConfirmCancelAlert(
+            title: "정말로 삭제하시겠습니까?",
+            message: nil,
+            onConfirm: { [weak self] in
+                guard let self else { return }
+                
+                Task {
+                    do {
+                        try await self.viewModel.deleteDrinkInfo()
+                        self.navigationController?.popToRootViewController(animated: true)
+                    } catch {
+                        self.showErrorAlert()
+                    }
+                }
+            })
     }
     
     @objc private func didTapBackButton() {

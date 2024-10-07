@@ -48,6 +48,36 @@ class MiniCardView: UIView {
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         backgroundImageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
+
+    // MARK: - Opacity and Transform (For touch effects)
+
+    func setPressedState() {
+        UIView.animate(withDuration: 0.1) {
+            self.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        }
+    }
+    
+    func setReleasedState() {
+        UIView.animate(withDuration: 0.1) {
+            self.transform = CGAffineTransform.identity
+        }
+    }
+
+    // 터치 이벤트 처리
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        setPressedState()  // 손가락이 눌렸을 때 애니메이션
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        setReleasedState()  // 손가락이 떼졌을 때 애니메이션
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        setReleasedState()  // 터치가 취소될 때 애니메이션
+    }
     
     // MARK: - Opacity Control
 
