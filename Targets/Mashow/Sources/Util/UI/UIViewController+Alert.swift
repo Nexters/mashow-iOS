@@ -48,7 +48,7 @@ extension UIViewController {
     // Confirm/Cancel Alert
     func showConfirmCancelAlert(
         title: String,
-        message: String,
+        message: String?,
         confirmTitle: String = "확인",
         cancelTitle: String = "취소",
         onConfirm: @escaping () -> Void,

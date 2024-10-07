@@ -234,6 +234,8 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController {
     @objc private func didTapRecordButton() {
+        Haptic.buttonTap()
+        
         let vc = DrinkSelectionViewController(
             viewModel: .init(
                 state: .init(
@@ -249,6 +251,8 @@ extension HomeViewController {
     }
     
     @objc private func didTapMyPageButton() {
+        Haptic.buttonTap()
+        
         let vc = MyPageViewController(
             viewModel: MyPageViewModel(
                 state: .init(accessTokenSubject: viewModel.state.accessToken)))

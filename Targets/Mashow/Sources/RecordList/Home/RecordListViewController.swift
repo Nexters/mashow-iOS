@@ -275,9 +275,12 @@ extension RecordListViewController: UICollectionViewDelegate {
 
 extension RecordListViewController {
     private func setupCollectionView() {
+        
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.backgroundColor = .clear
         
+        collectionView.delaysContentTouches = false
+
         // Register the custom cells and supplementary views
         collectionView.register(RecordCell.self,
                                 forCellWithReuseIdentifier: RecordCell.reuseIdentifier)
@@ -504,6 +507,8 @@ extension RecordListViewController {
     }
     
     @objc private func didTapRecordButton() {
+        Haptic.buttonTap()
+        
         let vc = DrinkSelectionViewController(
             viewModel: .init(
                 state: .init(

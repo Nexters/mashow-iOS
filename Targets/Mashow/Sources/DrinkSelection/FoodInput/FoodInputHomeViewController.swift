@@ -219,11 +219,18 @@ private extension FoodInputHomeViewController {
             foodItemsStackView.addArrangedSubview(arrangedView)
             
             // Animate with a delay for each item
-            let delay = 0.5 * Double(items.count - index - 1) + 0.1
-            UIView.animate(withDuration: 0.5, delay: delay, options: .curveEaseInOut, animations: {
-                arrangedView.alpha = 1
-                arrangedView.transform = .identity  // Reset transform to original position
-            }, completion: nil)
+            let delay = 0.5 * Double(items.count - index - 1) + 0.3
+            UIView.animate(
+                withDuration: 0.6,
+                delay: delay,
+                usingSpringWithDamping: 0.7,
+                initialSpringVelocity: 0.8,
+                options: .curveEaseInOut,
+                animations: {
+                    arrangedView.alpha = 1
+                    arrangedView.transform = .identity
+                },
+                completion: nil)
         }
     }
 }
@@ -231,6 +238,8 @@ private extension FoodInputHomeViewController {
 // MARK: - Actions
 private extension FoodInputHomeViewController {
     @objc func didTapInputButton() {
+        Haptic.buttonTap()
+        
         // Show modal view controller
         let foodInputViewController = FoodInputViewController()
         foodInputViewController.viewModel = FoodInputViewModel(
