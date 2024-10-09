@@ -8,7 +8,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
-        guard let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String else {
+        guard
+            let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String,
+            let gptKey = Bundle.main.object(forInfoDictionaryKey: "GPT_KEY") as? String
+        else {
             fatalError("XCConfig을 잘못 넣으셨군요...")
         }
         

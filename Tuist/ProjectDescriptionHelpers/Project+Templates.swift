@@ -30,17 +30,7 @@ extension Project {
                              bundleId: "\(organizationName).\(name)",
                              deploymentTarget: .iOS(targetVersion: "17.0", devices: .iphone),
                              infoPlist: .default,
-                             sources: ["Targets/\(name)/Sources/**"],
-                             resources: [],
-                             dependencies: [
-                                .external(name: "SnapKit"),
-                                .external(name: "Moya"),
-                                .external(name: "Kingfisher"),
-                                .external(name: "Lottie"),
-                                .external(name: "KakaoSDKAuth"),
-                                .external(name: "KakaoSDKUser"),
-                                .external(name: "Willow")
-                             ])
+                             sources: ["Targets/\(name)/Sources/**"])
         
         let tests = Target(name: "\(name)Tests",
                            platform: platform,
@@ -121,7 +111,15 @@ extension Project {
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
             entitlements: .file(path: "./Mashow.entitlements"),
-            dependencies: dependencies,
+            dependencies: dependencies + [
+                .external(name: "SnapKit"),
+                .external(name: "Moya"),
+                .external(name: "Kingfisher"),
+                .external(name: "Lottie"),
+                .external(name: "KakaoSDKAuth"),
+                .external(name: "KakaoSDKUser"),
+                .external(name: "Willow")
+            ],
             settings: .settings(configurations: [
                debugConfiguration,
                releaseConfiguration
