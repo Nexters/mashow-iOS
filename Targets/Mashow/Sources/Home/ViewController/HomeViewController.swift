@@ -348,13 +348,25 @@ extension HomeViewController {
     }
     
     @objc private func didTapAIButton() {
-        var configuration = PHPickerConfiguration()
-        configuration.selectionLimit = 1
-        configuration.filter = .images
+//        var configuration = PHPickerConfiguration()
+//        configuration.selectionLimit = 1
+//        configuration.filter = .images
+//
+//        let picker = PHPickerViewController(configuration: configuration)
+//        picker.delegate = self
+//        present(picker, animated: true, completion: nil)
         
-        let picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = self
-        present(picker, animated: true, completion: nil)
+        
+        // 카메라가 사용 가능한지 확인
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            let imagePickerController = UIImagePickerController()
+            imagePickerController.delegate = self
+            imagePickerController.sourceType = .camera
+            self.present(imagePickerController, animated: true, completion: nil)
+        } else {
+            // 카메라를 사용할 수 없는 경우 경고 메시지 표시
+            self.showErrorAlert(title: "카메라를 사용할 수 없습니다")
+        }
     }
     
     @objc private func didTapMyPageButton() {
@@ -369,28 +381,42 @@ extension HomeViewController {
 }
 
 // MARK: - Delegate
-extension HomeViewController: PHPickerViewControllerDelegate {
-    
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true, completion: nil) // Picker 닫기
-        
-        // 선택한 사진이 있을 경우
-        if let firstResult = results.first {
-            let itemProvider = firstResult.itemProvider
-            
-            // 이미지가 있는지 확인
-            if itemProvider.canLoadObject(ofClass: UIImage.self) {
-                itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
-                    guard let selectedImage = image as? UIImage else {
-                        return
-                    }
-                    
-                    Task { try await self.viewModel.askGPT(with: selectedImage) }
-                }
-            }
+
+// UIImagePickerControllerDelegate 메서드 구현
+extension HomeViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        if let selectedImage = info[.originalImage] as? UIImage {
+            Task { try await self.viewModel.askGPT(with: selectedImage) }
         }
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
     }
 }
+
+//extension HomeViewController: PHPickerViewControllerDelegate {
+//    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+//        picker.dismiss(animated: true, completion: nil) // Picker 닫기
+//        
+//        // 선택한 사진이 있을 경우
+//        if let firstResult = results.first {
+//            let itemProvider = firstResult.itemProvider
+//            
+//            // 이미지가 있는지 확인
+//            if itemProvider.canLoadObject(ofClass: UIImage.self) {
+//                itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
+//                    guard let selectedImage = image as? UIImage else {
+//                        return
+//                    }
+//                    
+//                    Task { try await self.viewModel.askGPT(with: selectedImage) }
+//                }
+//            }
+//        }
+//    }
+//}
 
 import SwiftUI
 #Preview {

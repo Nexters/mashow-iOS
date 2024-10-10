@@ -88,8 +88,10 @@ extension Project {
             ],
             "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
             "BASE_API_URL": "$(BASE_API_URL)",
+            "GPT_KEY": "$(GPT_KEY)",
             "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-            "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)"
+            "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+            "NSCameraUsageDescription": "라벨 정보를 인식하기 위해 카메라가 필요합니다. 기능을 사용하기 위해선 권한을 허용해주세요."
         ]
         
         let debugConfiguration = Configuration.debug(
