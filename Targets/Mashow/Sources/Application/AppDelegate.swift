@@ -15,12 +15,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             fatalError("XCConfig을 잘못 넣으셨군요...")
         }
         
-        do {
-            try Tips.configure()
-        }
-        catch {
-            print("Error initializing tips: \(error)")
-        }
+        // 별점 요청 로직
+        let appLaunchManager = AppLaunchManager()
+        appLaunchManager.incrementLaunchCountAndRequestReviewIfNeeded()
         
         KakaoSDK.initSDK(appKey: kakaoAppKey)
         return true
