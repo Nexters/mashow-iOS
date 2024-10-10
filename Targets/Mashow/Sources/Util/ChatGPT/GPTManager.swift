@@ -111,6 +111,7 @@ class SpiritGPT {
     - You must download the image form URL and should analyze it.
     - 'type' must be one of this; 'soju', 'liquor', 'beer', 'wine', 'sake', 'highball', 'cocktail'
     - If you think you don't have enough information, please return ‘N/A’
+    - Response should include the JSON data only, not other text
     """
     
     static private(set) var inProgress = false
@@ -118,7 +119,7 @@ class SpiritGPT {
     struct Spirit: Decodable {
         let type: String
         let name: String
-        let manufacturer: String
+        let manufacturer: String?
     }
     
     static func ask(_ ocrResult: String) async throws -> Spirit {

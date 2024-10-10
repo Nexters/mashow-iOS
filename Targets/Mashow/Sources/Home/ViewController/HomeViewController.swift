@@ -1,7 +1,6 @@
 import UIKit
 import SnapKit
 import Combine
-import PhotosUI
 
 class HomeViewController: UIViewController {
     var viewModel: HomeViewModel!
@@ -53,6 +52,7 @@ class HomeViewController: UIViewController {
             guard let self else { return }
             self.didTapRecordButton()
         }
+        
         return button
     }()
     
@@ -62,6 +62,7 @@ class HomeViewController: UIViewController {
             guard let self else { return }
             self.didTapAIButton()
         }
+        
         return button
     }()
 
@@ -96,6 +97,9 @@ class HomeViewController: UIViewController {
         return view
     }()
     
+    // MARK: Tip
+    private weak var tipView: TipView?
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -108,11 +112,63 @@ class HomeViewController: UIViewController {
         bind()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.setupTipView()
+        }
     }
-    
+        
     // MARK: - View setup
+    
+    private func setupTipView() {
+        let aiTipkey = "ShowAITip" // FIXME: 저장소 분리할 것
+        let showTip = UserDefaults.standard.bool(forKey: aiTipkey)
+        guard showTip == false else {
+            return
+        }
+        let tip = TipView(
+            title: "AI 기록을 사용해보세요 ✨",
+            message: "AI 기록을 이용하면 자동으로 술의 종류를 인식하고 기록할 수 있어요"
+        )
+        tip.onClose = { [weak self] in
+            self?.removeTipView()
+            UserDefaults.standard.set(true, forKey: aiTipkey)
+        }
+
+        view.addSubview(tip)
+
+        tip.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+        tip.alpha = 0.0
+
+        tip.snp.makeConstraints { make in
+            make.centerX.equalTo(aiButton)
+            make.bottom.equalTo(aiButton.snp.top).offset(-15)
+            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(15)
+            make.width.equalTo(250)
+        }
+
+        self.tipView = tip
+
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0,
+            usingSpringWithDamping: 0.6,
+            initialSpringVelocity: 0.8,
+            options: .curveEaseInOut,
+            animations: {
+                tip.transform = CGAffineTransform.identity
+                tip.alpha = 1.0
+            },
+            completion: nil)
+      }
+
+    
+    private func removeTipView() {
+        tipView?.removeFromSuperview()
+        tipView = nil
+    }
 
     private func setupViews() {
         view.addSubview(backgroundImageView)
@@ -185,10 +241,10 @@ class HomeViewController: UIViewController {
         }
         
         aiButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(15)
             make.left.equalTo(recordButton.snp.right).offset(20)
             make.height.equalTo(35)
             make.width.equalTo(35)
+            make.centerY.equalTo(recordButton)
         }
         
         myPageButton.snp.makeConstraints { make in
@@ -240,15 +296,21 @@ class HomeViewController: UIViewController {
     private func showGPTResultView(with spritInfo: SpiritGPT.Spirit) {
         guard let drinkType = DrinkType(rawValue: spritInfo.type) else {
             showErrorAlert(title: "라벨 인식 실패",
-                           message: "라벨을 인식할 수 없습니다. 라벨이 더 선명하게 보이는 이미지를 사용해보세요.")
+                           message: "라벨을 인식할 수 없습니다. 라벨이 더 잘 보이도록 사진을 촬영해보세요.")
             return
+        }
+        
+        let drinkName = if let manufacturer = spritInfo.manufacturer {
+            "\(spritInfo.name) (\(manufacturer))"
+        } else {
+            spritInfo.name
         }
         
         let vc = DrinkSelectionViewController(
             viewModel: .init(
                 state: .init(
                     initialDrinkType: drinkType,
-                    drinkName: spritInfo.name),
+                    drinkName: drinkName),
                 action: .init(
                     onSubmitted: { [weak self] in
                         guard let self else { return }
@@ -312,7 +374,7 @@ class HomeViewController: UIViewController {
                         switch gptError {
                         case .cannotRecognize:
                             self.showErrorAlert(title: "라벨 인식 실패",
-                                                message: "라벨을 인식할 수 없습니다. 라벨이 더 선명하게 보이는 이미지를 사용해보세요.")
+                                                message: "라벨을 인식할 수 없습니다. 라벨이 더 잘 보이도록 사진을 촬영해보세요.")
                         default:
                             self.showErrorAlert(title: "서비스 이용 불가",
                                                 message: "현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도하시거나 문제가 지속되면 제작자에게 문의해주세요.")
@@ -356,6 +418,8 @@ extension HomeViewController {
 //        picker.delegate = self
 //        present(picker, animated: true, completion: nil)
         
+        Haptic.buttonTap()
+        removeTipView()
         
         // 카메라가 사용 가능한지 확인
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
