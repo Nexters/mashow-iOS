@@ -5,6 +5,7 @@ import Combine
 class HomeViewController: UIViewController {
     var viewModel: HomeViewModel!
     private var cancellables = Set<AnyCancellable>()
+    private let aiTipkey = "ShowAITip" // FIXME: 저장소 분리할 것
 
     // MARK: - UI Elements
 
@@ -116,6 +117,8 @@ class HomeViewController: UIViewController {
         super.viewDidAppear(animated)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            // Check if tipView is already shown
+            guard self.tipView == nil else { return }
             self.setupTipView()
         }
     }
@@ -123,7 +126,6 @@ class HomeViewController: UIViewController {
     // MARK: - View setup
     
     private func setupTipView() {
-        let aiTipkey = "ShowAITip" // FIXME: 저장소 분리할 것
         let showTip = UserDefaults.standard.bool(forKey: aiTipkey)
         guard showTip == false else {
             return
@@ -134,7 +136,6 @@ class HomeViewController: UIViewController {
         )
         tip.onClose = { [weak self] in
             self?.removeTipView()
-            UserDefaults.standard.set(true, forKey: aiTipkey)
         }
 
         view.addSubview(tip)
@@ -166,6 +167,7 @@ class HomeViewController: UIViewController {
 
     
     private func removeTipView() {
+        UserDefaults.standard.set(true, forKey: aiTipkey)
         tipView?.removeFromSuperview()
         tipView = nil
     }
@@ -176,6 +178,7 @@ class HomeViewController: UIViewController {
         view.addSubview(showLabel)
 //        view.addSubview(viewToggleStackView)
         view.addSubview(drinkCardView)
+        drinkCardView.isHidden = true
         view.addSubview(recordButton)
         view.addSubview(aiButton)
         view.addSubview(myPageButton)
@@ -184,6 +187,7 @@ class HomeViewController: UIViewController {
     private func setupSubViewController() {
         addChild(listTypeRecordViewController)
         view.addSubview(listTypeRecordViewController.view)
+        listTypeRecordViewController.view.isHidden = true
         
         // For z index
         view.addSubview(overlayView)
@@ -410,16 +414,30 @@ extension HomeViewController {
     }
     
     @objc private func didTapAIButton() {
-//        var configuration = PHPickerConfiguration()
-//        configuration.selectionLimit = 1
-//        configuration.filter = .images
-//
-//        let picker = PHPickerViewController(configuration: configuration)
-//        picker.delegate = self
-//        present(picker, animated: true, completion: nil)
+        func makeNotificationAlert() -> UIAlertController? {
+            let infoKey = "NotifyTheLimit"
+             let shouldShow = UserDefaults.standard.bool(forKey: infoKey)
+            
+            guard shouldShow == false else { return nil }
+            
+            return makeAlert(
+                title: "안내",
+                message: "지금은 영어로 작성된 라벨만 인식할 수 있어요. 한글, 일본어, 한자 등 다른 언어의 라벨은 곧 지원될 예정이니 조금만 기다려 주세요!",
+                actions: [
+                    .init(title: "다시 보지 않기", style: .default, handler: { [weak self] _ in
+                        UserDefaults.standard.set(true, forKey: infoKey)
+                        DispatchQueue.main.async { self?.didTapAIButton() }
+                    })]
+            )
+        }
         
         Haptic.buttonTap()
         removeTipView()
+        
+        if let alertCandidate = makeNotificationAlert() {
+            present(alertCandidate, animated: true, completion: nil)
+            return
+        }
         
         // 카메라가 사용 가능한지 확인
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -428,7 +446,6 @@ extension HomeViewController {
             imagePickerController.sourceType = .camera
             self.present(imagePickerController, animated: true, completion: nil)
         } else {
-            // 카메라를 사용할 수 없는 경우 경고 메시지 표시
             self.showErrorAlert(title: "카메라를 사용할 수 없습니다")
         }
     }
@@ -446,7 +463,6 @@ extension HomeViewController {
 
 // MARK: - Delegate
 
-// UIImagePickerControllerDelegate 메서드 구현
 extension HomeViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let selectedImage = info[.originalImage] as? UIImage {
@@ -459,28 +475,6 @@ extension HomeViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true, completion: nil)
     }
 }
-
-//extension HomeViewController: PHPickerViewControllerDelegate {
-//    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-//        picker.dismiss(animated: true, completion: nil) // Picker 닫기
-//        
-//        // 선택한 사진이 있을 경우
-//        if let firstResult = results.first {
-//            let itemProvider = firstResult.itemProvider
-//            
-//            // 이미지가 있는지 확인
-//            if itemProvider.canLoadObject(ofClass: UIImage.self) {
-//                itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
-//                    guard let selectedImage = image as? UIImage else {
-//                        return
-//                    }
-//                    
-//                    Task { try await self.viewModel.askGPT(with: selectedImage) }
-//                }
-//            }
-//        }
-//    }
-//}
 
 import SwiftUI
 #Preview {

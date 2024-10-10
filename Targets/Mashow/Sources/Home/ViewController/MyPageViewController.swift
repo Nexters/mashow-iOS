@@ -38,6 +38,17 @@ class MyPageViewModel {
             try await networkManager.request(
                 .user(.withdraw(accessToken: accessToken)))
             state.accessTokenSubject.send(nil)
+            
+            // FIXME: 스토리지 초기화
+            resetDefaults()
+        }
+    }
+    
+    private func resetDefaults() {
+        let defaults = UserDefaults.standard
+        let dictionary = defaults.dictionaryRepresentation()
+        dictionary.keys.forEach { key in
+            defaults.removeObject(forKey: key)
         }
     }
 }

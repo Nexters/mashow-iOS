@@ -10,14 +10,14 @@ import StoreKit
 
 class AppLaunchManager {
     private let launchCountKey = "launchCountKey"
-    private let reviewRequestThreshold = 3
+    private let reviewRequestThresholds = [3, 7, 11, 17, 19]
 
     func incrementLaunchCountAndRequestReviewIfNeeded() {
         let currentCount = UserDefaults.standard.integer(forKey: launchCountKey)
         let newCount = currentCount + 1
         UserDefaults.standard.set(newCount, forKey: launchCountKey)
         
-        if newCount >= reviewRequestThreshold {
+        if reviewRequestThresholds.contains(newCount) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
                 self.requestReview()
             }

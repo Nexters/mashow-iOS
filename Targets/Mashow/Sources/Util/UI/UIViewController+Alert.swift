@@ -10,6 +10,25 @@ import UIKit
 
 extension UIViewController {
     // Default Alert
+    func makeAlert(
+        title: String,
+        message: String,
+        actions: [UIAlertAction] = []
+    ) -> UIAlertController {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        if actions.isEmpty {
+            let defaultAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(defaultAction)
+        } else {
+            for action in actions {
+                alertController.addAction(action)
+            }
+        }
+        
+        return alertController
+    }
+    
+    // Default Alert
     func showAlert(
         title: String,
         message: String,
