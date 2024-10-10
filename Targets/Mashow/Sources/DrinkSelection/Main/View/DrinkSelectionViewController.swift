@@ -243,6 +243,7 @@ extension DrinkSelectionViewController {
         }
         
         let vc = DrinkDetailViewController()
+        vc.viewModel = DrinkDetailViewModel(drinkDetails: [:])
         vc.environmentViewModel = viewModel
         navigationController?.pushViewController(vc, animated: true)
     }
