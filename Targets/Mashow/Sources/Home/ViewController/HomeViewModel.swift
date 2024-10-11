@@ -51,7 +51,7 @@ class HomeViewModel {
             let recognizedText = try await OCRManager.extractText(from: image)
         else {
             state.isLoading.send(false)
-            return nil
+            throw SpiritGPT.GPTError.cannotRecognize
         }
         
         do {
