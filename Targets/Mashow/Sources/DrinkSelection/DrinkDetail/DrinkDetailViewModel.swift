@@ -9,5 +9,9 @@
 import Foundation
 
 final class DrinkDetailViewModel {
-    var drinkDetails: [DrinkType: [String]] = [:]
+    var drinkDetails: [DrinkType: [String]]
+    
+    init(drinkDetails: [DrinkType : [String]] = [:]) {
+        self.drinkDetails = drinkDetails
+    }
 }

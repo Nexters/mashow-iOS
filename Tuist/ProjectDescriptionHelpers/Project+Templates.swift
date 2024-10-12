@@ -30,17 +30,7 @@ extension Project {
                              bundleId: "\(organizationName).\(name)",
                              deploymentTarget: .iOS(targetVersion: "17.0", devices: .iphone),
                              infoPlist: .default,
-                             sources: ["Targets/\(name)/Sources/**"],
-                             resources: [],
-                             dependencies: [
-                                .external(name: "SnapKit"),
-                                .external(name: "Moya"),
-                                .external(name: "Kingfisher"),
-                                .external(name: "Lottie"),
-                                .external(name: "KakaoSDKAuth"),
-                                .external(name: "KakaoSDKUser"),
-                                .external(name: "Willow")
-                             ])
+                             sources: ["Targets/\(name)/Sources/**"])
         
         let tests = Target(name: "\(name)Tests",
                            platform: platform,
@@ -98,8 +88,10 @@ extension Project {
             ],
             "KAKAO_APP_KEY": "$(KAKAO_APP_KEY)",
             "BASE_API_URL": "$(BASE_API_URL)",
+            "GPT_KEY": "$(GPT_KEY)",
             "CFBundleShortVersionString": "$(MARKETING_VERSION)",
-            "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)"
+            "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+            "NSCameraUsageDescription": "라벨 정보를 인식하기 위해 카메라가 필요합니다. 기능을 사용하기 위해선 권한을 허용해주세요."
         ]
         
         let debugConfiguration = Configuration.debug(
@@ -121,7 +113,15 @@ extension Project {
             sources: ["Targets/\(name)/Sources/**"],
             resources: ["Targets/\(name)/Resources/**"],
             entitlements: .file(path: "./Mashow.entitlements"),
-            dependencies: dependencies,
+            dependencies: dependencies + [
+                .external(name: "SnapKit"),
+                .external(name: "Moya"),
+                .external(name: "Kingfisher"),
+                .external(name: "Lottie"),
+                .external(name: "KakaoSDKAuth"),
+                .external(name: "KakaoSDKUser"),
+                .external(name: "Willow")
+            ],
             settings: .settings(configurations: [
                debugConfiguration,
                releaseConfiguration

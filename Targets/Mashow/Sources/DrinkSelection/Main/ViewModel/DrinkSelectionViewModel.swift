@@ -19,6 +19,7 @@ class DrinkSelectionViewModel {
         let addedTypes = CurrentValueSubject<[DrinkType], Never>([])
         let drinkSelectionResult = PassthroughSubject<DrinkDetail, Never>()
         let isLoading = CurrentValueSubject<Bool, Never>(false)
+        let goToNextPageWithDrinkName = CurrentValueSubject<String?, Never>(nil)
         
         var selectionResult = DrinkDetail()
         
@@ -35,6 +36,18 @@ class DrinkSelectionViewModel {
                 self.initialDrinkType = defaultType
                 self.currentType = CurrentValueSubject(defaultType)
             }
+        }
+        
+        init(initialDrinkType: DrinkType, drinkName: String) {
+            self.initialDrinkType = initialDrinkType
+            self.currentType = CurrentValueSubject(initialDrinkType)
+            
+            // 만약에 먼가가 여기로 들어왔다면 선택된 채로 보여주기
+            self.addedTypes.send([initialDrinkType])
+            self.selectionResult.liquors = [.init(liquorType: initialDrinkType.forAPIParameter, names: [])]
+            
+            // 그리고 simulated tap next
+            self.goToNextPageWithDrinkName.send(drinkName)
         }
     }
     

@@ -10,7 +10,7 @@ import UIKit
 import Combine
 
 class DrinkDetailViewController: DrinkSelectionSubViewController {
-    private let viewModel = DrinkDetailViewModel()
+    var viewModel: DrinkDetailViewModel!
     var subscriptions = Set<AnyCancellable>()
     
     lazy var backgroundImageView: UIImageView = {
@@ -76,14 +76,18 @@ class DrinkDetailViewController: DrinkSelectionSubViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setupLayouts()
-//        hideKeyboardWhenTappedAround()
         registerForKeyboardNotifications()
         
-        // 기본 셀 잡아줌
+        // 뷰모델의 drinkDetails가 비어있지 않으면 테이블 뷰를 업데이트
+        if !viewModel.drinkDetails.isEmpty {
+            tableView.reloadData()
+        }
+
+        // 만약 기본 셀을 추가해야 한다면 아래 로직을 유지합니다.
         environmentViewModel.state.addedTypes.value.forEach { type in
-            viewModel.drinkDetails[type] = [""]
+            viewModel.drinkDetails[type] = viewModel.drinkDetails[type] ?? [""]
         }
     }
     

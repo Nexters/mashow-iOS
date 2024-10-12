@@ -109,6 +109,26 @@ extension DrinkSelectionViewController {
                 }
             }
             .store(in: &cancellables)
+        
+        viewModel.state.goToNextPageWithDrinkName
+            .receive(on: DispatchQueue.main)
+            .compactMap { $0 }
+            .sink { [weak self] name in
+                guard let self else { return }
+                
+                guard 
+                    self.currentlySubmittable,
+                    let addedType = viewModel.state.addedTypes.value.first
+                else {
+                    return
+                }
+                
+                let vc = DrinkDetailViewController()
+                vc.viewModel = DrinkDetailViewModel(drinkDetails: [addedType: [name]])
+                vc.environmentViewModel = self.viewModel
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
+            .store(in: &cancellables)
     }
     
     @objc private func onTapAddedTypeButton(_ sender: UIButton) {
@@ -216,13 +236,14 @@ extension DrinkSelectionViewController {
     }
     
     @objc private func didTapNextButton() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.buttonTap()
         
         guard currentlySubmittable else {
             return
         }
         
         let vc = DrinkDetailViewController()
+        vc.viewModel = DrinkDetailViewModel(drinkDetails: [:])
         vc.environmentViewModel = viewModel
         navigationController?.pushViewController(vc, animated: true)
     }
